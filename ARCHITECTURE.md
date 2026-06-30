@@ -44,11 +44,13 @@ Die Analyse von **11 lokalen Krypto-Projekten** zeigt ein klares Bild: Es existi
 | M4 ABI | ✅ Etherscan-V2/Sourcify + EIP-1967-Proxy + decode/encode, cached | `abi` |
 | M5 Portfolio | ✅ Balances (EVM+SPL) + Allowance check/approve/revoke | `portfolio` |
 | M6 Security | ✅ GoPlus + honeypot.is, **EVM + Solana** | `security` |
+| M2b Solana-Swap | ✅ Jupiter quote + build (unsigned tx) | `solana_swap` |
 | R&D-9 MEV | ✅ private-RPC-Guidance | `mev_protection` |
 | R&D-10 Whale-Events | ✅ große ERC20-Transfers via getLogs | `whale_watch` |
+| R&D-12 Simulation | ✅ EVM dry-run + Revert-Decode | `simulate` |
 | Discovery | ✅ Fähigkeiten/Chains | `catalog` |
 
-**Querschnitt:** Envelope · kanon. ErrorCodes · Retry/Backoff · Provider-Resolver A/B/C · **TTL-Cache** · Rate-Limit · NFT-Gate · **x402-Bausteine**. **10 Chains.** Hosting (Docker/HTTP/`llms.txt`/context7) + GO-LIVE-Checkliste fertig. **Offen (User-Aktion):** Remote-Push, Deploy, x402-Treasury-Wiring, ERC-8257-Mint, Listings — siehe `docs/GO-LIVE.md`.
+**11 Tools.** **Querschnitt:** Envelope · kanon. ErrorCodes · Retry/Backoff · **RPC-Failover (publicRpcs-Liste)** · Provider-Resolver A/B/C · **TTL-Cache** · Rate-Limit · NFT-Gate · **x402-Bausteine** · **4byte-Fallback** (unverifizierte Contracts) · **USD-Bewertung** (CoinGecko). **10 Chains.** Hosting (Docker/HTTP/`llms.txt`/context7) + GO-LIVE-Checkliste fertig. **Verifikation:** 49 Unit-Tests + MCP-Smoke + `npm run livecheck` 7/7 live grün. **Offen (User-Aktion):** Remote-Push, Deploy, x402-Treasury-Wiring, ERC-8257-Mint, Listings — siehe `docs/GO-LIVE.md`.
 
 **Solana-Swap-TX ✅** via `solana_swap` (Jupiter quote + build, live verifiziert: 1 SOL → ~73 USDC). **Noch offen:** pump.fun buy/sell-TX direkt auf der Bonding-Curve (braucht `@pump-fun/pump-sdk`) — für graduated Token deckt `solana_swap` den Kauf bereits ab.
 
