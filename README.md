@@ -4,7 +4,7 @@
 
 > **Keystore-free by design.** The server never holds private keys and never signs. Every write action returns an *unsigned, ready-to-sign transaction*; the agent signs it with its own wallet. The server is multi-tenant and stateless — bring your own address, get back data + unsigned transactions.
 
-## Tools (10)
+## Tools (11)
 
 | Tool | What it does |
 |---|---|
@@ -17,6 +17,7 @@
 | `mev_protection` | Private-RPC guidance (Flashbots Protect, MEV Blocker) + per-chain sandwich risk so the agent broadcasts safely. |
 | `whale_watch` | Recent large ERC-20 transfers ("whale moves") for a token over a block window, decoded + sorted. |
 | `solana_swap` | Quote & build same-chain Solana swaps via **Jupiter** (e.g. SOL→USDC, buy a graduated pump token) — returns a serialized unsigned transaction. |
+| `simulate` | Dry-run an EVM transaction (eth_call) before signing and decode the revert reason (Error/Panic/custom) — never burn gas on a doomed tx. |
 | `catalog` | Discovery: lists every tool, supported chain (id/native asset) and provider mode so an agent can self-configure. |
 
 ## Supported chains
