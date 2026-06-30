@@ -1,0 +1,38 @@
+# Crypto-Knowledge
+
+> The on-chain brain for autonomous AI agents. An MCP server that lets agents
+> perform cross-chain routing, contract decoding, portfolio & allowance
+> management, gas/profit estimation, anti-rug security checks, MEV protection,
+> whale watching and EVM simulation — safely and deterministically.
+> Keystore-free: it never holds keys and returns only unsigned transactions
+> for the agent to sign.
+
+## Connect (MCP, Streamable HTTP)
+
+POST /mcp  — JSON-RPC 2.0 over Streamable HTTP (Model Context Protocol)
+
+## Tools
+
+- route: best cross-chain route (LiFi + deBridge), e.g. CRO -> SOL, with a ready-to-sign tx
+- solana_swap: Jupiter quote + build for same-chain Solana swaps (unsigned tx)
+- pumpfun: on-chain pump.fun bonding-curve, price, graduation progress, IPFS metadata
+- profitability: EIP-1559 gas estimate + net-profit verdict (arbitrage guard)
+- abi: fetch any verified EVM ABI (Etherscan V2 / Sourcify), follow EIP-1967 proxies, decode/encode calldata (4byte fallback for unverified)
+- portfolio: multi-chain balances (native + ERC-20 + SPL) with USD valuation, and allowance check/approve/revoke
+- security: anti-rug scan (GoPlus + honeypot.is), EVM + Solana, 0-100 risk score
+- mev_protection: private-RPC guidance (Flashbots Protect, MEV Blocker) + per-chain sandwich risk
+- whale_watch: recent large ERC-20 transfers over a block window
+- simulate: EVM transaction dry-run + revert reason decoding before signing
+- catalog: capabilities + chain discovery
+
+## Chains
+
+Ethereum, Base, Arbitrum, Optimism, Polygon, Cronos, ApeChain, BNB Smart Chain, Avalanche, Solana.
+
+## Provider modes (per call)
+
+open (public RPC), own_key (bring your own Helius/Alchemy key, recommended), tool (operator key, gated).
+
+## Source
+
+https://github.com/DerDoPhil/crypto-knowledge

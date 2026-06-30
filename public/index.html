@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Crypto-Knowledge — On-chain brain for AI agents</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; font:16px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; background:#0b0d10; color:#e6e8eb; }
+  main { max-width:760px; margin:0 auto; padding:64px 24px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  .sub { color:#8b929c; margin:0 0 32px; }
+  code { background:#15181d; padding:2px 6px; border-radius:6px; color:#7ee3c7; }
+  .grid { display:grid; gap:10px; margin:24px 0; }
+  .tool { background:#12151a; border:1px solid #1d222b; border-radius:10px; padding:12px 14px; }
+  .tool b { color:#7ee3c7; }
+  a { color:#7ee3c7; }
+  .pill { display:inline-block; background:#15181d; border:1px solid #1d222b; border-radius:999px; padding:2px 10px; margin:2px; font-size:13px; color:#aeb4bd; }
+</style>
+</head>
+<body><main>
+  <h1>Crypto-Knowledge</h1>
+  <p class="sub">The on-chain brain for autonomous AI agents — keystore-free MCP server.</p>
+  <p>Connect via MCP Streamable HTTP: <code>POST /mcp</code> &nbsp;·&nbsp; <a href="/llms.txt">/llms.txt</a></p>
+  <div class="grid">
+    <div class="tool"><b>route</b> — best cross-chain route (LiFi + deBridge), e.g. CRO → SOL</div>
+    <div class="tool"><b>solana_swap</b> — Jupiter Solana swaps (unsigned tx)</div>
+    <div class="tool"><b>pumpfun</b> — on-chain bonding curve, price, graduation, IPFS metadata</div>
+    <div class="tool"><b>profitability</b> — EIP-1559 gas + net-profit verdict</div>
+    <div class="tool"><b>abi</b> — fetch/parse any verified EVM ABI, follow proxies, decode/encode (4byte fallback)</div>
+    <div class="tool"><b>portfolio</b> — multi-chain balances + USD + allowance manager</div>
+    <div class="tool"><b>security</b> — anti-rug scan (EVM + Solana), 0–100 risk score</div>
+    <div class="tool"><b>mev_protection</b> — private-RPC guidance vs sandwich attacks</div>
+    <div class="tool"><b>whale_watch</b> — recent large ERC-20 transfers</div>
+    <div class="tool"><b>simulate</b> — EVM dry-run + revert decoding before signing</div>
+  </div>
+  <div>
+    <span class="pill">Ethereum</span><span class="pill">Base</span><span class="pill">Arbitrum</span>
+    <span class="pill">Optimism</span><span class="pill">Polygon</span><span class="pill">Cronos</span>
+    <span class="pill">ApeChain</span><span class="pill">BNB Chain</span><span class="pill">Avalanche</span><span class="pill">Solana</span>
+  </div>
+  <p class="sub" style="margin-top:32px"><a href="https://github.com/DerDoPhil/crypto-knowledge">github.com/DerDoPhil/crypto-knowledge</a></p>
+</main></body>
+</html>
