@@ -21,6 +21,8 @@ export interface ChainEntry {
   nativeDecimals: number;
   /** Public RPC used when the caller has no own/tool key (provider mode "open"). */
   publicRpc: string;
+  /** Fallback public RPCs tried in order on network failure (open mode). */
+  publicRpcs?: string[];
   /** Alchemy subdomain for keyed EVM RPC, or null if Alchemy has no endpoint. */
   alchemySubdomain: string | null;
   /** chainid for the unified Etherscan V2 API, or null if unsupported. */
@@ -38,6 +40,7 @@ export const CHAINS: Record<string, ChainEntry> = {
     nativeSymbol: "ETH",
     nativeDecimals: 18,
     publicRpc: "https://ethereum-rpc.publicnode.com",
+    publicRpcs: ["https://ethereum-rpc.publicnode.com", "https://eth.drpc.org", "https://1rpc.io/eth"],
     alchemySubdomain: "eth-mainnet",
     etherscanV2ChainId: 1,
     explorerUrl: "https://etherscan.io",
@@ -50,6 +53,7 @@ export const CHAINS: Record<string, ChainEntry> = {
     nativeSymbol: "ETH",
     nativeDecimals: 18,
     publicRpc: "https://mainnet.base.org",
+    publicRpcs: ["https://mainnet.base.org", "https://base.publicnode.com", "https://base.drpc.org"],
     alchemySubdomain: "base-mainnet",
     etherscanV2ChainId: 8453,
     explorerUrl: "https://basescan.org",
@@ -62,6 +66,7 @@ export const CHAINS: Record<string, ChainEntry> = {
     nativeSymbol: "ETH",
     nativeDecimals: 18,
     publicRpc: "https://arb1.arbitrum.io/rpc",
+    publicRpcs: ["https://arb1.arbitrum.io/rpc", "https://arbitrum.publicnode.com", "https://arbitrum.drpc.org"],
     alchemySubdomain: "arb-mainnet",
     etherscanV2ChainId: 42161,
     explorerUrl: "https://arbiscan.io",
@@ -74,6 +79,7 @@ export const CHAINS: Record<string, ChainEntry> = {
     nativeSymbol: "POL",
     nativeDecimals: 18,
     publicRpc: "https://polygon-rpc.com",
+    publicRpcs: ["https://polygon-rpc.com", "https://polygon-bor-rpc.publicnode.com", "https://polygon.drpc.org"],
     alchemySubdomain: "polygon-mainnet",
     etherscanV2ChainId: 137,
     explorerUrl: "https://polygonscan.com",
@@ -110,6 +116,7 @@ export const CHAINS: Record<string, ChainEntry> = {
     nativeSymbol: "ETH",
     nativeDecimals: 18,
     publicRpc: "https://mainnet.optimism.io",
+    publicRpcs: ["https://mainnet.optimism.io", "https://optimism.publicnode.com", "https://optimism.drpc.org"],
     alchemySubdomain: "opt-mainnet",
     etherscanV2ChainId: 10,
     explorerUrl: "https://optimistic.etherscan.io",
@@ -122,6 +129,7 @@ export const CHAINS: Record<string, ChainEntry> = {
     nativeSymbol: "BNB",
     nativeDecimals: 18,
     publicRpc: "https://bsc-dataseed.binance.org",
+    publicRpcs: ["https://bsc-dataseed.binance.org", "https://bsc-rpc.publicnode.com", "https://bsc.drpc.org"],
     alchemySubdomain: "bnb-mainnet",
     etherscanV2ChainId: 56,
     explorerUrl: "https://bscscan.com",

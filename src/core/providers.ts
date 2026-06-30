@@ -19,7 +19,10 @@ export interface CallerConfig {
 }
 
 export interface ResolvedRpc {
+  /** Primary endpoint (= urls[0]). */
   url: string;
+  /** Endpoints to try in order on network failure (open mode has fallbacks). */
+  urls: string[];
   /** True when an API key backs the endpoint (full token/NFT data available). */
   keyed: boolean;
 }
@@ -40,20 +43,26 @@ export function resolveEvmRpc(chainKey: string, caller: CallerConfig, op: Operat
   if (!chain || chain.kind !== "evm") throw new Error(`not an EVM chain: ${chainKey}`);
 
   const override = caller.evmRpcOverrides?.[chainKey];
-  if (override) return { url: override, keyed: true };
+  if (override) return { url: override, urls: [override], keyed: true };
 
   const key = effectiveKey(caller.providerMode, caller.alchemyKey, op.alchemyKey);
   if (key && chain.alchemySubdomain) {
-    return { url: `https://${chain.alchemySubdomain}.g.alchemy.com/v2/${key}`, keyed: true };
+    const url = `https://${chain.alchemySubdomain}.g.alchemy.com/v2/${key}`;
+    return { url, urls: [url], keyed: true };
   }
-  return { url: chain.publicRpc, keyed: false };
+  const urls = chain.publicRpcs ?? [chain.publicRpc];
+  return { url: urls[0]!, urls, keyed: false };
 }
 
 export function resolveSolanaRpc(caller: CallerConfig, op: OperatorConfig): ResolvedRpc {
   const sol = getChain("solana")!;
   const key = effectiveKey(caller.providerMode, caller.heliusKey, op.heliusKey);
-  if (key) return { url: `https://mainnet.helius-rpc.com/?api-key=${key}`, keyed: true };
-  return { url: sol.publicRpc, keyed: false };
+  if (key) {
+    const url = `https://mainnet.helius-rpc.com/?api-key=${key}`;
+    return { url, urls: [url], keyed: true };
+  }
+  const urls = sol.publicRpcs ?? [sol.publicRpc];
+  return { url: urls[0]!, urls, keyed: false };
 }
 
 /**

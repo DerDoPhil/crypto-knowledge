@@ -71,16 +71,16 @@ export async function estimateGas(
 ): Promise<GasEstimate> {
   const chain = getChain(chainKey);
   if (!chain || chain.chainId === null) throw new Error(`not an EVM chain: ${chainKey}`);
-  const { url } = resolveEvmRpc(chainKey, caller, op);
+  const { urls } = resolveEvmRpc(chainKey, caller, op);
 
   // Base fee from the latest block.
-  const block = await jsonRpc<{ baseFeePerGas?: string }>(url, "eth_getBlockByNumber", ["latest", false]);
+  const block = await jsonRpc<{ baseFeePerGas?: string }>(urls, "eth_getBlockByNumber", ["latest", false]);
   const baseFee = block.baseFeePerGas ? BigInt(block.baseFeePerGas) : 0n;
 
   // Suggested priority fee (fallback to 1 gwei if the node doesn't support it).
   let priority = GWEI;
   try {
-    priority = BigInt(await jsonRpc<string>(url, "eth_maxPriorityFeePerGas", []));
+    priority = BigInt(await jsonRpc<string>(urls, "eth_maxPriorityFeePerGas", []));
   } catch {
     /* keep 1 gwei default */
   }
@@ -93,7 +93,7 @@ export async function estimateGas(
   let gasUnits = 0n;
   for (const tx of txs) {
     try {
-      const est = await jsonRpc<string>(url, "eth_estimateGas", [
+      const est = await jsonRpc<string>(urls, "eth_estimateGas", [
         { from: tx.from, to: tx.to, data: tx.data, value: tx.value ?? "0x0" },
       ]);
       gasUnits += BigInt(est);

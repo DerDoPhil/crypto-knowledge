@@ -55,17 +55,27 @@ export async function simulateTx(
   if (!chain || chain.kind !== "evm") {
     throw new CryptoKnowledgeError(ErrorCode.UNSUPPORTED_CHAIN, `simulation needs an EVM chain, got '${chainKey}'`);
   }
-  const { url } = resolveEvmRpc(chainKey, caller, op);
+  const { urls } = resolveEvmRpc(chainKey, caller, op);
+  const body = {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "eth_call",
+    params: [{ from: tx.from, to: tx.to, data: tx.data, value: tx.value ?? "0x0" }, "latest"],
+  };
 
-  const res = await fetchJson<{ result?: string; error?: { message?: string; data?: string } }>(url, {
-    method: "POST",
-    body: {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "eth_call",
-      params: [{ from: tx.from, to: tx.to, data: tx.data, value: tx.value ?? "0x0" }, "latest"],
-    },
-  });
+  // Try each endpoint; a network failure falls over, a JSON-RPC reply (result or
+  // revert error) is authoritative and returned.
+  let res: { result?: string; error?: { message?: string; data?: string } } | undefined;
+  let lastErr: unknown;
+  for (const url of urls) {
+    try {
+      res = await fetchJson<{ result?: string; error?: { message?: string; data?: string } }>(url, { method: "POST", body });
+      break;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (!res) throw lastErr ?? new CryptoKnowledgeError(ErrorCode.RPC_ERROR, "simulation: all endpoints failed");
 
   if (res.error) {
     const reason = decodeRevert(res.error.data, res.error.message);

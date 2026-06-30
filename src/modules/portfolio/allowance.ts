@@ -28,13 +28,13 @@ export async function checkAllowance(
   caller: CallerConfig,
   op: OperatorConfig,
 ): Promise<AllowanceResult> {
-  const { url } = resolveEvmRpc(chainKey, caller, op);
+  const { urls } = resolveEvmRpc(chainKey, caller, op);
   const data = encodeFunctionData({
     abi: ERC20_ALLOWANCE_ABI,
     functionName: "allowance",
     args: [owner as `0x${string}`, spender as `0x${string}`],
   });
-  const raw = await ethCall(url, token, data);
+  const raw = await ethCall(urls, token, data);
   const allowance = decodeFunctionResult({
     abi: ERC20_ALLOWANCE_ABI,
     functionName: "allowance",

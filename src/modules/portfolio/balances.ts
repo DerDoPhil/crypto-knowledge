@@ -36,7 +36,7 @@ export interface BalancesResult {
   warnings: string[];
 }
 
-async function erc20Field<T>(rpc: string, token: string, fn: "decimals" | "symbol"): Promise<T | null> {
+async function erc20Field<T>(rpc: string | string[], token: string, fn: "decimals" | "symbol"): Promise<T | null> {
   try {
     const data = encodeFunctionData({ abi: ERC20_ABI, functionName: fn });
     const raw = await ethCall(rpc, token, data);
@@ -59,9 +59,9 @@ async function evmBalances(
   warnings: string[],
 ): Promise<ChainBalances> {
   const chain = getChain(chainKey)!;
-  const { url, keyed } = resolveEvmRpc(chainKey, caller, op);
+  const { urls, keyed } = resolveEvmRpc(chainKey, caller, op);
 
-  const nativeRaw = BigInt(await jsonRpc<string>(url, "eth_getBalance", [address, "latest"]));
+  const nativeRaw = BigInt(await jsonRpc<string>(urls, "eth_getBalance", [address, "latest"]));
   const native: TokenBalance = {
     address: null,
     symbol: chain.nativeSymbol,
@@ -75,7 +75,7 @@ async function evmBalances(
   let contracts: string[] = tokens ?? [];
   if (!tokens && keyed) {
     try {
-      const res = await jsonRpc<AlchemyTokenBalances>(url, "alchemy_getTokenBalances", [address, "erc20"]);
+      const res = await jsonRpc<AlchemyTokenBalances>(urls, "alchemy_getTokenBalances", [address, "erc20"]);
       contracts = res.tokenBalances
         .filter((t) => t.tokenBalance && BigInt(t.tokenBalance) > 0n)
         .map((t) => t.contractAddress);
@@ -92,10 +92,10 @@ async function evmBalances(
   for (const token of contracts) {
     try {
       const balData = encodeFunctionData({ abi: ERC20_ABI, functionName: "balanceOf", args: [address as `0x${string}`] });
-      const balRaw = BigInt(await ethCall(url, token, balData));
+      const balRaw = BigInt(await ethCall(urls, token, balData));
       if (balRaw === 0n) continue;
-      const decimals = (await erc20Field<number>(url, token, "decimals")) ?? 18;
-      const symbol = (await erc20Field<string>(url, token, "symbol")) ?? null;
+      const decimals = (await erc20Field<number>(urls, token, "decimals")) ?? 18;
+      const symbol = (await erc20Field<string>(urls, token, "symbol")) ?? null;
       tokenBalances.push({
         address: token,
         symbol,
@@ -109,7 +109,7 @@ async function evmBalances(
     }
   }
 
-  if (shouldNudgeOwnKey(caller, { url, keyed })) warnings.push(OWN_KEY_NUDGE);
+  if (shouldNudgeOwnKey(caller, { url: urls[0]!, urls, keyed })) warnings.push(OWN_KEY_NUDGE);
   return { chain: chainKey, native, tokens: tokenBalances };
 }
 
@@ -128,9 +128,9 @@ async function solanaBalances(
   warnings: string[],
 ): Promise<ChainBalances> {
   const sol = getChain("solana")!;
-  const { url, keyed } = resolveSolanaRpc(caller, op);
+  const { urls, keyed } = resolveSolanaRpc(caller, op);
 
-  const lamports = await jsonRpc<{ value: number }>(url, "getBalance", [address]);
+  const lamports = await jsonRpc<{ value: number }>(urls, "getBalance", [address]);
   const native: TokenBalance = {
     address: null,
     symbol: "SOL",
@@ -142,7 +142,7 @@ async function solanaBalances(
 
   const tokens: TokenBalance[] = [];
   try {
-    const accounts = await jsonRpc<SolTokenAccounts>(url, "getTokenAccountsByOwner", [
+    const accounts = await jsonRpc<SolTokenAccounts>(urls, "getTokenAccountsByOwner", [
       address,
       { programId: SPL_TOKEN_PROGRAM },
       { encoding: "jsonParsed" },
@@ -163,7 +163,7 @@ async function solanaBalances(
     warnings.push("solana: failed to read SPL token accounts");
   }
 
-  if (shouldNudgeOwnKey(caller, { url, keyed })) warnings.push(OWN_KEY_NUDGE);
+  if (shouldNudgeOwnKey(caller, { url: urls[0]!, urls, keyed })) warnings.push(OWN_KEY_NUDGE);
   return { chain: "solana", native, tokens };
 }
 

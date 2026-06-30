@@ -58,20 +58,20 @@ export async function recentLargeTransfers(
   if (!chain || chain.chainId === null) {
     throw new CryptoKnowledgeError(ErrorCode.UNSUPPORTED_CHAIN, `whale watch needs an EVM chain, got '${chainKey}'`);
   }
-  const { url } = resolveEvmRpc(chainKey, caller, op);
+  const { urls } = resolveEvmRpc(chainKey, caller, op);
   const warnings: string[] = [];
 
   const lookback = Math.min(blockLookback, MAX_LOOKBACK);
   if (blockLookback > MAX_LOOKBACK) warnings.push(`blockLookback capped at ${MAX_LOOKBACK}`);
 
-  const latestHex = await jsonRpc<string>(url, "eth_blockNumber", []);
+  const latestHex = await jsonRpc<string>(urls, "eth_blockNumber", []);
   const latest = Number(BigInt(latestHex));
   const fromBlock = Math.max(0, latest - lookback);
 
   // decimals (default 18 if the token doesn't expose it)
   let decimals = 18;
   try {
-    const d = await ethCall(url, token, encodeFunctionData({ abi: ERC20_DECIMALS_ABI, functionName: "decimals" }));
+    const d = await ethCall(urls, token, encodeFunctionData({ abi: ERC20_DECIMALS_ABI, functionName: "decimals" }));
     decimals = Number(decodeFunctionResult({ abi: ERC20_DECIMALS_ABI, functionName: "decimals", data: d as `0x${string}` }));
   } catch {
     warnings.push("could not read decimals — assuming 18");
@@ -79,7 +79,7 @@ export async function recentLargeTransfers(
 
   let logs: RawLog[] = [];
   try {
-    logs = await jsonRpc<RawLog[]>(url, "eth_getLogs", [
+    logs = await jsonRpc<RawLog[]>(urls, "eth_getLogs", [
       { fromBlock: `0x${fromBlock.toString(16)}`, toBlock: "latest", address: token, topics: [TRANSFER_TOPIC] },
     ]);
   } catch (err) {
