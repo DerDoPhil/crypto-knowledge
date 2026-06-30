@@ -26,7 +26,7 @@ const PROTECTED_RPCS: Record<string, ProtectedRpc[]> = {
 };
 
 /** L2s with a single sequencer have no public mempool → negligible sandwich risk. */
-const LOW_RISK_L2 = new Set(["base", "arbitrum"]);
+const LOW_RISK_L2 = new Set(["base", "arbitrum", "optimism"]);
 
 export function getMevAdvice(chainKey: string): MevAdvice {
   const chain = getChain(chainKey);

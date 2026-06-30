@@ -12,9 +12,12 @@ const COINGECKO_NATIVE: Record<string, string> = {
   ethereum: "ethereum",
   base: "ethereum",
   arbitrum: "ethereum",
+  optimism: "ethereum",
   polygon: "matic-network",
   cronos: "crypto-com-chain",
   apechain: "apecoin",
+  bsc: "binancecoin",
+  avalanche: "avalanche-2",
   solana: "solana",
 };
 

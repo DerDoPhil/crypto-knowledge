@@ -7,6 +7,7 @@ import { getChain } from "../../registry/chains.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 import { fetchGoPlus } from "./goplus.js";
 import { fetchGoPlusSolana, scoreSolanaToken } from "./goplus-solana.js";
+import { fetchHoneypotIs } from "./honeypot.js";
 import { scoreToken } from "./score.js";
 
 export function registerSecurityTool(server: McpServer, _ctx: ToolContext): void {
@@ -40,10 +41,27 @@ export function registerSecurityTool(server: McpServer, _ctx: ToolContext): void
         }
 
         if (!isAddress(input.address)) return toToolResult(invalidInput("`address` must be a valid token address", meta));
-        const raw = await fetchGoPlus(input.chain, input.address);
+
+        // GoPlus (static) + honeypot.is (simulation) in parallel — cross-check.
+        const [raw, sim] = await Promise.all([
+          fetchGoPlus(input.chain, input.address),
+          fetchHoneypotIs(input.chain, input.address),
+        ]);
         const report = scoreToken(raw);
+        const dataSources = ["goplus"];
         const warnings = report.verdict === "insufficient_data" ? ["GoPlus returned little data — token may be brand new"] : [];
-        return toToolResult(ok({ token: input.address, ...report, dataSources: ["goplus"] }, meta, warnings));
+
+        if (sim) {
+          dataSources.push("honeypot.is");
+          // Escalate if the live simulation disagrees with the static analysis.
+          if (sim.isHoneypot === true && report.checks.honeypot.isHoneypot !== true) {
+            report.riskScore = Math.min(100, report.riskScore + 40);
+            report.verdict = "high_risk";
+            report.redFlags.push("honeypot.is simulation flags this as a honeypot (static analysis missed it)");
+          }
+        }
+
+        return toToolResult(ok({ token: input.address, ...report, honeypotSimulation: sim, dataSources }, meta, warnings));
       } catch (err) {
         const e = toCryptoKnowledgeError(err);
         return toToolResult(fail({ code: e.code, message: e.message, retryable: e.retryable }, meta));

@@ -16,6 +16,13 @@ describe("chain registry", () => {
     expect(getChainByEvmId(1)!.key).toBe("ethereum");
   });
 
+  it("includes the expanded chain set (optimism, bsc, avalanche)", () => {
+    expect(getChainByEvmId(10)!.key).toBe("optimism");
+    expect(getChainByEvmId(56)!.key).toBe("bsc");
+    expect(getChainByEvmId(43114)!.key).toBe("avalanche");
+    expect(getChain("bsc")!.nativeSymbol).toBe("BNB");
+  });
+
   it("classifies solana as non-EVM", () => {
     expect(isEvmChain("solana")).toBe(false);
     expect(getChain("solana")!.kind).toBe("solana");
