@@ -1,0 +1,97 @@
+{
+  "$schema": "https://8257.ai/schema/manifest.json",
+  "schemaVersion": "0.1.0",
+  "name": "Crypto-Knowledge — On-Chain Brain for AI Agents",
+  "image": "https://crypto-knowledge-eight.vercel.app/icon.svg",
+  "featuredImage": "https://crypto-knowledge-eight.vercel.app/icon.svg",
+  "description": "The on-chain brain for autonomous AI agents — an MCP server with 12 tools that lets agents do complex crypto operations safely and deterministically: cross-chain routing (LiFi + deBridge, e.g. CRO→SOL), Solana swaps (Jupiter), pump.fun bonding curves, EIP-1559 gas + net-profit checks, ABI fetch/decode for ANY contract (Etherscan V2 / Sourcify / 4byte for unverified), multi-chain balances + USD + allowance management, anti-rug security scans (GoPlus + honeypot.is, EVM + Solana), MEV/sandwich protection, whale-transfer watching, EVM transaction simulation, and a ready-to-run Web3 knowledge base (create a wallet, deploy a contract, grind a vanity address, verify, bridge). Keystore-free: it never holds keys and returns only unsigned transactions for the agent to sign. Agents working with Web3 save huge amounts of reasoning/search credits because a massive amount of correct, current on-chain expertise is ready to retrieve in one call instead of being re-derived every time.",
+  "version": "0.1.0",
+  "author": "PhilzVault / Claudian",
+  "origin": "https://crypto-knowledge-eight.vercel.app",
+  "endpoint": "https://crypto-knowledge-eight.vercel.app/mcp",
+  "baseUrl": "https://crypto-knowledge-eight.vercel.app",
+  "creatorAddress": "0xbC5CbC5434D3846BC445723e82B51b3932795e6d",
+  "transport": {
+    "type": "mcp",
+    "protocol": "streamable-http",
+    "url": "https://crypto-knowledge-eight.vercel.app/mcp",
+    "description": "Model Context Protocol over Streamable HTTP. POST JSON-RPC 2.0 to /mcp. Call the 'catalog' tool first to discover capabilities and supported chains."
+  },
+  "tags": [
+    "crypto-knowledge", "crypto", "web3", "onchain", "on-chain", "defi", "mcp",
+    "model-context-protocol", "agent", "agents", "ai", "ai-agent", "ai-agents",
+    "autonomous", "autonomous-agent", "agentic", "agent-tool", "agent-tools",
+    "agent-economy", "agent-commerce", "machine-payments", "x402",
+    "erc-8257", "erc8257", "tool-registry", "opensea",
+    "cross-chain", "crosschain", "bridge", "routing", "lifi", "debridge",
+    "swap", "swaps", "dex", "jupiter", "solana", "sol", "ethereum", "eth",
+    "base", "arbitrum", "optimism", "polygon", "cronos", "cro", "apechain",
+    "bsc", "bnb", "avalanche", "avax",
+    "pump.fun", "pumpfun", "pump", "memecoin", "memecoins", "token",
+    "gas", "gas-estimation", "eip-1559", "profitability", "arbitrage",
+    "abi", "abi-decoder", "calldata", "smart-contract", "contract",
+    "etherscan", "sourcify", "4byte", "proxy", "eip-1967",
+    "portfolio", "balances", "erc20", "spl", "allowance", "approve", "revoke",
+    "security", "anti-rug", "rug", "honeypot", "goplus", "risk-score", "scam",
+    "mev", "sandwich", "front-running", "flashbots", "mev-blocker",
+    "whale", "whale-watch", "whale-tracking", "simulation", "dry-run",
+    "wallet", "create-wallet", "deploy", "deploy-contract", "vanity",
+    "vanity-address", "foundry", "anchor", "solana-cli", "knowledge", "runbook",
+    "knowledge-base", "how-to", "developer-tools", "save-credits", "unsigned-tx",
+    "keystore-free", "non-custodial", "nft-gated", "normies", "erc721"
+  ],
+  "keywords": "crypto knowledge, on-chain brain, web3 agent tool, mcp server, cross-chain routing, CRO to SOL, lifi, debridge, jupiter swap, pump.fun bonding curve, gas estimation, profitability, abi decoder, 4byte, unverified contracts, portfolio balances usd, erc20 allowance, anti-rug, honeypot, goplus, mev protection, flashbots, mev blocker, whale watch, transaction simulation, revert decoding, create wallet, deploy contract, vanity address, foundry, anchor, save agent credits, keystore-free, unsigned transactions, ethereum base arbitrum optimism polygon cronos apechain bsc avalanche solana, nft gated, normies, erc-8257, opensea",
+  "authentication": [
+    {
+      "type": "open",
+      "description": "Read tools and unsigned-transaction builders are openly callable. The server never holds keys — it returns data + unsigned transactions that the calling agent signs with its own wallet."
+    },
+    {
+      "type": "siwe",
+      "description": "Optional NFT gate for the operator-key tier: holding a Normies NFT (Ethereum Mainnet) grants the tool-provided RPC tier free; non-holders use their own free Helius/Alchemy key or pay $0.10 per request via x402.",
+      "passContract": "0x9Eb6E2025B64f340691e424b7fe7022fFDE12438",
+      "chain": "ethereum",
+      "chainId": 1,
+      "collection": "https://opensea.io/collection/normies"
+    },
+    {
+      "type": "x402",
+      "description": "Non-holders without their own RPC key pay $0.10 USDC per request via x402 (USDC on Base) for the operator-provided data tier. Public-RPC (open) mode stays free.",
+      "network": "base",
+      "asset": "USDC",
+      "amountUsd": 0.1
+    }
+  ],
+  "predicate": {
+    "type": "erc721-holding",
+    "contractAddress": "0x9Eb6E2025B64f340691e424b7fe7022fFDE12438",
+    "predicateContract": "0xc8721c9A776958FfFfEb602DA1b708bf1D318379",
+    "network": "ethereum-mainnet",
+    "description": "Holding ≥1 Normies NFT (ERC-721, Ethereum Mainnet) grants the free operator-key tier. Non-holders use their own RPC key (free) or pay $0.10/request via x402. Enforced on-chain by the canonical ERC721OwnerPredicate.",
+    "minBalance": 1
+  },
+  "payment": {
+    "protocol": "x402",
+    "description": "Open/own-key usage is free. The operator-provided data tier is free for Normies NFT holders; other agents pay $0.10 USDC per request via x402 on Base.",
+    "perRequestUsd": 0.1,
+    "feeRecipient": {
+      "network": "base",
+      "asset": "USDC (0x833589fcd6edb6e08f4c7c32d4f71b54bda02913)",
+      "address": "0xbC5CbC5434D3846BC445723e82B51b3932795e6d"
+    }
+  },
+  "capabilities": [
+    { "name": "catalog", "description": "Discover all tools, supported chains and provider modes. Call this first.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "route", "description": "Best cross-chain route (LiFi + deBridge) between any chains/tokens with a ready-to-sign transaction.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "solana_swap", "description": "Jupiter quote + build for same-chain Solana swaps (unsigned tx).", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "pumpfun", "description": "On-chain pump.fun bonding-curve state, price, graduation progress, IPFS metadata.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "profitability", "description": "EIP-1559 gas estimate + net-profit verdict after gas & slippage (arbitrage guard).", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "abi", "description": "Fetch/decode any verified EVM ABI (Etherscan V2 / Sourcify), follow EIP-1967 proxies; 4byte fallback decodes unverified contracts.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "portfolio", "description": "Multi-chain balances (native + ERC-20 + SPL) with USD valuation, and ERC-20 allowance check/approve/revoke (unsigned tx).", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "security", "description": "Anti-rug scan (GoPlus + honeypot.is), EVM + Solana, 0-100 risk score with red flags.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "mev_protection", "description": "Private-RPC guidance (Flashbots Protect, MEV Blocker) + per-chain sandwich risk.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "whale_watch", "description": "Recent large ERC-20 transfers (whale moves) over a block window.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "simulate", "description": "Dry-run an EVM tx (eth_call) and decode the revert reason before signing.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
+    { "name": "knowledge", "description": "Ready-to-run Web3 runbooks with real commands: create wallet, deploy contract (EVM/Solana), vanity address, verify, faucets, bridge — instant retrieval saves agent credits.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" }
+  ]
+}

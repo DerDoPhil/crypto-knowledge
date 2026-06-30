@@ -15,6 +15,7 @@ import { registerEventsTool } from "./modules/events/tool.js";
 import { registerCatalogTool } from "./modules/catalog/tool.js";
 import { registerJupiterTool } from "./modules/jupiter/tool.js";
 import { registerSimulateTool } from "./modules/simulate/tool.js";
+import { registerKnowledgeTool } from "./modules/knowledge/tool.js";
 
 export function createServer(): McpServer {
   const op = loadOperatorConfig();
@@ -37,6 +38,7 @@ export function createServer(): McpServer {
   registerCatalogTool(server, ctx); // discovery: capabilities + chains
   registerJupiterTool(server, ctx); // M2b solana_swap (Jupiter trade tx)
   registerSimulateTool(server, ctx); // R&D-12 simulate (EVM dry-run)
+  registerKnowledgeTool(server, ctx); // knowledge base (ready-to-run runbooks)
 
   return server;
 }

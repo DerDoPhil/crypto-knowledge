@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Crypto-Knowledge">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0d10"/>
+      <stop offset="1" stop-color="#12181c"/>
+    </linearGradient>
+    <linearGradient id="t" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7ee3c7"/>
+      <stop offset="1" stop-color="#36b39a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#g)"/>
+  <!-- node-graph "brain" motif -->
+  <g stroke="url(#t)" stroke-width="10" fill="none" opacity="0.9">
+    <path d="M160 200 L256 152 L352 200 L352 312 L256 360 L160 312 Z"/>
+    <path d="M256 152 L256 360 M160 200 L352 312 M352 200 L160 312"/>
+  </g>
+  <g fill="url(#t)">
+    <circle cx="256" cy="152" r="18"/>
+    <circle cx="352" cy="200" r="18"/>
+    <circle cx="352" cy="312" r="18"/>
+    <circle cx="256" cy="360" r="18"/>
+    <circle cx="160" cy="312" r="18"/>
+    <circle cx="160" cy="200" r="18"/>
+    <circle cx="256" cy="256" r="22"/>
+  </g>
+  <text x="256" y="452" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="46" font-weight="700" fill="#e6e8eb">crypto-knowledge</text>
+</svg>
