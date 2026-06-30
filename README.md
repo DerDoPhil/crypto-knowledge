@@ -4,20 +4,23 @@
 
 > **Keystore-free by design.** The server never holds private keys and never signs. Every write action returns an *unsigned, ready-to-sign transaction*; the agent signs it with its own wallet. The server is multi-tenant and stateless — bring your own address, get back data + unsigned transactions.
 
-## Tools (6 modules)
+## Tools (9)
 
 | Tool | What it does |
 |---|---|
-| `route` | Best cross-chain route between any chains/tokens (e.g. CRO → SOL) via the LiFi aggregator. Returns estimated output, time, fees and a ready-to-sign transaction. |
+| `route` | Best cross-chain route between any chains/tokens (e.g. CRO → SOL). Queries **LiFi + deBridge** in parallel, compares output, returns the best route plus alternatives, each with a ready-to-sign transaction. |
 | `pumpfun` | Direct on-chain pump.fun reads: live bonding-curve reserves, price, graduation progress, market cap, and resolved IPFS metadata. |
 | `profitability` | EIP-1559 multi-chain gas estimation + net-profit verdict after gas & slippage (arbitrage guard). |
-| `abi` | Fetch any verified EVM contract's ABI (Etherscan V2 / Sourcify), follow EIP-1967 proxies, and tell the agent exactly which parameters each function needs. Decode/encode calldata. |
+| `abi` | Fetch any verified EVM contract's ABI (Etherscan V2 / Sourcify), follow EIP-1967 proxies, and tell the agent exactly which parameters each function needs. Decode/encode calldata. Cached. |
 | `portfolio` | Multi-chain balances (native + ERC-20 + SPL) and ERC-20 allowance management (check / approve / revoke) returning unsigned transactions. |
-| `security` | Anti-rug scan (via GoPlus): honeypot, buy/sell tax, liquidity locks, mint/blacklist/pause powers, holder concentration → 0-100 risk score with red flags. |
+| `security` | Anti-rug scan via **GoPlus + honeypot.is** (EVM **and Solana**): honeypot/non-transferable, taxes, liquidity locks, mint/freeze/blacklist/pause powers, holder concentration → 0-100 risk score with red flags. |
+| `mev_protection` | Private-RPC guidance (Flashbots Protect, MEV Blocker) + per-chain sandwich risk so the agent broadcasts safely. |
+| `whale_watch` | Recent large ERC-20 transfers ("whale moves") for a token over a block window, decoded + sorted. |
+| `catalog` | Discovery: lists every tool, supported chain (id/native asset) and provider mode so an agent can self-configure. |
 
 ## Supported chains
 
-Ethereum, Base, Arbitrum, Polygon, **Cronos**, ApeChain, Solana. Chain-agnostic by design — adding a chain is a single registry entry (`src/registry/chains.ts`).
+Ethereum, Base, Arbitrum, Optimism, Polygon, **Cronos**, ApeChain, BNB Smart Chain, Avalanche, Solana (10). Chain-agnostic by design — adding a chain is a single registry entry (`src/registry/chains.ts`).
 
 ## Quick start
 

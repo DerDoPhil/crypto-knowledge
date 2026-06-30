@@ -42,7 +42,7 @@ async function main() {
   console.log("ENCODE_CALL calldata:", structured?.data?.calldata);
 
   await client.close();
-  const okTools = tools.tools.length === 8;
+  const okTools = tools.tools.length === 9;
   const okEncode = structured?.data?.calldata?.startsWith("0xa9059cbb");
   console.log(okTools && okEncode ? "SMOKE: PASS" : "SMOKE: FAIL");
   process.exit(okTools && okEncode ? 0 : 1);

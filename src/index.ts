@@ -12,6 +12,7 @@ import { registerRoutingTool } from "./modules/routing/tool.js";
 import { registerPumpfunTool } from "./modules/pumpfun/tool.js";
 import { registerMevTool } from "./modules/mev/tool.js";
 import { registerEventsTool } from "./modules/events/tool.js";
+import { registerCatalogTool } from "./modules/catalog/tool.js";
 
 export function createServer(): McpServer {
   const op = loadOperatorConfig();
@@ -31,6 +32,7 @@ export function createServer(): McpServer {
   registerSecurityTool(server, ctx); // M6  security
   registerMevTool(server, ctx); // M7  mev_protection (R&D-9)
   registerEventsTool(server, ctx); // M8  whale_watch (R&D-10)
+  registerCatalogTool(server, ctx); // discovery: capabilities + chains
 
   return server;
 }
