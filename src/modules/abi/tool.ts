@@ -7,6 +7,7 @@ import { getChain } from "../../registry/chains.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 import { decodeCalldata, describeFunction, encodeCall, listFunctions } from "./decoder.js";
 import { getAbiBundle } from "./explorer.js";
+import { abiFromSignature, lookupSelector } from "./fourbyte.js";
 
 /** Coerce JSON args into viem-compatible values based on the function's input types. */
 function coerceArgs(abi: Abi, functionName: string, raw: unknown[]): unknown[] {
@@ -49,36 +50,47 @@ export function registerAbiTool(server: McpServer, ctx: ToolContext): void {
 
       try {
         // Resolve the ABI: caller-provided wins, otherwise fetch from explorer.
-        let abi: Abi;
+        // For decode_calldata the ABI is optional — we fall back to 4byte.
+        let abi: Abi | null = null;
         let provenance: Record<string, unknown> = { source: "caller-provided" };
         if (input.abi) {
           abi = input.abi as Abi;
-        } else {
-          if (!input.address || !isAddress(input.address)) {
-            return toToolResult(invalidInput("a valid `address` (or an `abi`) is required", meta));
+        } else if (input.address && isAddress(input.address)) {
+          try {
+            const bundle = await getAbiBundle(input.chain, input.address, ctx.op);
+            abi = bundle.abi;
+            provenance = {
+              source: bundle.source,
+              verified: bundle.verified,
+              contractName: bundle.contractName,
+              isProxy: bundle.isProxy,
+              implementation: bundle.implementation,
+              proxyResolved: bundle.proxyResolved,
+            };
+          } catch (fetchErr) {
+            // Unverified is fatal for everything except decode_calldata (→ 4byte).
+            if (input.action !== "decode_calldata") throw fetchErr;
+            provenance = { source: "unverified", note: (fetchErr as Error).message };
           }
-          const bundle = await getAbiBundle(input.chain, input.address, ctx.op);
-          abi = bundle.abi;
-          provenance = {
-            source: bundle.source,
-            verified: bundle.verified,
-            contractName: bundle.contractName,
-            isProxy: bundle.isProxy,
-            implementation: bundle.implementation,
-            proxyResolved: bundle.proxyResolved,
-          };
+        } else if (input.action !== "decode_calldata") {
+          return toToolResult(invalidInput("a valid `address` (or an `abi`) is required", meta));
         }
+
+        const needsAbi = (): boolean => abi !== null;
+        const noAbi = () =>
+          toToolResult(fail({ code: ErrorCode.NOT_VERIFIED, message: "no ABI available for this contract" }, meta));
 
         switch (input.action) {
           case "get_abi":
-            return toToolResult(ok({ provenance, abi }, meta));
+            return needsAbi() ? toToolResult(ok({ provenance, abi }, meta)) : noAbi();
 
           case "list_functions":
-            return toToolResult(ok({ provenance, functions: listFunctions(abi) }, meta));
+            return needsAbi() ? toToolResult(ok({ provenance, functions: listFunctions(abi!) }, meta)) : noAbi();
 
           case "describe_function": {
+            if (!needsAbi()) return noAbi();
             if (!input.function) return toToolResult(invalidInput("`function` is required", meta));
-            const specs = describeFunction(abi, input.function);
+            const specs = describeFunction(abi!, input.function);
             if (specs.length === 0) {
               return toToolResult(
                 fail({ code: ErrorCode.NOT_FOUND, message: `no function '${input.function}' in ABI` }, meta),
@@ -92,13 +104,34 @@ export function registerAbiTool(server: McpServer, ctx: ToolContext): void {
             if (!input.calldata || !input.calldata.startsWith("0x")) {
               return toToolResult(invalidInput("`calldata` (0x-prefixed) is required", meta));
             }
-            return toToolResult(ok({ provenance, decoded: decodeCalldata(abi, input.calldata as `0x${string}`) }, meta));
+            const calldata = input.calldata as `0x${string}`;
+            if (abi) {
+              return toToolResult(ok({ provenance, decoded: decodeCalldata(abi, calldata) }, meta));
+            }
+            // No ABI → recover the signature from the 4byte directory.
+            const selector = calldata.slice(0, 10);
+            const sigs = await lookupSelector(selector);
+            for (const sig of sigs) {
+              try {
+                const decoded = decodeCalldata(abiFromSignature(sig), calldata);
+                const warnings = sigs.length > 1 ? [`selector matched ${sigs.length} signatures; used '${sig}'`] : [];
+                return toToolResult(
+                  ok({ provenance: { source: "4byte", signature: sig, candidates: sigs }, decoded }, meta, warnings),
+                );
+              } catch {
+                // try the next candidate signature
+              }
+            }
+            return toToolResult(
+              fail({ code: ErrorCode.NOT_FOUND, message: `could not decode selector ${selector} (no ABI, no 4byte match)` }, meta),
+            );
           }
 
           case "encode_call": {
+            if (!needsAbi()) return noAbi();
             if (!input.function) return toToolResult(invalidInput("`function` is required", meta));
-            const args = coerceArgs(abi, input.function, input.args ?? []);
-            const calldata = encodeCall(abi, input.function, args);
+            const args = coerceArgs(abi!, input.function, input.args ?? []);
+            const calldata = encodeCall(abi!, input.function, args);
             return toToolResult(ok({ provenance, function: input.function, calldata }, meta));
           }
         }

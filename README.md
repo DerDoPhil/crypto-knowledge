@@ -11,7 +11,7 @@
 | `route` | Best cross-chain route between any chains/tokens (e.g. CRO → SOL). Queries **LiFi + deBridge** in parallel, compares output, returns the best route plus alternatives, each with a ready-to-sign transaction. |
 | `pumpfun` | Direct on-chain pump.fun reads: live bonding-curve reserves, price, graduation progress, market cap, and resolved IPFS metadata. |
 | `profitability` | EIP-1559 multi-chain gas estimation + net-profit verdict after gas & slippage (arbitrage guard). |
-| `abi` | Fetch any verified EVM contract's ABI (Etherscan V2 / Sourcify), follow EIP-1967 proxies, and tell the agent exactly which parameters each function needs. Decode/encode calldata. Cached. |
+| `abi` | Fetch any verified EVM contract's ABI (Etherscan V2 / Sourcify), follow EIP-1967 proxies, and tell the agent exactly which parameters each function needs. Decode/encode calldata — `decode_calldata` even works on **unverified** contracts via a 4byte-directory selector lookup. Cached. |
 | `portfolio` | Multi-chain balances (native + ERC-20 + SPL) and ERC-20 allowance management (check / approve / revoke) returning unsigned transactions. |
 | `security` | Anti-rug scan via **GoPlus + honeypot.is** (EVM **and Solana**): honeypot/non-transferable, taxes, liquidity locks, mint/freeze/blacklist/pause powers, holder concentration → 0-100 risk score with red flags. |
 | `mev_protection` | Private-RPC guidance (Flashbots Protect, MEV Blocker) + per-chain sandwich risk so the agent broadcasts safely. |
