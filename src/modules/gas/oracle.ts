@@ -1,5 +1,6 @@
 import { formatUnits } from "viem";
 import type { OperatorConfig } from "../../config.js";
+import { sharedCache, TTL } from "../../core/cache.js";
 import { fetchJson } from "../../core/http.js";
 import { jsonRpc } from "../../core/rpc.js";
 import { resolveEvmRpc, type CallerConfig } from "../../core/providers.js";
@@ -25,10 +26,13 @@ export async function getNativeUsd(chainKey: string): Promise<number | null> {
   const id = COINGECKO_NATIVE[chainKey];
   if (!id) return null;
   try {
-    const res = await fetchJson<Record<string, { usd: number }>>(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`,
-    );
-    return res[id]?.usd ?? null;
+    const { value } = await sharedCache.wrap(`price:${id}`, TTL.price, async () => {
+      const res = await fetchJson<Record<string, { usd: number }>>(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`,
+      );
+      return res[id]?.usd ?? null;
+    });
+    return value;
   } catch {
     return null;
   }

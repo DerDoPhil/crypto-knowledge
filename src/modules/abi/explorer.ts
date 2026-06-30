@@ -1,5 +1,6 @@
 import type { Abi } from "viem";
 import type { OperatorConfig } from "../../config.js";
+import { sharedCache, TTL } from "../../core/cache.js";
 import { CryptoKnowledgeError, ErrorCode } from "../../core/errors.js";
 import { fetchJson } from "../../core/http.js";
 import { ethGetStorageAt } from "../../core/rpc.js";
@@ -101,7 +102,7 @@ async function detectProxyOnChain(chain: ChainEntry, address: string): Promise<s
  * falls back to keyless Sourcify, and transparently follows EIP-1967 proxies so
  * the agent sees the implementation's functions, not the proxy stub.
  */
-export async function getAbiBundle(chainKey: string, address: string, op: OperatorConfig): Promise<AbiBundle> {
+async function resolveAbiBundle(chainKey: string, address: string, op: OperatorConfig): Promise<AbiBundle> {
   const chain = getChain(chainKey);
   if (!chain || chain.kind !== "evm") {
     throw new CryptoKnowledgeError(ErrorCode.UNSUPPORTED_CHAIN, `ABI lookup needs an EVM chain, got '${chainKey}'`);
@@ -144,4 +145,14 @@ export async function getAbiBundle(chainKey: string, address: string, op: Operat
   }
 
   return bundle;
+}
+
+/**
+ * Resolve a contract's callable ABI, cached for an hour (ABIs almost never
+ * change), keyed by chain + address.
+ */
+export async function getAbiBundle(chainKey: string, address: string, op: OperatorConfig): Promise<AbiBundle> {
+  const key = `abi:${chainKey}:${address.toLowerCase()}`;
+  const { value } = await sharedCache.wrap(key, TTL.abi, () => resolveAbiBundle(chainKey, address, op));
+  return value;
 }

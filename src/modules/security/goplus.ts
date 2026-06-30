@@ -1,3 +1,4 @@
+import { sharedCache, TTL } from "../../core/cache.js";
 import { CryptoKnowledgeError, ErrorCode } from "../../core/errors.js";
 import { fetchJson } from "../../core/http.js";
 import { getChain } from "../../registry/chains.js";
@@ -43,14 +44,18 @@ export async function fetchGoPlus(chainKey: string, address: string): Promise<Go
   if (!chain || chain.chainId === null) {
     throw new CryptoKnowledgeError(ErrorCode.UNSUPPORTED_CHAIN, `GoPlus security needs an EVM chain, got '${chainKey}'`);
   }
-  const url = `https://api.gopluslabs.io/api/v1/token_security/${chain.chainId}?contract_addresses=${address.toLowerCase()}`;
-  const res = await fetchJson<GoPlusResponse>(url);
-  if (res.code !== 1 || !res.result) {
-    throw new CryptoKnowledgeError(ErrorCode.UPSTREAM_ERROR, `GoPlus: ${res.message || "no result"}`);
-  }
-  const token = res.result[address.toLowerCase()];
-  if (!token) {
-    throw new CryptoKnowledgeError(ErrorCode.NOT_FOUND, `GoPlus has no data for ${address} (token may be too new)`);
-  }
-  return token;
+  const lower = address.toLowerCase();
+  const { value } = await sharedCache.wrap(`goplus:${chain.chainId}:${lower}`, TTL.security, async () => {
+    const url = `https://api.gopluslabs.io/api/v1/token_security/${chain.chainId}?contract_addresses=${lower}`;
+    const res = await fetchJson<GoPlusResponse>(url);
+    if (res.code !== 1 || !res.result) {
+      throw new CryptoKnowledgeError(ErrorCode.UPSTREAM_ERROR, `GoPlus: ${res.message || "no result"}`);
+    }
+    const token = res.result[lower];
+    if (!token) {
+      throw new CryptoKnowledgeError(ErrorCode.NOT_FOUND, `GoPlus has no data for ${address} (token may be too new)`);
+    }
+    return token;
+  });
+  return value;
 }
