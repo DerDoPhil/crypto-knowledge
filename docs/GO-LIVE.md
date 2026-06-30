@@ -64,7 +64,18 @@ curl https://<deine-domain>/llms.txt
 - `ACCESS_GATING_ENABLED=true`, `HOLDER_NFT_CONTRACT=<Normies-Contract>`, `HOLDER_NFT_CHAIN=ethereum`, `TREASURY_ADDRESS=<dein Treasury>`.
 - x402-Flow analog SwarmSkill (keyless xpay-Facilitator). **TODO im Code:** die x402-Middleware ist als Tier-Logik vorhanden (`src/access/gate.ts`), der HTTP-402-Payment-Handshake muss noch an den xpay-Facilitator gehängt werden (`paymentSettled`-Flag setzen) — 1 kleiner Adapter, bewusst offen gelassen bis du das Treasury bestätigst.
 
-## 6. ERC-8257 / OpenSea-Listing — VORBEREITET, du führst 1 Befehl aus ✅
+## 6. ERC-8257 / OpenSea-Listing — ✅ ERLEDIGT (2026-06-30)
+
+**🟢 LIVE: Crypto-Knowledge ist Tool #178 auf Base → https://opensea.io/tools/erc8257/base/178**
+
+- registerTool tx (Base): `0x65b152669c6d01d014405b86e775b328403b7c01d96fa8b4469550b4c9dd4e52` (Block 48029554, success)
+- setAccessPredicate → open tx: `0xc09e5e1d0dcfa1064d02a9e581da26d9b4831a01f830955b6de3d627bc856e64` (Block 48029611, success)
+- Creator `0xbc5cbc…e6d` (= SwarmSkill/AgentRoom) → erscheint bei deinen Entwickler-Tools.
+- **Access = open** (wie AgentRoom auf Base). Normies-Gate ging auf Base NICHT (Normies liegen auf ETH-Mainnet, Base-Predicate kann Mainnet-Collection nicht setzen → revert). Normies-frei / $0.10-x402 läuft in der App-Schicht. Wenn du echtes On-Chain-NFT-Gate willst: separat auf **Mainnet** registrieren (wie SwarmSkill), Wallet hat dort ~0,0096 ETH.
+
+<details><summary>Original-Runbook (für künftige Tools / Re-Registrierung)</summary>
+
+### (war: VORBEREITET, du führst 1 Befehl aus)
 
 Alles fertig (Claude hat es vorbereitet & validiert), **nur der On-Chain-Call fehlt** (deine Wallet + Gas):
 
@@ -87,6 +98,8 @@ npx tsx scripts/register-erc8257.ts
 `ACCESS=normies` = NFT-Gate (zeigt „NFT Gated" wie SwarmSkill) und konfiguriert die Normies-Collection. `ACCESS=open` = ohne Gate. Nach Erfolg druckt es die **Tool-ID** → eintragen in `TOOL_ID` (Manifest/Env), dann ist es auf OpenSea bei deinen Tools.
 
 > ⚠️ Falls du das Manifest später änderst: Hash neu rechnen (`npx @opensea/tool-sdk hash`) und on-chain syncen — sonst Drift-Bug (siehe SwarmSkill-Lehre).
+
+</details>
 
 ## 7. Weitere Verbreitung (analog SwarmSkill)
 

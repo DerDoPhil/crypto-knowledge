@@ -31,7 +31,7 @@
  *
  *   (set DRY_RUN=false to actually send. ACCESS=open registers with no NFT gate.)
  */
-import { createPublicClient, createWalletClient, http, parseAbi, zeroAddress, type Hex } from "viem";
+import { createPublicClient, createWalletClient, http, parseAbi, parseEventLogs, zeroAddress, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base, mainnet } from "viem/chains";
 
@@ -96,7 +96,9 @@ async function main() {
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   console.log(`  mined in block ${receipt.blockNumber}, status ${receipt.status}`);
 
-  const toolId = count + 1n; // toolCount increments by one
+  // Read the authoritative toolId from the ToolRegistered event (not count+1).
+  const events = parseEventLogs({ abi: REGISTRY_ABI, eventName: "ToolRegistered", logs: receipt.logs });
+  const toolId = (events[0]?.args as { toolId?: bigint } | undefined)?.toolId ?? count + 1n;
   console.log(`\n✅ Registered as tool #${toolId} on ${net}.`);
 
   if (access === "normies") {
