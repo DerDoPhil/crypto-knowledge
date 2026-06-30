@@ -1,0 +1,38 @@
+{
+  "name": "crypto-knowledge",
+  "version": "0.1.0",
+  "description": "The on-chain brain for autonomous AI agents — an MCP server for cross-chain routing, contract decoding, portfolio/allowance management, gas/profit estimation and anti-rug security checks.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "crypto-knowledge": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsup src/index.ts --format esm --clean --target node20",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@solana/web3.js": "^1.98.4",
+    "viem": "^2.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsup": "^8.2.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
