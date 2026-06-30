@@ -60,6 +60,7 @@ export async function getRoute(params: RouteParams, op: OperatorConfig): Promise
     fromAddress: params.fromAddress,
     ...(params.toAddress ? { toAddress: params.toAddress } : {}),
     slippage: String((params.slippageBps ?? 50) / 10_000),
+    integrator: "crypto-knowledge", // LiFi requires an integrator id, else 400
   });
 
   const headers: Record<string, string> = {};

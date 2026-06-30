@@ -22,7 +22,9 @@
     "build": "tsup src/index.ts src/http.ts --format esm --clean --target node20",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "livecheck": "tsx scripts/livecheck.ts",
+    "smoke": "tsx scripts/smoke.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
