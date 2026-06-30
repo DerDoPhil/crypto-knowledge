@@ -16,6 +16,7 @@ import { registerCatalogTool } from "./modules/catalog/tool.js";
 import { registerJupiterTool } from "./modules/jupiter/tool.js";
 import { registerSimulateTool } from "./modules/simulate/tool.js";
 import { registerKnowledgeTool } from "./modules/knowledge/tool.js";
+import { registerChainTradeTool } from "./modules/chaintrade/tool.js";
 
 export function createServer(): McpServer {
   const op = loadOperatorConfig();
@@ -39,6 +40,7 @@ export function createServer(): McpServer {
   registerJupiterTool(server, ctx); // M2b solana_swap (Jupiter trade tx)
   registerSimulateTool(server, ctx); // R&D-12 simulate (EVM dry-run)
   registerKnowledgeTool(server, ctx); // knowledge base (ready-to-run runbooks)
+  registerChainTradeTool(server, ctx); // P2P NFT/token swaps via ChainTrade escrow
 
   return server;
 }

@@ -153,6 +153,29 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.anza.xyz/cli/examples/test-validator"],
   },
 
+  register_onchain_tool: {
+    topic: "register_onchain_tool",
+    title: "Register an agent tool on-chain (ERC-8257 / OpenSea)",
+    summary: "List your agent tool in the canonical ERC-8257 ToolRegistry so it appears on OpenSea's agent-tools surface, optionally NFT-gated.",
+    scope: ["evm"],
+    prerequisites: ["A public HTTPS host for the manifest", "Node 20+", "A funded creator wallet (gas)"],
+    steps: [
+      { title: "Write an ERC-8257 manifest", note: 'Serve it at https://<your-host>/.well-known/erc8257-manifest.json. Required fields incl. name, description (<=500 chars), inputs, outputs, creatorAddress (lowercase). Extension fields (capabilities, authentication, predicate, payment) are allowed but ideally reverse-DNS namespaced.' },
+      { title: "Validate the manifest", command: "curl -s https://<host>/.well-known/erc8257-manifest.json -o /tmp/m.json && npx @opensea/tool-sdk validate /tmp/m.json", note: "Must print 'Manifest is valid' before registering — schema errors here cause indexing failures later." },
+      { title: "Compute the authoritative hash (JCS-canonicalized)", command: "npx @opensea/tool-sdk hash /tmp/m.json", note: "Use THIS hash on-chain. Do NOT keccak the raw bytes — that drifts from OpenSea's canonical hash and breaks re-indexing." },
+      { title: "Register on the canonical ToolRegistry", command: "// ToolRegistry 0x265BB2DBFC0A8165C9A1941Eb1372F349baD2cf1 (same address on Ethereum + Base)\n// registerTool(string metadataURI, bytes32 manifestHash, address accessPredicate) returns (uint256 toolId)\n// accessPredicate = address(0) for open access", note: "Read the new toolId from the ToolRegistered event. Gas ~0.00006 ETH on mainnet at low gwei, a bit more for the string." },
+      { title: "Optional NFT gate", command: "// On the ERC721OwnerPredicate 0xc8721c9A776958FfFfEb602DA1b708bf1D318379:\n// setCollections(uint256 toolId, address[] collections)   <-- NOT 'configure'\n// pass [<your NFT contract>]", note: "CRITICAL: the gate only works on the chain where the NFT lives (e.g. register on Ethereum mainnet if your NFT is on mainnet — a Base predicate can't reference a mainnet collection)." },
+      { title: "Verify", command: "// getToolConfig(toolId) on the registry; getCollections(toolId) + hasAccess(toolId, <non-holder>, '0x') on the predicate\n// hasAccess should be false for a non-holder when gated", note: "Tool appears at https://opensea.io/tools/erc8257/<chain>/<toolId> after OpenSea indexes it (minutes to hours)." },
+      { title: "Update the manifest later", command: "// updateToolMetadata(uint256 toolId, string newURI, bytes32 newHash) on the registry", note: "Always recompute the hash with @opensea/tool-sdk and sync on-chain, or OpenSea won't re-index the change." },
+    ],
+    warnings: [
+      "The gate predicate function is setCollections, not configure (configure does not exist on the canonical predicate).",
+      "NFT-gating only works on the chain where the NFT contract is deployed.",
+      "Registrations can be removed via deregisterTool(toolId) (creator only).",
+    ],
+    references: ["https://github.com/ProjectOpenSea/tool-registry", "https://8257.ai/schema/manifest.json"],
+  },
+
   bridge_funds: {
     topic: "bridge_funds",
     title: "Move funds across chains",
