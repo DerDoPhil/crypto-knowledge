@@ -4,13 +4,32 @@
   "name": "Crypto-Knowledge — On-Chain Brain for AI Agents",
   "image": "https://crypto-knowledge-eight.vercel.app/icon.svg",
   "featuredImage": "https://crypto-knowledge-eight.vercel.app/icon.svg",
-  "description": "The on-chain brain for autonomous AI agents — an MCP server with 12 tools that lets agents do complex crypto operations safely and deterministically: cross-chain routing (LiFi + deBridge, e.g. CRO→SOL), Solana swaps (Jupiter), pump.fun bonding curves, EIP-1559 gas + net-profit checks, ABI fetch/decode for ANY contract (Etherscan V2 / Sourcify / 4byte for unverified), multi-chain balances + USD + allowance management, anti-rug security scans (GoPlus + honeypot.is, EVM + Solana), MEV/sandwich protection, whale-transfer watching, EVM transaction simulation, and a ready-to-run Web3 knowledge base (create a wallet, deploy a contract, grind a vanity address, verify, bridge). Keystore-free: it never holds keys and returns only unsigned transactions for the agent to sign. Agents working with Web3 save huge amounts of reasoning/search credits because a massive amount of correct, current on-chain expertise is ready to retrieve in one call instead of being re-derived every time.",
+  "description": "The on-chain brain for AI agents — an MCP server with 12 tools: cross-chain routing (LiFi+deBridge, e.g. CRO→SOL), Solana swaps, pump.fun, gas/profit, ABI decode for ANY contract (4byte), balances+USD+allowances, anti-rug (GoPlus+honeypot.is, EVM+Solana), MEV protection, whale-watch, EVM simulation, ready-to-run Web3 runbooks (wallet, deploy, vanity, verify, bridge). Keystore-free: returns only unsigned tx. Saves agents huge credits — correct on-chain expertise in one call.",
   "version": "0.1.0",
   "author": "PhilzVault / Claudian",
   "origin": "https://crypto-knowledge-eight.vercel.app",
   "endpoint": "https://crypto-knowledge-eight.vercel.app/mcp",
   "baseUrl": "https://crypto-knowledge-eight.vercel.app",
-  "creatorAddress": "0xbC5CbC5434D3846BC445723e82B51b3932795e6d",
+  "creatorAddress": "0xbc5cbc5434d3846bc445723e82b51b3932795e6d",
+  "inputs": {
+    "type": "object",
+    "description": "MCP JSON-RPC 2.0 tool call over Streamable HTTP (POST /mcp). Call the 'catalog' tool first to discover tools/chains, then call any tool with its action + arguments.",
+    "properties": {
+      "method": { "type": "string", "description": "MCP method, e.g. 'tools/call' or 'tools/list'" },
+      "params": { "type": "object", "description": "For tools/call: { name: <tool>, arguments: { action, ... } }" }
+    },
+    "required": ["method", "params"]
+  },
+  "outputs": {
+    "type": "object",
+    "description": "Each tool returns a uniform envelope.",
+    "properties": {
+      "ok": { "type": "boolean", "description": "true on success" },
+      "data": { "type": "object", "description": "tool result (structuredContent)" },
+      "warnings": { "type": "array", "description": "non-fatal notes" },
+      "errors": { "type": "array", "description": "canonical error codes on failure" }
+    }
+  },
   "transport": {
     "type": "mcp",
     "protocol": "streamable-http",
