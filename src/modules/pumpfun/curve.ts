@@ -1,9 +1,11 @@
-import { Connection, PublicKey } from "@solana/web3.js";
 import type { OperatorConfig } from "../../config.js";
 import { CryptoKnowledgeError, ErrorCode } from "../../core/errors.js";
 import { resolveSolanaRpc, type CallerConfig } from "../../core/providers.js";
+import { getAccountDataBase64 } from "../../solana/account.js";
+import { decodeBase58, encodeBase58, findProgramAddressSync } from "../../solana/pubkey.js";
 
-export const PUMP_PROGRAM_ID = new PublicKey("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P");
+export const PUMP_PROGRAM_ID = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P";
+const BONDING_CURVE_SEED = new TextEncoder().encode("bonding-curve");
 
 /** pump.fun graduates to Raydium at ~85 SOL of real reserves. */
 const GRADUATION_SOL = 85;
@@ -23,10 +25,20 @@ export interface BondingCurveState {
   marketCapSol: number;
 }
 
-/** Derive the bonding-curve PDA: seeds ["bonding-curve", mint]. */
-export function bondingCurvePda(mint: PublicKey): PublicKey {
-  const [pda] = PublicKey.findProgramAddressSync([Buffer.from("bonding-curve"), mint.toBuffer()], PUMP_PROGRAM_ID);
-  return pda;
+function assertValidMint(mint: string): Uint8Array {
+  try {
+    const bytes = decodeBase58(mint);
+    if (bytes.length !== 32) throw new Error("bad length");
+    return bytes;
+  } catch {
+    throw new CryptoKnowledgeError(ErrorCode.INVALID_INPUT, `invalid mint address '${mint}'`);
+  }
+}
+
+/** Derive the bonding-curve PDA: seeds ["bonding-curve", mint]. Returns base58. */
+export function bondingCurvePda(mintBytes: Uint8Array): string {
+  const { address } = findProgramAddressSync([BONDING_CURVE_SEED, mintBytes], decodeBase58(PUMP_PROGRAM_ID));
+  return encodeBase58(address);
 }
 
 function decodeCurve(data: Buffer): {
@@ -55,23 +67,16 @@ export async function getBondingCurve(
   caller: CallerConfig,
   op: OperatorConfig,
 ): Promise<BondingCurveState> {
-  let mint: PublicKey;
-  try {
-    mint = new PublicKey(mintStr);
-  } catch {
-    throw new CryptoKnowledgeError(ErrorCode.INVALID_INPUT, `invalid mint address '${mintStr}'`);
-  }
+  const mintBytes = assertValidMint(mintStr);
+  const { urls } = resolveSolanaRpc(caller, op);
+  const curvePk = bondingCurvePda(mintBytes);
 
-  const { url } = resolveSolanaRpc(caller, op);
-  const connection = new Connection(url, "confirmed");
-  const curvePk = bondingCurvePda(mint);
-
-  const account = await connection.getAccountInfo(curvePk);
-  if (!account) {
+  const data = await getAccountDataBase64(urls, curvePk);
+  if (!data) {
     throw new CryptoKnowledgeError(ErrorCode.NOT_FOUND, `no bonding curve for ${mintStr} (not a pump.fun token or graduated)`);
   }
 
-  const c = decodeCurve(account.data as Buffer);
+  const c = decodeCurve(data);
 
   // price = (virtualSol / 1e9) / (virtualToken / 1e6)  — verified formula.
   const solReserves = Number(c.virtualSolReserves) / 1e9;
@@ -84,7 +89,7 @@ export async function getBondingCurve(
 
   return {
     mint: mintStr,
-    bondingCurve: curvePk.toBase58(),
+    bondingCurve: curvePk,
     complete: c.complete,
     phase: c.complete ? "graduated" : "bonding",
     progressPct: round(progressPct),

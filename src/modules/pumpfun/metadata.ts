@@ -1,10 +1,12 @@
-import { Connection, PublicKey } from "@solana/web3.js";
 import type { OperatorConfig } from "../../config.js";
 import { CryptoKnowledgeError, ErrorCode } from "../../core/errors.js";
 import { fetchJson } from "../../core/http.js";
 import { resolveSolanaRpc, type CallerConfig } from "../../core/providers.js";
+import { getAccountDataBase64 } from "../../solana/account.js";
+import { decodeBase58, encodeBase58, findProgramAddressSync } from "../../solana/pubkey.js";
 
-const METADATA_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
+const METADATA_PROGRAM_ID = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s";
+const METADATA_SEED = new TextEncoder().encode("metadata");
 const IPFS_GATEWAYS = ["https://ipfs.io/ipfs/", "https://cloudflare-ipfs.com/ipfs/", "https://gateway.pinata.cloud/ipfs/"];
 
 export interface TokenMetadata {
@@ -19,12 +21,10 @@ export interface TokenMetadata {
   website: string | null;
 }
 
-function metadataPda(mint: PublicKey): PublicKey {
-  const [pda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("metadata"), METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
-    METADATA_PROGRAM_ID,
-  );
-  return pda;
+function metadataPda(mintBytes: Uint8Array): string {
+  const programBytes = decodeBase58(METADATA_PROGRAM_ID);
+  const { address } = findProgramAddressSync([METADATA_SEED, programBytes, mintBytes], programBytes);
+  return encodeBase58(address);
 }
 
 /** Read a borsh length-prefixed UTF-8 string, returning the value and next offset. */
@@ -48,25 +48,27 @@ interface OffchainJson {
   website?: string;
 }
 
+function assertValidMint(mint: string): Uint8Array {
+  try {
+    const bytes = decodeBase58(mint);
+    if (bytes.length !== 32) throw new Error("bad length");
+    return bytes;
+  } catch {
+    throw new CryptoKnowledgeError(ErrorCode.INVALID_INPUT, `invalid mint address '${mint}'`);
+  }
+}
+
 /** Resolve a pump.fun / SPL token's on-chain metadata + off-chain IPFS JSON. */
 export async function getTokenMetadata(
   mintStr: string,
   caller: CallerConfig,
   op: OperatorConfig,
 ): Promise<TokenMetadata> {
-  let mint: PublicKey;
-  try {
-    mint = new PublicKey(mintStr);
-  } catch {
-    throw new CryptoKnowledgeError(ErrorCode.INVALID_INPUT, `invalid mint address '${mintStr}'`);
-  }
+  const mintBytes = assertValidMint(mintStr);
+  const { urls } = resolveSolanaRpc(caller, op);
+  const data = await getAccountDataBase64(urls, metadataPda(mintBytes));
+  if (!data) throw new CryptoKnowledgeError(ErrorCode.NOT_FOUND, `no Metaplex metadata for ${mintStr}`);
 
-  const { url } = resolveSolanaRpc(caller, op);
-  const connection = new Connection(url, "confirmed");
-  const account = await connection.getAccountInfo(metadataPda(mint));
-  if (!account) throw new CryptoKnowledgeError(ErrorCode.NOT_FOUND, `no Metaplex metadata for ${mintStr}`);
-
-  const data = account.data as Buffer;
   // key(1) + updateAuthority(32) + mint(32) = 65, then name, symbol, uri.
   let offset = 65;
   const name = readString(data, offset);
