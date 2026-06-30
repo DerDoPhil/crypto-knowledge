@@ -45,7 +45,7 @@ const REGISTRY_ABI = parseAbi([
   "function toolCount() view returns (uint256)",
   "event ToolRegistered(uint256 indexed toolId, address indexed creator, address indexed accessPredicate, string metadataURI, bytes32 manifestHash)",
 ]);
-const PREDICATE_ABI = parseAbi(["function configure(uint256 toolId, address[] collections)"]);
+const PREDICATE_ABI = parseAbi(["function setCollections(uint256 toolId, address[] collections)"]);
 
 const NETWORKS = { base, mainnet } as const;
 
@@ -106,7 +106,7 @@ async function main() {
     const cfgHash = await walletClient.writeContract({
       address: ERC721_PREDICATE,
       abi: PREDICATE_ABI,
-      functionName: "configure",
+      functionName: "setCollections",
       args: [toolId, [NORMIES_NFT]],
     });
     await publicClient.waitForTransactionReceipt({ hash: cfgHash });
