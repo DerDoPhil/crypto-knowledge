@@ -10,6 +10,7 @@ import { registerSecurityTool } from "./modules/security/tool.js";
 import { registerGasTool } from "./modules/gas/tool.js";
 import { registerRoutingTool } from "./modules/routing/tool.js";
 import { registerPumpfunTool } from "./modules/pumpfun/tool.js";
+import { registerMevTool } from "./modules/mev/tool.js";
 
 export function createServer(): McpServer {
   const op = loadOperatorConfig();
@@ -27,6 +28,7 @@ export function createServer(): McpServer {
   registerAbiTool(server, ctx); // M4  abi
   registerPortfolioTool(server, ctx); // M5  portfolio
   registerSecurityTool(server, ctx); // M6  security
+  registerMevTool(server, ctx); // M7  mev_protection (R&D-9)
 
   return server;
 }

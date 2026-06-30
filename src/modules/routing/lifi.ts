@@ -2,6 +2,7 @@ import type { OperatorConfig } from "../../config.js";
 import { CryptoKnowledgeError, ErrorCode } from "../../core/errors.js";
 import { fetchJson } from "../../core/http.js";
 import { getChain } from "../../registry/chains.js";
+import type { RouteParams, RouteQuote } from "./types.js";
 
 const LIFI_BASE = "https://li.quest/v1";
 const NATIVE_PLACEHOLDER = "0x0000000000000000000000000000000000000000";
@@ -35,15 +36,6 @@ interface LifiQuote {
   action?: { toToken?: { symbol?: string; decimals?: number } };
 }
 
-export interface RouteQuote {
-  aggregator: string;
-  estimatedOut: { raw: string; min: string; token: string | null };
-  estimatedTimeSec: number;
-  fees: { gasUsd: number | null; bridgeUsd: number | null; totalUsd: number | null };
-  steps: string[];
-  transaction: LifiQuote["transactionRequest"] | null;
-}
-
 function sumUsd(items: Array<{ amountUSD?: string }> | undefined): number | null {
   if (!items || items.length === 0) return null;
   let total = 0;
@@ -55,17 +47,6 @@ function sumUsd(items: Array<{ amountUSD?: string }> | undefined): number | null
     }
   }
   return any ? round(total) : null;
-}
-
-export interface RouteParams {
-  fromChain: string;
-  toChain: string;
-  fromToken: string;
-  toToken: string;
-  amount: string;
-  fromAddress: string;
-  toAddress?: string;
-  slippageBps?: number;
 }
 
 /** Fetch the best cross-chain route from LiFi and normalize it for agents. */
@@ -108,7 +89,14 @@ export async function getRoute(params: RouteParams, op: OperatorConfig): Promise
     estimatedTimeSec: quote.estimate.executionDuration,
     fees: { gasUsd, bridgeUsd, totalUsd },
     steps: (quote.includedSteps ?? []).map((s) => `${s.type}:${s.tool}`),
-    transaction: quote.transactionRequest ?? null,
+    transaction: quote.transactionRequest
+      ? {
+          to: quote.transactionRequest.to,
+          data: quote.transactionRequest.data,
+          value: quote.transactionRequest.value,
+          ...(quote.transactionRequest.chainId !== undefined ? { chainId: quote.transactionRequest.chainId } : {}),
+        }
+      : null,
   };
 }
 
