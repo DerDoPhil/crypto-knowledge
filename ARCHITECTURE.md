@@ -32,6 +32,28 @@ Die Analyse von **11 lokalen Krypto-Projekten** zeigt ein klares Bild: Es existi
 
 ---
 
+## 0.1 Implementierungs-Status (2026-06-30)
+
+**Gebaut & lauffähig** (TypeScript, `@modelcontextprotocol/sdk`, stdio + Streamable HTTP). 44 Tests grün, live verifiziert.
+
+| Modul | Status | Tool |
+|---|---|---|
+| M1 Routing | ✅ LiFi **+ deBridge** parallel, Best+Alternativen | `route` |
+| M2 pump.fun | ✅ on-chain Curve + IPFS-Metadata (get_curve/get_metadata) | `pumpfun` |
+| M3 Gas/Profit | ✅ EIP-1559 + Profit-Math | `profitability` |
+| M4 ABI | ✅ Etherscan-V2/Sourcify + EIP-1967-Proxy + decode/encode, cached | `abi` |
+| M5 Portfolio | ✅ Balances (EVM+SPL) + Allowance check/approve/revoke | `portfolio` |
+| M6 Security | ✅ GoPlus + honeypot.is, **EVM + Solana** | `security` |
+| R&D-9 MEV | ✅ private-RPC-Guidance | `mev_protection` |
+| R&D-10 Whale-Events | ✅ große ERC20-Transfers via getLogs | `whale_watch` |
+| Discovery | ✅ Fähigkeiten/Chains | `catalog` |
+
+**Querschnitt:** Envelope · kanon. ErrorCodes · Retry/Backoff · Provider-Resolver A/B/C · **TTL-Cache** · Rate-Limit · NFT-Gate · **x402-Bausteine**. **10 Chains.** Hosting (Docker/HTTP/`llms.txt`/context7) + GO-LIVE-Checkliste fertig. **Offen (User-Aktion):** Remote-Push, Deploy, x402-Treasury-Wiring, ERC-8257-Mint, Listings — siehe `docs/GO-LIVE.md`.
+
+**Solana-Swap-TX ✅** via `solana_swap` (Jupiter quote + build, live verifiziert: 1 SOL → ~73 USDC). **Noch offen:** pump.fun buy/sell-TX direkt auf der Bonding-Curve (braucht `@pump-fun/pump-sdk`) — für graduated Token deckt `solana_swap` den Kauf bereits ab.
+
+---
+
 # SCHRITT 1 — Tiefengutachten des Workspaces
 
 ## 1.1 Inventar der analysierten Projekte

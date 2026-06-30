@@ -13,6 +13,7 @@ const TOOL_CATALOG = [
   { name: "security", purpose: "Anti-rug scan (GoPlus + honeypot.is), EVM + Solana, 0-100 risk score.", kinds: ["evm", "solana"] },
   { name: "mev_protection", purpose: "Private-RPC guidance vs sandwich attacks + per-chain risk.", kinds: ["evm", "solana"] },
   { name: "whale_watch", purpose: "Recent large ERC-20 transfers (whale moves) over a block window.", kinds: ["evm"] },
+  { name: "solana_swap", purpose: "Quote/build same-chain Solana swaps via Jupiter (unsigned tx).", kinds: ["solana"] },
 ] as const;
 
 export function registerCatalogTool(server: McpServer, _ctx: ToolContext): void {
