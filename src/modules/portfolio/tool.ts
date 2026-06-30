@@ -6,6 +6,7 @@ import { toCryptoKnowledgeError } from "../../core/errors.js";
 import { getChain } from "../../registry/chains.js";
 import { buildCallerConfig, providerInputShape, toToolResult, type ToolContext } from "../shared.js";
 import { getBalances } from "./balances.js";
+import { valuateBalances } from "./prices.js";
 import { buildApprove, checkAllowance } from "./allowance.js";
 
 export function registerPortfolioTool(server: McpServer, ctx: ToolContext): void {
@@ -43,7 +44,8 @@ export function registerPortfolioTool(server: McpServer, ctx: ToolContext): void
             if (!input.address) return toToolResult(invalidInput("`address` is required", meta));
             const chains = input.chains ?? ["ethereum"];
             const res = await getBalances(chains, input.address, input.tokensByChain, caller, ctx.op);
-            return toToolResult(ok({ address: input.address, balances: res.balances }, meta, res.warnings));
+            const totalUsd = await valuateBalances(res.balances); // best-effort, fills usd in place
+            return toToolResult(ok({ address: input.address, totalUsd, balances: res.balances }, meta, res.warnings));
           }
 
           case "check_allowance": {
