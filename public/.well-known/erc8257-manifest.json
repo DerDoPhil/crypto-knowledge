@@ -2,8 +2,8 @@
   "$schema": "https://8257.ai/schema/manifest.json",
   "schemaVersion": "0.1.0",
   "name": "Crypto-Knowledge — On-Chain Brain for AI Agents",
-  "image": "https://crypto-knowledge-eight.vercel.app/icon.svg",
-  "featuredImage": "https://crypto-knowledge-eight.vercel.app/icon.svg",
+  "image": "https://crypto-knowledge-eight.vercel.app/icon.png",
+  "featuredImage": "https://crypto-knowledge-eight.vercel.app/icon.png",
   "description": "The on-chain brain for AI agents — an MCP server with 12 tools: cross-chain routing (LiFi+deBridge, e.g. CRO→SOL), Solana swaps, pump.fun, gas/profit, ABI decode for ANY contract (4byte), balances+USD+allowances, anti-rug (GoPlus+honeypot.is, EVM+Solana), MEV protection, whale-watch, EVM simulation, ready-to-run Web3 runbooks (wallet, deploy, vanity, verify, bridge). Keystore-free: returns only unsigned tx. Saves agents huge credits — correct on-chain expertise in one call.",
   "version": "0.1.0",
   "author": "PhilzVault / Claudian",
@@ -98,6 +98,34 @@
       "asset": "USDC (0x833589fcd6edb6e08f4c7c32d4f71b54bda02913)",
       "address": "0xbC5CbC5434D3846BC445723e82B51b3932795e6d"
     }
+  },
+  "access": {
+    "logic": "OR",
+    "requirements": [
+      {
+        "kind": "0xbdf8c428",
+        "data": "0x0000000000000000000000009eb6e2025b64f340691e424b7fe7022ffde12438",
+        "label": "Hold >=1 Normies NFT (ERC-721, Ethereum) for the free operator tier; or bring your own free RPC key; or pay $0.10 USDC/request (x402 on Base). Enforced on-chain by the canonical ERC721OwnerPredicate.",
+        "links": {
+          "collection": "https://opensea.io/collection/normies",
+          "etherscan": "https://etherscan.io/address/0x9Eb6E2025B64f340691e424b7fe7022fFDE12438"
+        }
+      }
+    ]
+  },
+  "pricing": [
+    {
+      "amount": "100000",
+      "asset": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "recipient": "eip155:8453:0xbC5CbC5434D3846BC445723e82B51b3932795e6d",
+      "protocol": "x402",
+      "description": "Per-request fee for non-Normies-holder agents using the operator data tier: $0.10 USDC on Base. Normies NFT holders and own-key/open users are free."
+    }
+  ],
+  "links": {
+    "spec": "https://8257.ai",
+    "source": "https://github.com/DerDoPhil/crypto-knowledge",
+    "mcp": "https://crypto-knowledge-eight.vercel.app/mcp"
   },
   "capabilities": [
     { "name": "catalog", "description": "Discover all tools, supported chains and provider modes. Call this first.", "method": "MCP", "url": "https://crypto-knowledge-eight.vercel.app/mcp" },
