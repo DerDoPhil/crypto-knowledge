@@ -336,6 +336,37 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  permit2_usage: {
+    topic: "permit2_usage",
+    title: "Permit2: signature-based token transfers for ANY ERC-20",
+    summary: "Give every token EIP-2612-style UX: one on-chain approval to Permit2, then off-chain signatures authorize transfers — the pattern Uniswap and most modern routers use.",
+    scope: ["evm"],
+    prerequisites: ["viem"],
+    steps: [
+      { title: "One-time setup per token", command: "approve(PERMIT2, MaxUint256) on the token", note: "Permit2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3 (same on all major chains, reference kind='addresses'). After this, no more per-spender on-chain approvals for that token." },
+      { title: "SignatureTransfer (one-shot payments)", note: "Sign a PermitTransferFrom EIP-712 message {permitted:{token,amount}, spender, nonce, deadline}; the spender submits permitTransferFrom(...) — perfect for agent checkout flows. Nonces are unordered bitmaps: pick random nonces, no sequencing needed." },
+      { title: "AllowanceTransfer (session allowances)", note: "Sign a PermitSingle granting spender an allowance with EXPIRATION — time-boxed approvals instead of infinite ones. Query current state via allowance(owner, token, spender) → (amount, expiration, nonce)." },
+      { title: "Build the typed data with the SDK", command: "npm i @uniswap/permit2-sdk  → SignatureTransfer.getPermitData(permit, PERMIT2_ADDRESS, chainId)", note: "Then walletClient.signTypedData(...) — hand-building the EIP-712 structs is error-prone (see eip712_signing)." },
+    ],
+    warnings: ["Your Permit2 signature is as powerful as an approval — sign only spenders you trust, with tight amounts/deadlines. Phishing sites harvest Permit2 signatures precisely because no on-chain action is visible until redemption."],
+    references: ["https://github.com/Uniswap/permit2"],
+  },
+
+  solana_subscriptions: {
+    topic: "solana_subscriptions",
+    title: "Real-time Solana: WebSocket subscriptions (logs, accounts, program events)",
+    summary: "Push instead of poll: subscribe to program logs and account changes over the RPC WebSocket — the pattern behind live token-launch and trade monitors.",
+    scope: ["solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Connect the WS endpoint", note: "wss://api.mainnet-beta.solana.com (same host as HTTP RPC; provider endpoints have their own wss URLs — public WS is aggressively rate-limited, use a free Helius key for anything serious)." },
+      { title: "Watch a program's activity", command: "connection.onLogs(new PublicKey(PROGRAM_ID), ({logs, signature}) => …, 'confirmed')", note: "This is how new pump.fun launches are detected live: subscribe to the pump.fun program (reference kind='addresses') and parse its Anchor events from the logs (see anchor_program_interaction)." },
+      { title: "Watch balances/accounts", command: "connection.onAccountChange(pubkey, cb)  // token accounts, curve state PDAs …", note: "Fires on every write to the account — decode with the owning program's layout." },
+      { title: "Build in reconnect + backfill", note: "WS connections drop silently. On reconnect, backfill the gap via getSignaturesForAddress since your last seen signature — otherwise you miss events and double-process others (dedupe by signature)." },
+      { title: "Unsubscribe or leak", command: "const id = connection.onLogs(…); await connection.removeOnLogsListener(id)", note: "Serverless runtimes + WS don't mix — run subscribers on a long-lived process (VPS/worker), not inside request handlers." },
+    ],
+  },
+
   price_oracle_safety: {
     topic: "price_oracle_safety",
     title: "Price oracle safety: why spot prices get you drained (TWAP, Chainlink, sanity bands)",
