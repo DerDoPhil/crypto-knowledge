@@ -750,6 +750,41 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.jito.network", "https://docs.marinade.finance"],
   },
 
+  prediction_markets: {
+    topic: "prediction_markets",
+    title: "Prediction markets for agents: read probabilities, trade, resolve (Polymarket)",
+    summary: "How an agent reads market-implied probabilities and participates — plus the resolution/settlement risk that isn't obvious.",
+    scope: ["evm"],
+    prerequisites: ["USDC on Polygon to trade"],
+    steps: [
+      { title: "Price = probability", command: "GET https://gamma-api.polymarket.com/markets?closed=false", note: "A YES share trading at $0.63 means the market prices ~63% probability; YES+NO ≈ $1.00. Live-verified keyless. Great signal source for agents even if you never trade." },
+      { title: "The mechanics", note: "Outcome shares are ERC-1155 (Gnosis Conditional Tokens) on Polygon; $1 is paid to the winning side at resolution. Buy YES if you think the market underprices the event; sell/short via NO." },
+      { title: "Trade via the CLOB", command: "Order book + order placement at https://clob.polymarket.com (live-verified); the py/ts clients sign orders (EIP-712) and post them.", note: "Trading needs derived API creds + on-chain USDC allowance to the exchange. Read-only market data needs neither." },
+      { title: "RESOLUTION risk (the non-obvious part)", note: "Markets resolve via an oracle (UMA optimistic oracle) — there's a dispute window, and ambiguous questions can resolve unexpectedly or stay frozen. Don't assume instant settlement; read the market's resolution source before sizing a position." },
+    ],
+    warnings: ["Low-volume markets have wide spreads and thin liquidity — the displayed 'probability' can be stale or manipulable. Check volume + order-book depth first."],
+    references: ["https://docs.polymarket.com"],
+  },
+
+  arbitrage_basics: {
+    topic: "arbitrage_basics",
+    title: "On-chain arbitrage: DEX, cross-chain and the costs that eat naive bots",
+    summary: "The real arbitrage playbook for agents — where edges exist, and the fees/risks that turn a 'profitable' quote into a loss.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "The forms", note: "DEX↔DEX (same chain, price differs between pools), triangular (A→B→C→A on one venue), cross-chain (same asset cheaper on chain X), and CEX↔DEX. Agents realistically compete only where they have a latency or capital edge — the obvious ones are bot-saturated." },
+      { title: "ALWAYS net out every cost BEFORE deciding", command: "call tool \"profitability\" with the trade legs + expected revenue", note: "Costs: gas (both chains for cross-chain), DEX fees per hop, slippage/price-impact at YOUR size, bridge fees + delay, and MEV (your profitable tx gets sandwiched/frontrun). A 0.4% gross edge is usually negative after all of these." },
+      { title: "Simulate the whole path atomically", command: "call tool \"simulate\" (EVM) — dry-run the full route; if any leg reverts you pay gas for nothing", note: "Same-chain arb should be atomic (one tx, revert-if-unprofitable) — often via a flash loan so you need no upfront capital. Cross-chain CANNOT be atomic → you carry inventory/price risk during the bridge." },
+      { title: "Protect the transaction", note: "Submit via a private/MEV-protected RPC (Flashbots/MEV-Blocker, reference kind='endpoints') so searchers can't frontrun your arb. Public mempool = your edge gets stolen." },
+      { title: "Data sources for spotting edges", note: "Cross-DEX quotes via the route tool; prices via DefiLlama/Pyth/CoinGecko; funding-rate/basis arb via perps_funding_data; CEX prices via Binance/Bybit keyless endpoints." },
+    ],
+    warnings: [
+      "Cross-chain arb is NOT atomic — the price can move against you during the bridge delay; size for that risk.",
+      "'Free' flash-loan arb still pays the flash-loan fee + gas; the loan just removes the capital requirement, not the costs.",
+    ],
+  },
+
   defi_yield_research: {
     topic: "defi_yield_research",
     title: "Research DeFi yields and stablecoin health (keyless, one API family)",

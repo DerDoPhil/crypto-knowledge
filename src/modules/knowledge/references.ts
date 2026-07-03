@@ -403,6 +403,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "Keyless. On-chain you submit the returned update to the Pyth contract; off-chain use the parsed price directly.",
   },
   {
+    name: "Polymarket (prediction markets)",
+    baseUrl: "https://gamma-api.polymarket.com",
+    auth: "none",
+    what: "Prediction-market data: markets, questions, prices (=implied probabilities), volume — keyless (live-verified).",
+    example: "GET /markets?closed=false&limit=20 → each market's outcomes + prices; order book/trading via https://clob.polymarket.com (live-verified). Settles in USDC on Polygon.",
+    limits: "Read keyless; placing orders needs API creds + on-chain USDC on Polygon.",
+  },
+  {
     name: "Snapshot (DAO governance, off-chain votes)",
     baseUrl: "https://hub.snapshot.org/graphql",
     auth: "none",
@@ -641,6 +649,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Market, DeFi & social data": ["defi_yield_research", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social"],
   "Staking": ["solana_staking", "eth_staking"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
+  "Trading & strategies": ["arbitrage_basics", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Security": ["price_oracle_safety", "wallet_security_checklist"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
