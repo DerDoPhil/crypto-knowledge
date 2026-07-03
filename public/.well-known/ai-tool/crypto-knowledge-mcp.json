@@ -1,0 +1,63 @@
+{
+  "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
+  "name": "Crypto-Knowledge — On-Chain Brain for AI Agents",
+  "description": "MCP server that gives AI agents correct on-chain expertise in one call: cross-chain routing (LiFi + deBridge), Solana swaps (Jupiter), pump.fun curve state, ABI decoding for any contract, portfolio balances with USD values, anti-rug security scans, gas and profitability checks, MEV protection, whale watching, EVM simulation and ready-to-run Web3 runbooks across 10 chains. Keystore-free: it never holds keys and returns only unsigned transactions for the agent to sign.",
+  "version": "0.2.1",
+  "endpoint": "https://crypto-knowledge-eight.vercel.app/mcp",
+  "creatorAddress": "0xbc5cbc5434d3846bc445723e82b51b3932795e6d",
+  "image": "https://crypto-knowledge-eight.vercel.app/icon.png",
+  "featuredImage": "https://crypto-knowledge-eight.vercel.app/icon.png",
+  "inputs": {
+    "type": "object",
+    "description": "MCP JSON-RPC 2.0 tool call over Streamable HTTP (POST /mcp). Call the 'catalog' tool first to discover tools and chains, then call any tool with its action and arguments.",
+    "properties": {
+      "method": { "type": "string", "description": "MCP method, e.g. 'tools/call' or 'tools/list'" },
+      "params": { "type": "object", "description": "For tools/call: { name: <tool>, arguments: { action, ... } }" }
+    },
+    "required": ["method", "params"]
+  },
+  "outputs": {
+    "type": "object",
+    "description": "Each tool returns a uniform envelope.",
+    "properties": {
+      "ok": { "type": "boolean", "description": "true on success" },
+      "data": { "type": "object", "description": "tool result (structuredContent)" },
+      "warnings": { "type": "array", "description": "non-fatal notes" },
+      "errors": { "type": "array", "description": "canonical error codes on failure" }
+    }
+  },
+  "tags": [
+    "crypto", "web3", "onchain", "defi", "mcp", "ai-agents", "agent-tools",
+    "cross-chain", "bridge", "swap", "solana", "ethereum", "base",
+    "security", "anti-rug", "mev", "simulation", "x402", "normies"
+  ],
+  "access": {
+    "logic": "OR",
+    "requirements": [
+      {
+        "kind": "0xbdf8c428",
+        "data": "0x0000000000000000000000009eb6e2025b64f340691e424b7fe7022ffde12438",
+        "label": "Hold >=1 Normies NFT (ERC-721, Ethereum) for free access; otherwise pay $0.10 USDC per request via x402 on Base. Enforced on-chain by the canonical ERC721OwnerPredicate.",
+        "links": {
+          "collection": "https://opensea.io/collection/normies",
+          "etherscan": "https://etherscan.io/address/0x9Eb6E2025B64f340691e424b7fe7022fFDE12438"
+        }
+      }
+    ]
+  },
+  "io.opensea.access": {
+    "type": "erc721-owner",
+    "chain": "eip155:1",
+    "contract": "0x9Eb6E2025B64f340691e424b7fe7022fFDE12438",
+    "collection": "Normies",
+    "description": "Holding a Normies NFT grants free access. Non-holders pay $0.10 USDC per request via x402 on Base."
+  },
+  "io.opensea.display": {
+    "title": "Crypto-Knowledge",
+    "subtitle": "The on-chain brain for AI agents — 12 MCP tools across 10 chains",
+    "category": "Agent tools",
+    "icon": "https://crypto-knowledge-eight.vercel.app/icon.png",
+    "featuredImage": "https://crypto-knowledge-eight.vercel.app/icon.png"
+  },
+  "io.dophil.docs": "https://crypto-knowledge-eight.vercel.app/llms.txt"
+}

@@ -16,6 +16,12 @@ export interface OperatorConfig {
     holderNftChain: string;
     treasuryAddress?: string;
   };
+  x402: {
+    facilitatorUrl: string;
+    network: string;
+    asset: string;
+    priceAtomic: string;
+  };
 }
 
 function env(name: string): string | undefined {
@@ -36,6 +42,15 @@ export function loadOperatorConfig(): OperatorConfig {
       holderNftContract: env("HOLDER_NFT_CONTRACT"),
       holderNftChain: env("HOLDER_NFT_CHAIN") ?? "ethereum",
       treasuryAddress: env("TREASURY_ADDRESS"),
+    },
+    x402: {
+      // keyless xpay facilitator (the SwarmSkill pattern) — no account/KYB needed
+      facilitatorUrl: env("X402_FACILITATOR_URL") ?? "https://facilitator.xpay.sh",
+      network: env("X402_NETWORK") ?? "base",
+      // USDC on Base
+      asset: env("X402_ASSET") ?? "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      // $0.10 in 6-decimals USDC — must match the on-chain manifest's pricing[0].amount
+      priceAtomic: env("X402_PRICE_ATOMIC") ?? "100000",
     },
   };
 }

@@ -10,6 +10,54 @@ import { fetchGoPlusSolana, scoreSolanaToken } from "./goplus-solana.js";
 import { fetchHoneypotIs } from "./honeypot.js";
 import { scoreToken } from "./score.js";
 
+/**
+ * Core scan logic, transport-agnostic: returns the uniform envelope. Used by the
+ * MCP tool below AND the standalone REST endpoint (api/tools/security.ts) that
+ * backs the separately registered ERC-8257 tool on OpenSea.
+ */
+export async function runSecurityScan(input: { chain: string; address: string }) {
+  const startedAt = performance.now();
+  const meta = { source: "goplus", startedAt, chain: input.chain };
+  const chain = getChain(input.chain);
+  if (!chain) return invalidInput(`unknown chain '${input.chain}'`, meta);
+
+  try {
+    if (chain.kind === "solana") {
+      const raw = await fetchGoPlusSolana(input.address);
+      const report = scoreSolanaToken(raw);
+      const warnings =
+        report.verdict === "insufficient_data" ? ["GoPlus returned little data — token may be brand new"] : [];
+      return ok({ token: input.address, ...report, dataSources: ["goplus-solana"] }, meta, warnings);
+    }
+
+    if (!isAddress(input.address)) return invalidInput("`address` must be a valid token address", meta);
+
+    // GoPlus (static) + honeypot.is (simulation) in parallel — cross-check.
+    const [raw, sim] = await Promise.all([
+      fetchGoPlus(input.chain, input.address),
+      fetchHoneypotIs(input.chain, input.address),
+    ]);
+    const report = scoreToken(raw);
+    const dataSources = ["goplus"];
+    const warnings = report.verdict === "insufficient_data" ? ["GoPlus returned little data — token may be brand new"] : [];
+
+    if (sim) {
+      dataSources.push("honeypot.is");
+      // Escalate if the live simulation disagrees with the static analysis.
+      if (sim.isHoneypot === true && report.checks.honeypot.isHoneypot !== true) {
+        report.riskScore = Math.min(100, report.riskScore + 40);
+        report.verdict = "high_risk";
+        report.redFlags.push("honeypot.is simulation flags this as a honeypot (static analysis missed it)");
+      }
+    }
+
+    return ok({ token: input.address, ...report, honeypotSimulation: sim, dataSources }, meta, warnings);
+  } catch (err) {
+    const e = toCryptoKnowledgeError(err);
+    return fail({ code: e.code, message: e.message, retryable: e.retryable }, meta);
+  }
+}
+
 export function registerSecurityTool(server: McpServer, _ctx: ToolContext): void {
   server.registerTool(
     "security",
@@ -25,47 +73,6 @@ export function registerSecurityTool(server: McpServer, _ctx: ToolContext): void
         address: z.string().describe("Token contract / mint address."),
       },
     },
-    async (input) => {
-      const startedAt = performance.now();
-      const meta = { source: "goplus", startedAt, chain: input.chain };
-      const chain = getChain(input.chain);
-      if (!chain) return toToolResult(invalidInput(`unknown chain '${input.chain}'`, meta));
-
-      try {
-        if (chain.kind === "solana") {
-          const raw = await fetchGoPlusSolana(input.address);
-          const report = scoreSolanaToken(raw);
-          const warnings =
-            report.verdict === "insufficient_data" ? ["GoPlus returned little data — token may be brand new"] : [];
-          return toToolResult(ok({ token: input.address, ...report, dataSources: ["goplus-solana"] }, meta, warnings));
-        }
-
-        if (!isAddress(input.address)) return toToolResult(invalidInput("`address` must be a valid token address", meta));
-
-        // GoPlus (static) + honeypot.is (simulation) in parallel — cross-check.
-        const [raw, sim] = await Promise.all([
-          fetchGoPlus(input.chain, input.address),
-          fetchHoneypotIs(input.chain, input.address),
-        ]);
-        const report = scoreToken(raw);
-        const dataSources = ["goplus"];
-        const warnings = report.verdict === "insufficient_data" ? ["GoPlus returned little data — token may be brand new"] : [];
-
-        if (sim) {
-          dataSources.push("honeypot.is");
-          // Escalate if the live simulation disagrees with the static analysis.
-          if (sim.isHoneypot === true && report.checks.honeypot.isHoneypot !== true) {
-            report.riskScore = Math.min(100, report.riskScore + 40);
-            report.verdict = "high_risk";
-            report.redFlags.push("honeypot.is simulation flags this as a honeypot (static analysis missed it)");
-          }
-        }
-
-        return toToolResult(ok({ token: input.address, ...report, honeypotSimulation: sim, dataSources }, meta, warnings));
-      } catch (err) {
-        const e = toCryptoKnowledgeError(err);
-        return toToolResult(fail({ code: e.code, message: e.message, retryable: e.retryable }, meta));
-      }
-    },
+    async (input) => toToolResult(await runSecurityScan(input)),
   );
 }

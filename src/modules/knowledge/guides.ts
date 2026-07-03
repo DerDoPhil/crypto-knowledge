@@ -156,24 +156,58 @@ export const GUIDES: Record<string, Guide> = {
   register_onchain_tool: {
     topic: "register_onchain_tool",
     title: "Register an agent tool on-chain (ERC-8257 / OpenSea)",
-    summary: "List your agent tool in the canonical ERC-8257 ToolRegistry so it appears on OpenSea's agent-tools surface, optionally NFT-gated.",
+    summary: "List your agent tool in the canonical ERC-8257 ToolRegistry so it appears on OpenSea's agent-tools surface, optionally NFT-gated. Follows the indexer's REAL acceptance rules (origin binding, name-slug path, listing limits) — most of which `tool-sdk validate` does NOT check.",
     scope: ["evm"],
-    prerequisites: ["A public HTTPS host for the manifest", "Node 20+", "A funded creator wallet (gas)"],
+    prerequisites: ["A public HTTPS host serving BOTH the manifest and the tool endpoint on the exact same origin", "Node 20+", "A funded creator wallet (gas)"],
     steps: [
-      { title: "Write an ERC-8257 manifest", note: 'Serve it at https://<your-host>/.well-known/erc8257-manifest.json. Required fields incl. name, description (<=500 chars), inputs, outputs, creatorAddress (lowercase). Extension fields (capabilities, authentication, predicate, payment) are allowed but ideally reverse-DNS namespaced.' },
-      { title: "Validate the manifest", command: "curl -s https://<host>/.well-known/erc8257-manifest.json -o /tmp/m.json && npx @opensea/tool-sdk validate /tmp/m.json", note: "Must print 'Manifest is valid' before registering — schema errors here cause indexing failures later." },
-      { title: "Compute the authoritative hash (JCS-canonicalized)", command: "npx @opensea/tool-sdk hash /tmp/m.json", note: "Use THIS hash on-chain. Do NOT keccak the raw bytes — that drifts from OpenSea's canonical hash and breaks re-indexing." },
-      { title: "Register on the canonical ToolRegistry", command: "// ToolRegistry 0x265BB2DBFC0A8165C9A1941Eb1372F349baD2cf1 (same address on Ethereum + Base)\n// registerTool(string metadataURI, bytes32 manifestHash, address accessPredicate) returns (uint256 toolId)\n// accessPredicate = address(0) for open access", note: "Read the new toolId from the ToolRegistered event. Gas ~0.00006 ETH on mainnet at low gwei, a bit more for the string." },
-      { title: "Optional NFT gate", command: "// On the ERC721OwnerPredicate 0xc8721c9A776958FfFfEb602DA1b708bf1D318379:\n// setCollections(uint256 toolId, address[] collections)   <-- NOT 'configure'\n// pass [<your NFT contract>]", note: "CRITICAL: the gate only works on the chain where the NFT lives (e.g. register on Ethereum mainnet if your NFT is on mainnet — a Base predicate can't reference a mainnet collection)." },
-      { title: "Verify", command: "// getToolConfig(toolId) on the registry; getCollections(toolId) + hasAccess(toolId, <non-holder>, '0x') on the predicate\n// hasAccess should be false for a non-holder when gated", note: "Tool appears at https://opensea.io/tools/erc8257/<chain>/<toolId> after OpenSea indexes it (minutes to hours)." },
-      { title: "Update the manifest later", command: "// updateToolMetadata(uint256 toolId, string newURI, bytes32 newHash) on the registry", note: "Always recompute the hash with @opensea/tool-sdk and sync on-chain, or OpenSea won't re-index the change." },
+      { title: "Derive the canonical manifest path from your tool name (origin binding)", command: '// slug = name.toLowerCase().replace(/\\s+/g, "-").replace(/[^a-z0-9-]/g, "")\n// manifest MUST live at: https://<endpoint-origin>/.well-known/ai-tool/<slug>.json', note: "This binding is enforced at registration. Pick a short ASCII name (e.g. 'My Tool' → my-tool.json); special characters make the slug ambiguous. The endpoint in the manifest MUST be on the exact same origin (RFC 6454: same scheme+host+port — subdomains do NOT count). Serve the manifest as a real static file; the indexer does NOT follow redirects, so avoid rewrites/redirects in the path." },
+      { title: "Write the manifest within the indexer's listing limits", note: "Required: type='https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1', name (1-128 chars), description (1-500 chars), endpoint (https, same origin), inputs/outputs (JSON Schema), creatorAddress (LOWERCASE, must equal the registering wallet). Limits validate does NOT check but the indexer enforces: MAX 16 tags (lowercase alphanumeric+hyphens, 1-32 chars; recommended category tags: ai, defi, nft, trading, image, security); image = square 1:1; featuredImage MUST be 16:9 (omit it if you only have a square icon — it is only needed for the Featured section). NO un-namespaced extension fields — anything beyond the spec fields must use a reverse-DNS prefix (e.g. io.yourname.docs), or first-time ingestion rejects the manifest." },
+      { title: "Validate + compute the authoritative hash", command: "curl -s https://<origin>/.well-known/ai-tool/<slug>.json -o /tmp/m.json\nnpx -y @opensea/tool-sdk@latest validate /tmp/m.json   # must be valid AND warning-free\nnpx -y @opensea/tool-sdk@latest hash /tmp/m.json       # use THIS hash on-chain", note: "Always pin @latest — a cached old SDK computes a DIFFERENT hash than OpenSea verifies with. Never keccak raw bytes and never use the generic npm `canonicalize` package (different key order → wrong hash → OpenSea treats the tool as stale forever)." },
+      { title: "Register on the canonical ToolRegistry", command: "// ToolRegistry 0x265BB2DBFC0A8165C9A1941Eb1372F349baD2cf1 (same address on Ethereum + Base)\n// registerTool(string metadataURI, bytes32 manifestHash, address accessPredicate) returns (uint256 toolId)\n// accessPredicate = address(0) for open access", note: "Read the new toolId from the ToolRegistered event. Gas ~0.00006 ETH on mainnet at low gwei." },
+      { title: "Optional NFT gate", command: "// On the ERC721OwnerPredicate 0xc8721c9A776958FfFfEb602DA1b708bf1D318379:\n// setCollections(uint256 toolId, address[] collections)   <-- NOT 'configure'\n// pass [<your NFT contract>]", note: "Configuring the gate 1-2 blocks AFTER registerTool is fine (listed tools do the same). CRITICAL: the gate only works on the chain where the NFT lives — a Base predicate can't reference a mainnet collection." },
+      { title: "Cross-check exactly like OpenSea does", command: "npx -y @opensea/tool-sdk@latest inspect --tool-id <id> --network mainnet", note: "Checks on-chain config, manifest validity, hash match and endpoint reachability in one shot. NOTE: inspect does NOT check the listing limits (tag count, featuredImage ratio) — recheck those by hand against docs.opensea.io/docs/tool-manifest." },
+      { title: "Wait for ingestion, then verify", note: "Tool appears at https://opensea.io/tools/erc8257/<chain>/<toolId> — fresh, rule-conform registrations have been observed to index within ~40 minutes; there is also a daily metadata refresh job. The page shows 'Tool not found' until ingested." },
+      { title: "Update the manifest later", command: "// updateToolMetadata(uint256 toolId, string newURI, bytes32 newHash) on the registry", note: "Always recompute the hash with @opensea/tool-sdk@latest and sync on-chain, or OpenSea won't re-index the change. The update path is more tolerant than first-time ingestion — but a hash mismatch still freezes re-indexing." },
     ],
     warnings: [
+      "Origin mismatch between manifest and endpoint ⇒ the tool is rejected and MARKED AS DEREGISTERED by the indexer (per official docs) — a later fix requires a fresh registerTool, updateToolMetadata won't resurrect it.",
+      "First-time ingestion validates HARD (slug path, origin, no un-namespaced fields, listing limits). `tool-sdk validate`, `verify` and `inspect` all pass manifests the indexer still refuses — the docs pages are the real spec.",
       "The gate predicate function is setCollections, not configure (configure does not exist on the canonical predicate).",
       "NFT-gating only works on the chain where the NFT contract is deployed.",
       "Registrations can be removed via deregisterTool(toolId) (creator only).",
     ],
-    references: ["https://github.com/ProjectOpenSea/tool-registry", "https://8257.ai/schema/manifest.json"],
+    references: [
+      "https://docs.opensea.io/docs/tool-manifest",
+      "https://docs.opensea.io/docs/agent-tool-registry",
+      "https://eips.ethereum.org/EIPS/eip-8257",
+      "https://github.com/ProjectOpenSea/tool-registry",
+    ],
+  },
+
+  opensea_tool_logo: {
+    topic: "opensea_tool_logo",
+    title: "Make your ERC-8257 tool logo render on OpenSea (image + cache pitfalls)",
+    summary:
+      "Get the tool image to actually show on opensea.io/tools: the two manifest image fields, the mandatory on-chain hash sync, and the CloudFront image-cache trap that no manifest change can fix.",
+    scope: ["evm"],
+    prerequisites: ["register_onchain_tool"],
+    steps: [
+      { title: "Add both image fields to the manifest", note: "Top-level `image` = the square logo/icon (~1000x1000 PNG or JPG). `featuredImage` = a ~16:9 banner (e.g. 1536x864). Both must be absolute HTTPS URLs. OpenSea indexes exactly these two fields — it does NOT scrape <meta>/OpenGraph tags off your page." },
+      { title: "Serve valid, fully-decodable images BEFORE syncing the hash", command: "curl -sfI https://<host>/logo.png   # expect: 200 + content-type: image/png", note: "A corrupt/partial PNG or a 404 at fetch time gets cached as an ERROR by OpenSea's image proxy (see warnings). Decode the file end-to-end locally first (e.g. Pillow im.load()), not just the magic bytes." },
+      { title: "Recompute the hash and sync it on-chain", command: "npx @opensea/tool-sdk hash /tmp/m.json   # then: updateToolMetadata(toolId, manifestUri, thisHash)", note: "This on-chain 'hash update event' is what makes OpenSea RE-INDEX the manifest — text, tags, access AND images. If the on-chain hash doesn't match the served manifest's tool-sdk hash, OpenSea treats it as stale and ignores every change." },
+      { title: "Confirm the metadata re-indexed", note: "The tool page (opensea.io/tools/erc8257/<chain>/<toolId>) then shows 'Onchain hash verified' + 'Updated Xm ago' plus your new text/tags. That proves the hash sync worked and metadata was picked up (usually within minutes)." },
+      { title: "If text is correct but the logo is still blank — inspect the image proxy", command: "// the logo <img> src on the tool page is https://i2c.seadn.io/tool-images/<id>/<id>.png\n// fetch(src) and read .status + the cache-control header", note: "200 + valid PNG = it will render. HTTP 422 with 'x-cache: Error from cloudfront' = the proxy cached a fetch error; see warnings for the ONLY fixes." },
+    ],
+    warnings: [
+      "OpenSea's tool-image CDN id (i2c.seadn.io/tool-images/<id>/<id>.png) is STABLE and tool-bound. It does NOT change when you change the manifest image URL (a 'cache-bust' of the source URL does nothing) nor when you update the on-chain hash.",
+      "If OpenSea's proxy ever fetched a broken source image (corrupt/partial/404), CloudFront caches that error as HTTP 422 with cache-control max-age=31536000 (ONE YEAR). After that, fixing the source and changing the URL will NOT force a re-fetch.",
+      "There is NO public 'refresh metadata' button for tools (only NFT items have one). Recovery = wait for OpenSea's autonomous daily broken-metadata refresh (up to ~1 day), OR ask an OpenSea dev to purge the cached tool image for your toolId.",
+      "Metadata (text/tags/hash) is picked up fast via the on-chain event; the image runs through a separate async pipeline and can lag well behind the text — don't assume the logo failed just because the text updated first.",
+    ],
+    references: [
+      "https://docs.opensea.io/docs/tool-manifest",
+      "https://github.com/ProjectOpenSea/tool-sdk/tree/main/examples/token-nft-overlap-tool/public",
+    ],
   },
 
   bridge_funds: {

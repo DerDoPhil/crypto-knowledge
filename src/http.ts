@@ -9,10 +9,36 @@
  */
 import http from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { AccessEnforcer } from "./access/enforce.js";
+import { loadOperatorConfig } from "./config.js";
 import { createServer } from "./index.js";
 import { LLMS_TXT, LANDING_HTML } from "./landing.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
+const enforcer = new AccessEnforcer(loadOperatorConfig());
+
+/**
+ * Streamable-HTTP requires Accept to include both application/json and
+ * text/event-stream (else 406). The transport reads `req.rawHeaders` (via
+ * @hono/node-server), not the parsed header object, so normalize rawHeaders so
+ * lenient agent clients and registry/health probes (wildcard Accept or none) work.
+ */
+function ensureMcpAccept(req: http.IncomingMessage): void {
+  const REQUIRED = "application/json, text/event-stream";
+  const ok = (v: string) => v.includes("application/json") && v.includes("text/event-stream");
+  const raw = req.rawHeaders;
+  if (Array.isArray(raw)) {
+    let found = false;
+    for (let i = 0; i < raw.length; i += 2) {
+      if (raw[i]?.toLowerCase() === "accept") {
+        found = true;
+        if (!ok(raw[i + 1] ?? "")) raw[i + 1] = REQUIRED;
+      }
+    }
+    if (!found) raw.push("Accept", REQUIRED);
+  }
+  req.headers["accept"] = REQUIRED;
+}
 
 function readBody(req: http.IncomingMessage): Promise<unknown> {
   return new Promise((resolve, reject) => {
@@ -50,9 +76,23 @@ const server = http.createServer(async (req, res) => {
 
   if (url.startsWith("/mcp")) {
     try {
+      ensureMcpAccept(req);
       const body = req.method === "POST" ? await readBody(req) : undefined;
+
+      // NFT-holder / x402 gate (no-op unless ACCESS_GATING_ENABLED=true).
+      const verdict = await enforcer.enforce({
+        headers: req.headers,
+        body,
+        resourceUrl: `https://${req.headers.host ?? `localhost:${PORT}`}/mcp`,
+      });
+      if (!verdict.allowed) {
+        res.writeHead(verdict.status ?? 402, { "content-type": "application/json", ...(verdict.headers ?? {}) });
+        res.end(JSON.stringify(verdict.body ?? { error: "access denied" }));
+        return;
+      }
+
       const mcp = createServer();
-      const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+      const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
       res.on("close", () => {
         transport.close();
         mcp.close();

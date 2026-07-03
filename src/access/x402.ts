@@ -87,3 +87,34 @@ export async function verifyPayment(
     return { valid: false, reason: (err as Error).message };
   }
 }
+
+export interface SettleResult {
+  success: boolean;
+  txHash?: string;
+  reason?: string;
+}
+
+/**
+ * Settle a verified payment via the facilitator's /settle endpoint — this is what
+ * actually moves the USDC to `payTo`. Verify alone never charges the payer.
+ */
+export async function settlePayment(
+  cfg: X402Config,
+  paymentPayload: unknown,
+  requirements: PaymentRequirements,
+): Promise<SettleResult> {
+  try {
+    const res = await fetchJson<{ success?: boolean; transaction?: string; txHash?: string; errorReason?: string }>(
+      `${cfg.facilitatorUrl}/settle`,
+      {
+        method: "POST",
+        body: { x402Version: 1, paymentPayload, paymentRequirements: requirements },
+        maxAttempts: 2,
+      },
+    );
+    const txHash = res.transaction ?? res.txHash;
+    return { success: Boolean(res.success), ...(txHash ? { txHash } : {}), ...(res.errorReason ? { reason: res.errorReason } : {}) };
+  } catch (err) {
+    return { success: false, reason: (err as Error).message };
+  }
+}

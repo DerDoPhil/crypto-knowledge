@@ -28,8 +28,15 @@ Ethereum, Base, Arbitrum, Polygon, Cronos, ApeChain, Solana.
 
 ## Access
 
-Provider modes per call: open (public RPC), own_key (bring your own Helius/Alchemy key, recommended), tool (operator key, gated).
-Optionally NFT-gated for free access, otherwise pay-per-request via x402.
+Discovery is free: initialize, tools/list and the catalog tool need no credentials.
+Every other tools/call requires ONE of:
+1. Normies NFT holder (free): send headers
+   X-Wallet: 0x<your address>
+   X-Wallet-Signature: personal_sign of "crypto-knowledge-auth <wallet-lowercase> <YYYY-MM-DD>" (UTC date, today)
+   Collection: https://opensea.io/collection/normies (Ethereum)
+2. x402 payment ($0.10 USDC on Base per request): an unpaid call answers HTTP 402
+   with the exact payment requirements (scheme "exact", payTo, asset). Retry with
+   the X-PAYMENT header; the payment is verified and settled via the facilitator.
 
 ## Source
 
