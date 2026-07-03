@@ -336,6 +336,21 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  price_oracle_safety: {
+    topic: "price_oracle_safety",
+    title: "Price oracle safety: why spot prices get you drained (TWAP, Chainlink, sanity bands)",
+    summary: "The oracle-manipulation playbook from the defender's side — what a price source must survive before agent logic or a contract trusts it.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Never trust a single pool's spot price", note: "AMM spot (reserve ratio) is flash-loan-movable within one tx — the classic drain: attacker skews the pool, your logic prices against it, attacker profits. This applies to AGENT decisions too, not just contracts." },
+      { title: "Prefer manipulation-resistant sources", note: "Chainlink feeds (aggregated off-chain, see chainlink_price_feeds guide) or Uniswap v3 TWAP (observe() over 10-30 min windows — attacker must hold the skew across many blocks, which costs real money)." },
+      { title: "Cross-check two independent sources", command: "chainlink latestRoundData  vs  GET https://coins.llama.fi/prices/current/{chain}:{token}", note: "Diverging >1-2% ⇒ halt the trade path and investigate; one of them is stale or being gamed." },
+      { title: "Apply sanity bands in agent logic", note: "Reject quotes that imply price moves beyond a per-asset band (e.g. ±10% vs last known good) — this catches decimal bugs, depegs and manipulation in one check. The route/profitability tools of this server already price against aggregator quotes, not single pools." },
+      { title: "Low-liquidity tokens have NO safe price", note: "If liquidity is thin (check the security tool's LP data / Jupiter Price liquidity field), any oracle is manipulable — size positions accordingly or skip." },
+    ],
+  },
+
   deterministic_deploys_create2: {
     topic: "deterministic_deploys_create2",
     title: "Deploy a contract to the SAME address on every chain (CREATE2/CREATE3)",

@@ -220,6 +220,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     example: "GET /files/any/1/0x…  (repo: https://repo.sourcify.dev)",
   },
   {
+    name: "The Graph (subgraph queries)",
+    baseUrl: "https://gateway.thegraph.com/api",
+    auth: "free-key",
+    what: "GraphQL queries against indexed protocol data (Uniswap pools, Aave positions, NFT transfers …) — the standard for historical/aggregated on-chain data that raw RPC can't answer cheaply.",
+    example: "POST /{api-key}/subgraphs/id/{subgraph-id} {query: '{ pools(first:5){ id volumeUSD } }'}",
+    limits: "Free API key includes a generous monthly query allowance; find subgraph IDs at thegraph.com/explorer.",
+  },
+  {
     name: "Blockscout (keyless explorer API, many chains)",
     baseUrl: "https://eth.blockscout.com/api/v2",
     auth: "none",
