@@ -336,6 +336,36 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  tx_confirmation_patterns: {
+    topic: "tx_confirmation_patterns",
+    title: "Wait for transaction confirmation correctly (EVM, Solana, Bitcoin)",
+    summary: "The per-chain patterns for knowing a tx is REALLY in — with timeouts, reorg awareness and the failure modes naive polling misses.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "EVM: poll the receipt, then wait confirmations", note: "eth_getTransactionReceipt returns null until mined — poll with backoff + hard timeout. For value transfers wait 1-2 extra blocks (reorg safety); L2s: distinguish soft confirmation from L1 finality if bridging follows. status 0x0 = mined but REVERTED — that's final, don't retry the same call blindly." },
+      { title: "EVM: handle the stuck case", note: "No receipt after N minutes → tx may be underpriced. Same nonce + >=10% fee bump replaces it; a NEW nonce would create a second payment." },
+      { title: "Solana: confirm against block height, not time", note: "sendTransaction → confirmTransaction({signature, blockhash, lastValidBlockHeight}). Once the chain passes lastValidBlockHeight without inclusion the tx is DEAD (blockhash expired) — safe to rebuild+resend. getSignatureStatuses for 'confirmed' vs 'finalized' (~32 slots)." },
+      { title: "Bitcoin: mempool then blocks", command: "GET https://mempool.space/api/tx/{txid}/status → {confirmed, block_height}", note: "0-conf = fully reversible (esp. RBF-signaled). 1 conf ok for small amounts, 3-6 for meaningful value." },
+      { title: "Idempotency for agents", note: "Persist txid/signature BEFORE broadcasting; on restart resume by checking status of the stored id instead of re-sending — double-spends by crashed agents are a classic self-inflicted loss." },
+    ],
+  },
+
+  ipfs_for_nfts: {
+    topic: "ipfs_for_nfts",
+    title: "Resolve and host NFT metadata on IPFS (gateways, pinning, ipfs:// URIs)",
+    summary: "Turn ipfs:// token URIs into data reliably, and pin your own NFT metadata for free — with the gateway fallback reality.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Resolve ipfs:// URIs", command: "ipfs://<CID>/<path> → https://<gateway>/ipfs/<CID>/<path>", note: "tokenURI() often returns ipfs:// — never pass it to fetch() directly." },
+      { title: "Use a gateway FALLBACK LIST, never one gateway", command: "gateway.pinata.cloud/ipfs/ → dweb.link/ipfs/ (follow redirects!) → ipfs.io/ipfs/", note: "Live-tested reality: public gateways time out or redirect to subdomain form (https://<cid>.ipfs.dweb.link) under load — treat every gateway call as fallible, follow 3xx, time-box to ~10s each." },
+      { title: "Pin your own metadata (free tiers)", note: "Pinata free tier (~1GB) or web3.storage: upload image first, put its ipfs:// URI into the metadata JSON, upload that, use the metadata CID in tokenURI. CIDs are content-addressed — changing one byte changes the CID." },
+      { title: "On-chain SVG alternative", note: "Fully on-chain collections return data:application/json;base64,… from tokenURI — decode base64 twice (JSON, then image field). No gateway involved, nothing can rot." },
+    ],
+    warnings: ["Metadata that only lives on ONE pinning service disappears when the pin lapses — pin on two services or use a paid pinning plan for anything that matters."],
+  },
+
   defi_yield_research: {
     topic: "defi_yield_research",
     title: "Research DeFi yields and stablecoin health (keyless, one API family)",
