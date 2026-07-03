@@ -336,6 +336,38 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  ens_resolution: {
+    topic: "ens_resolution",
+    title: "Resolve ENS names correctly (forward, reverse, offchain)",
+    summary: "Name → address and back with the pitfalls that cause silent wrong-address bugs: normalization, reverse-record spoofing, offchain (CCIP-Read) names.",
+    scope: ["evm"],
+    prerequisites: ["viem"],
+    steps: [
+      { title: "Forward resolution", command: "await publicClient.getEnsAddress({ name: normalize('vitalik.eth') })  // → 0xd8dA6BF2…", note: "viem walks Registry → resolver → addr and handles CCIP-Read (offchain names like *.cb.id) automatically. ALWAYS pass the name through normalize() (ENSIP-15) — visually identical unicode names resolve differently." },
+      { title: "Reverse resolution (address → name)", command: "await publicClient.getEnsName({ address })", note: "SECURITY: anyone can point their reverse record at any name. After reverse-resolving, forward-resolve the returned name and require it to match the original address (viem does NOT do this check for you in getEnsName on old versions — verify)." },
+      { title: "Other records", command: "getEnsText({ name, key: 'com.twitter' }); getEnsAvatar({ name })", note: "Text records hold socials/URLs; avatar can be NFT-URIs (eip155:1/erc721:… format)." },
+      { title: "Registry (for raw calls)", note: "ENS Registry: 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e (reference kind='addresses'); node = namehash(normalized name). Never hash unnormalized input." },
+    ],
+    warnings: ["ENS names EXPIRE — a resolved address can change owners after expiry+re-registration; don't cache name→address mappings long-term for payments."],
+    references: ["https://docs.ens.domains"],
+  },
+
+  account_abstraction_4337: {
+    topic: "account_abstraction_4337",
+    title: "ERC-4337 account abstraction: UserOperations, bundlers, paymasters",
+    summary: "How smart-account transactions work — the UserOperation flow, bundler RPC methods, gas sponsoring — and what an agent needs to integrate them.",
+    scope: ["evm"],
+    prerequisites: ["A bundler endpoint (Pimlico/Alchemy — free keys)"],
+    steps: [
+      { title: "The model", note: "Smart accounts don't send txs — they sign UserOperations, a bundler wraps them into EntryPoint.handleOps(). EntryPoint v0.7: 0x0000000071727De22E5E9d8BAf0edAc6f37da032 (reference kind='addresses'; v0.6 legacy still common — accounts are pinned to ONE version)." },
+      { title: "Bundler RPC methods", command: "eth_sendUserOperation(userOp, entryPoint)\neth_estimateUserOperationGas(userOp, entryPoint)\neth_getUserOperationReceipt(userOpHash)", note: "Same JSON-RPC shape as Ethereum but served by the bundler, not a normal node. Track inclusion by userOpHash, NOT tx hash (many userOps share one tx)." },
+      { title: "Gas sponsoring via paymaster", note: "A paymaster field in the userOp lets a third party pay gas (or accept ERC-20 for it) — this is how 'gasless' dApp UX works. Sponsorship policies are configured on the provider (Pimlico/Alchemy dashboards)." },
+      { title: "Use an SDK, not raw structs", command: "permissionless.js (viem-native) or the provider SDKs", note: "UserOp signing digests, nonces (2D nonce keys!), initCode for counterfactual deployment and paymaster data are easy to get subtly wrong by hand." },
+      { title: "Signature validation differs", note: "Smart accounts verify via EIP-1271 isValidSignature — relevant when such an account logs into YOUR service (see siwe_auth/eip712_signing guides)." },
+    ],
+    references: ["https://eips.ethereum.org/EIPS/eip-4337", "https://docs.pimlico.io"],
+  },
+
   anchor_program_interaction: {
     topic: "anchor_program_interaction",
     title: "Interact with any Anchor program on Solana (IDL fetch, discriminators, events)",
