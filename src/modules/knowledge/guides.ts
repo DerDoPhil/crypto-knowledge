@@ -336,6 +336,23 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  nft_metadata_standards: {
+    topic: "nft_metadata_standards",
+    title: "NFT metadata that marketplaces actually render (fields, traits, refresh)",
+    summary: "The exact metadata JSON format OpenSea & co. parse — required fields, the attributes/display_type system, storage URI schemes and how to force a re-index.",
+    scope: ["evm", "solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Core JSON fields", command: '{ "name": "…", "description": "…", "image": "ipfs://… or https://…", "external_url": "…", "background_color": "RRGGBB (no #)", "animation_url": "…" }', note: "image: ≥3000×3000px recommended. animation_url supports GLTF/GLB/WEBM/MP4/OGG/MP3/WAV and even HTML pages (interactive NFTs)." },
+      { title: "Traits: the attributes array", command: '"attributes": [ { "trait_type": "Speed", "value": 92, "display_type": "number", "max_value": 100 }, { "trait_type": "Background", "value": "Wild" }, { "trait_type": "Birthday", "value": 1735689600, "display_type": "date" } ]', note: "display_type variants: number, boost_number, boost_percentage, date (unix seconds). No display_type = plain text trait; marketplaces auto-compute rarity per trait_type/value pair." },
+      { title: "Storage URI schemes", note: "ipfs://<CID> (see ipfs_for_nfts), ar://<hash> (Arweave), data:application/json;base64,… (fully on-chain), web3:// (ERC-4804). tokenURI must return one of these; gateways are the marketplace's job." },
+      { title: "Collection-level metadata", note: "Implement contractURI() returning a JSON with collection name/description/image — that's what fills the collection page header." },
+      { title: "Force a metadata refresh", note: "Emit ERC-4906 events (MetadataUpdate(tokenId) / BatchMetadataUpdate) — indexers listen for them. ERC-1155: the URI event. Manual fallback: OpenSea API /refresh_nft_metadata per token." },
+    ],
+    warnings: ["Metadata JSON is parsed strictly — a trailing comma or numeric value quoted as string in a number-typed trait breaks trait indexing silently."],
+    references: ["https://docs.opensea.io/docs/metadata-standards"],
+  },
+
   permit2_usage: {
     topic: "permit2_usage",
     title: "Permit2: signature-based token transfers for ANY ERC-20",
