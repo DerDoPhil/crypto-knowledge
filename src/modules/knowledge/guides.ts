@@ -653,6 +653,39 @@ export const GUIDES: Record<string, Guide> = {
     warnings: ["Metadata that only lives on ONE pinning service disappears when the pin lapses — pin on two services or use a paid pinning plan for anything that matters."],
   },
 
+  erc4626_vaults: {
+    topic: "erc4626_vaults",
+    title: "ERC-4626 tokenized vaults: deposit, redeem, share↔asset math",
+    summary: "The standard yield-vault interface (sDAI, Morpho, Yearn, LST wrappers) and the share-price rounding traps that lose dust or enable inflation attacks.",
+    scope: ["evm"],
+    prerequisites: ["viem"],
+    steps: [
+      { title: "The model: shares vs assets", note: "A 4626 vault is an ERC-20 whose tokens are SHARES of an underlying asset. asset() returns the underlying (e.g. sDAI.asset() = DAI, live-verified). Share value grows as the vault earns — 1 share > 1 asset over time." },
+      { title: "Convert without depositing", command: "convertToShares(assets) / convertToAssets(shares) — read-only previews", note: "Use previewDeposit/previewRedeem for the EXACT amount including fees at execution; convert* ignores fees/slippage." },
+      { title: "Deposit", command: "approve(vault, assets) then vault.deposit(assets, receiver) → mints shares\n// or vault.mint(shares, receiver) to target an exact share count", note: "Selectors: deposit 0x6e553f65, redeem 0xba087652, asset 0x38d52e0f, totalAssets 0x01e1d114." },
+      { title: "Withdraw", command: "vault.redeem(shares, receiver, owner) → assets  //  or withdraw(assets, receiver, owner)", note: "redeem burns a share count; withdraw targets an asset amount. maxWithdraw/maxRedeem tell you the cap (liquidity may be lent out)." },
+      { title: "Rounding direction matters", note: "The spec rounds AGAINST the user (deposit → fewer shares, withdraw → fewer assets) to protect the vault. For tiny amounts you can round to zero shares — check the return value, never assume." },
+    ],
+    warnings: ["Inflation/donation attack: a freshly-deployed empty vault can be manipulated by donating assets to skew share price so the first depositor loses funds. Prefer vaults with a virtual-shares/dead-shares mitigation or existing TVL."],
+    references: ["https://eips.ethereum.org/EIPS/eip-4626"],
+  },
+
+  stableswap_pools: {
+    topic: "stableswap_pools",
+    title: "Curve-style stableswap pools: virtual price, get_dy, LP safety",
+    summary: "How to price and safely interact with Curve stableswap/metapools — and why get_virtual_price is the number that matters.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Quote a swap on-chain", command: "get_dy(i, j, dx) → output amount for swapping dx of coin i to coin j (indices from the pool's coins())", note: "This is the authoritative on-chain quote incl. the pool's amplification curve; use it, don't approximate stableswap math by hand." },
+      { title: "LP-token value: get_virtual_price", command: "get_virtual_price() → 1e18-scaled value of ONE LP token in the pool's invariant units", note: "Live-verified (3pool ~1.04). It only ever goes UP (from fees) barring a depeg — a sudden DROP is a depeg/exploit signal. This is the manipulation-resistant number for pricing LP collateral, NOT the spot balance ratio (see price_oracle_safety)." },
+      { title: "Add/remove liquidity", command: "add_liquidity([amounts], minMint) / remove_liquidity_one_coin(lpAmount, i, minOut)", note: "Imbalanced add/remove pays a fee; balanced is cheapest. calc_token_amount previews LP minted (approximate — set a min)." },
+      { title: "Discover pools", command: "GET https://api.curve.finance/api/getPools/ethereum/main (keyless, live-verified)", note: "Returns pool addresses, coins and TVL across chains; or this server's route tool for the best swap across DEXes." },
+    ],
+    warnings: ["A stableswap pool that has gone heavily imbalanced (one coin dominates) signals a depeg in progress — swapping INTO the scarce coin gets terrible rates, and LPs are left holding the depegged asset."],
+    references: ["https://docs.curve.finance"],
+  },
+
   defi_lending: {
     topic: "defi_lending",
     title: "Lending & borrowing with Aave v3 (supply, borrow, health factor)",

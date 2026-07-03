@@ -271,6 +271,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "Keyless read; proposing a tx still needs owner signatures.",
   },
   {
+    name: "Curve API (pools, APYs)",
+    baseUrl: "https://api.curve.finance/api",
+    auth: "none",
+    what: "Curve pool data, balances, APYs, gauge rewards across chains — keyless (live-verified).",
+    example: "GET /getPools/ethereum/main → pool addresses, coins, tvl, volume; /getVolumes/ethereum",
+    limits: "Static-ish JSON; cache it.",
+  },
+  {
     name: "The Graph (subgraph queries)",
     baseUrl: "https://gateway.thegraph.com/api",
     auth: "free-key",
@@ -630,7 +638,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "pumpfun_token2022_gotchas", "solana_pay"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_ordinals_runes"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "eip7702_smart_eoas", "safe_multisig"],
-  "Market, DeFi & social data": ["defi_yield_research", "defi_lending", "perps_funding_data", "dao_governance_data", "farcaster_social"],
+  "Market, DeFi & social data": ["defi_yield_research", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social"],
   "Staking": ["solana_staking", "eth_staking"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Security": ["price_oracle_safety", "wallet_security_checklist"],
