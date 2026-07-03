@@ -25,6 +25,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Signature-based ERC-20 approvals shared across protocols. Same address on all major EVM chains.",
   },
   {
+    name: "CREATE2 deployers (deterministic deployments)",
+    addresses: { evm_arachnid_proxy: "0x4e59b44847b379578588920cA78FbF26c0B4956C", evm_createx: "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed" },
+    note: "Arachnid proxy = what Foundry uses for `forge create --use-create2`/deterministic scripts; CreateX adds guarded salts + CREATE3. Same addresses across chains — this is how one contract gets one address everywhere. See deterministic_deploys_create2 guide.",
+  },
+  {
     name: "ERC-4337 EntryPoint v0.7",
     addresses: { evm: "0x0000000071727De22E5E9d8BAf0edAc6f37da032" },
     note: "Account-abstraction entry point. v0.6 (legacy, still widely used): 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.",

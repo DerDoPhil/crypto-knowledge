@@ -336,6 +336,23 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  deterministic_deploys_create2: {
+    topic: "deterministic_deploys_create2",
+    title: "Deploy a contract to the SAME address on every chain (CREATE2/CREATE3)",
+    summary: "Deterministic deployments for multichain protocols and vanity contract addresses — the address formula, Foundry workflow, and the redeploy trap.",
+    scope: ["evm"],
+    prerequisites: ["Foundry"],
+    steps: [
+      { title: "The address formula", command: "address = keccak256(0xff ++ deployer ++ salt ++ keccak256(initCode))[12:]", note: "Depends ONLY on deployer contract, salt and creation bytecode — nonce-independent, so the same inputs give the same address on every chain." },
+      { title: "Foundry does it for you", command: "// in a script: new MyContract{salt: bytes32(uint256(1))}(constructorArgs)\nforge script … --broadcast", note: "Foundry routes salted creations through the canonical Arachnid proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C (live-verified, deployed on virtually every EVM chain). Deploy from the SAME proxy on each chain to keep addresses equal." },
+      { title: "Vanity contract addresses", note: "Brute-force salts until the computed address matches your pattern (tools: cast create2 --starts-with 0xbeef --deployer … --init-code-hash …). Cheap for 4-6 hex chars, exponential beyond." },
+      { title: "CREATE3 when initCode may change", note: "CreateX (0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed, live-verified) offers CREATE3: address depends only on deployer+salt, NOT the bytecode — deploy different versions to the same address across chains." },
+      { title: "Constructor args are part of initCode", note: "Different constructor args ⇒ different address (CREATE2). If chains need different configs, move config to an initialize() call after deployment." },
+    ],
+    warnings: ["A CREATE2 address can be redeployed after selfdestruct with DIFFERENT code (metamorphic contracts) — treat 'same address' as identity proof only together with verified source."],
+    references: ["https://github.com/pcaversaccio/createx", "https://book.getfoundry.sh"],
+  },
+
   ens_resolution: {
     topic: "ens_resolution",
     title: "Resolve ENS names correctly (forward, reverse, offchain)",
