@@ -3,6 +3,7 @@ import { AccessEnforcer } from "../../src/access/enforce.js";
 import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
 import { getReference, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
+import { ask, deepSearchGuides } from "../../src/modules/knowledge/search.js";
 
 /**
  * Standalone REST endpoint for the ERC-8257 tool "Crypto-Knowledge" — the chain
@@ -34,7 +35,7 @@ export default async function handler(
     json(200, {
       ok: true,
       tool: "crypto-knowledge",
-      usage: 'POST {"action":"list_topics"|"get_guide"|"search"|"reference","topic"?,"query"?,"kind"?}',
+      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference","topic"?,"query"?,"kind"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guides + endpoints in one call.',
       topics: GUIDE_TOPICS,
       references: [...REFERENCE_KINDS],
       access: "list_topics is free. Guides/references: free for Normies NFT holders (X-Wallet + X-Wallet-Signature) or $0.10 USDC per request via x402 (X-PAYMENT).",
@@ -81,12 +82,15 @@ export default async function handler(
       return;
     }
 
+    if (action === "ask") {
+      json(200, { ok: true, data: ask(typeof body.query === "string" ? body.query : "") });
+      return;
+    }
+
     if (action === "search") {
-      const q = typeof body.query === "string" ? body.query.toLowerCase() : "";
-      const hits = Object.values(GUIDES)
-        .filter((g) => `${g.topic} ${g.title} ${g.summary}`.toLowerCase().includes(q))
-        .map((g) => ({ topic: g.topic, title: g.title, summary: g.summary }));
-      json(200, { ok: true, data: { query: q, count: hits.length, results: hits } });
+      // Deep full-text over guide bodies; returns FULL matching guides so one call answers.
+      const results = deepSearchGuides(typeof body.query === "string" ? body.query : "", 5);
+      json(200, { ok: true, data: { query: body.query ?? "", count: results.length, results } });
       return;
     }
 
@@ -101,7 +105,7 @@ export default async function handler(
       return;
     }
 
-    json(400, { ok: false, errors: [{ code: "INVALID_INPUT", message: "action must be list_topics | get_guide | search | reference" }] });
+    json(400, { ok: false, errors: [{ code: "INVALID_INPUT", message: "action must be list_topics | ask | get_guide | search | reference" }] });
   } catch (err) {
     if (!res.headersSent) json(500, { ok: false, errors: [{ code: "INTERNAL", message: (err as Error).message }] });
   }

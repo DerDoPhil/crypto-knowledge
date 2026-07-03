@@ -5,6 +5,7 @@ import { ErrorCode } from "../../core/errors.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 import { GUIDES, GUIDE_TOPICS } from "./guides.js";
 import { getReference, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
+import { ask, deepSearchGuides } from "./search.js";
 
 export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): void {
   server.registerTool(
@@ -21,9 +22,12 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
         "common-error playbook (pattern → cause → fix) and JSON-RPC gotchas. Actions: list_topics, get_guide, " +
         "search, reference.",
       inputSchema: {
-        action: z.enum(["list_topics", "get_guide", "search", "reference"]).default("list_topics"),
+        action: z.enum(["list_topics", "get_guide", "search", "ask", "reference"]).default("list_topics"),
         topic: z.string().optional().describe("Guide topic id (get_guide), e.g. 'create_wallet', 'debug_failed_tx'."),
-        query: z.string().optional().describe("Free-text query (search) matched against titles/summaries."),
+        query: z
+          .string()
+          .optional()
+          .describe("Your question or keywords. 'ask' returns the best guides AND matching endpoints/addresses in one call; 'search' returns full matching guides (deep full-text over guide bodies)."),
         kind: z
           .enum(REFERENCE_KINDS)
           .optional()
@@ -54,12 +58,14 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
         return toToolResult(ok({ kind: input.kind, ...(getReference(input.kind as ReferenceKind) as object) }, meta));
       }
 
+      if (input.action === "ask") {
+        return toToolResult(ok(ask(input.query ?? ""), meta));
+      }
+
       if (input.action === "search") {
-        const q = (input.query ?? "").toLowerCase();
-        const hits = Object.values(GUIDES)
-          .filter((g) => `${g.topic} ${g.title} ${g.summary}`.toLowerCase().includes(q))
-          .map((g) => ({ topic: g.topic, title: g.title, summary: g.summary }));
-        return toToolResult(ok({ query: input.query ?? "", count: hits.length, results: hits }, meta));
+        // Deep full-text over guide bodies; returns FULL matching guides so one call answers.
+        const results = deepSearchGuides(input.query ?? "", 5);
+        return toToolResult(ok({ query: input.query ?? "", count: results.length, results }, meta));
       }
 
       // get_guide

@@ -2,7 +2,7 @@
   "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
   "name": "Crypto-Knowledge",
   "description": "The on-chain brain for AI agents: retrieve correct, curated Web3 coding knowledge in one call instead of burning reasoning and search credits. Ready-to-run runbooks with real commands (wallets, EVM and Solana deploys, EIP-712 signing, ERC-20 allowance and permit flows, event logs, tx debugging, x402 machine payments, Multicall, SIWE, ERC-8257 tool registration) plus reference tables: canonical contract addresses, keyless free API endpoints with limits, and an error playbook.",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/knowledge",
   "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
   "image": "https://crypto-knowledge-mcp.vercel.app/icon.png",
@@ -14,11 +14,12 @@
         "type": "string",
         "enum": [
           "list_topics",
+          "ask",
           "get_guide",
           "search",
           "reference"
         ],
-        "description": "list_topics (free) lists all guides and reference tables; get_guide returns one runbook; search matches titles/summaries; reference returns a curated table."
+        "description": "ask (RECOMMENDED) — send a natural-language question, get the best guides AND matching endpoints/addresses in ONE call; list_topics (free) lists all guides + reference tables; get_guide returns one runbook by id; search does deep full-text over guide bodies; reference returns a curated table."
       },
       "topic": {
         "type": "string",
@@ -26,7 +27,7 @@
       },
       "query": {
         "type": "string",
-        "description": "Free-text query for search."
+        "description": "Your question (ask) or keywords (search)."
       },
       "kind": {
         "type": "string",
