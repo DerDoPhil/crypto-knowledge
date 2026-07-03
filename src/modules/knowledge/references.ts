@@ -189,6 +189,22 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "See rpc_gotchas: eth_getLogs and archive calls are heavily restricted on free tiers.",
   },
   {
+    name: "Helius (Solana, free key)",
+    baseUrl: "https://mainnet.helius-rpc.com/?api-key=KEY",
+    auth: "free-key",
+    what: "Production-grade Solana RPC + DAS API (getAsset/getAssetsByOwner for NFTs incl. compressed) + enhanced/parsed transaction API.",
+    example: 'POST {"jsonrpc":"2.0","id":1,"method":"getAssetsByOwner","params":{"ownerAddress":"…"}}',
+    limits: "Free tier is generous; the public solana RPC has no DAS API at all.",
+  },
+  {
+    name: "Ethereum Beacon API (consensus layer)",
+    baseUrl: "https://ethereum-beacon-api.publicnode.com",
+    auth: "none",
+    what: "Standard beacon-node REST API: validators, duties, finality checkpoints, blocks.",
+    example: "GET /eth/v1/beacon/states/head/finality_checkpoints",
+    limits: "For validator/staking data — execution-layer data stays on JSON-RPC.",
+  },
+  {
     name: "Solana public RPC",
     baseUrl: "https://api.mainnet-beta.solana.com",
     auth: "none",

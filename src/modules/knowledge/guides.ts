@@ -336,6 +336,21 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  erc_standards_cheatsheet: {
+    topic: "erc_standards_cheatsheet",
+    title: "ERC interface IDs, selectors and events — the exact constants",
+    summary: "The precise ERC-165 interface IDs, function selectors and event topics agents most often need (and most often hallucinate).",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Detect a contract's standard via ERC-165", command: "supportsInterface(bytes4) selector 0x01ffc9a7\nERC-721: 0x80ac58cd   ERC-721Metadata: 0x5b5e139f\nERC-1155: 0xd9b67a26  ERC-2981 (royalties): 0x2a55205a\nERC-4906 (metadata update): 0x49064906", note: "ERC-20 has NO ERC-165 id — probe decimals()/balanceOf() instead." },
+      { title: "Core ERC-20 selectors", command: "transfer(address,uint256)      0xa9059cbb\ntransferFrom(address,address,uint256) 0x23b872dd\napprove(address,uint256)       0x095ea7b3\nbalanceOf(address)             0x70a08231\nallowance(address,address)     0xdd62ed3e\ndecimals()                     0x313ce567" },
+      { title: "Core ERC-721 selectors", command: "ownerOf(uint256)               0x6352211e\nsafeTransferFrom(address,address,uint256) 0x42842e0e\ntokenURI(uint256)              0xc87b56dd\nsetApprovalForAll(address,bool) 0xa22cb465" },
+      { title: "Event topic0 hashes", command: "Transfer(address,address,uint256)  0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\nApproval(address,address,uint256)  0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925\nTransferSingle (ERC-1155)          0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62", note: "ERC-20 and ERC-721 Transfer share the SAME topic0 — distinguish by topic count (721 indexes tokenId → 4 topics, 20 has 3)." },
+      { title: "Verify any selector yourself", command: "call tool \"abi\" { action: 'decode_calldata', data: '0x…' }  // or toFunctionSelector('transfer(address,uint256)') in viem" },
+    ],
+  },
+
   bitcoin_basics: {
     topic: "bitcoin_basics",
     title: "Bitcoin for agents: UTXOs, fees, PSBT, broadcasting (keyless APIs)",
