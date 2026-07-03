@@ -670,6 +670,38 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://aave.com/docs"],
   },
 
+  eth_staking: {
+    topic: "eth_staking",
+    title: "Stake ETH: Lido (stETH/wstETH) vs solo vs Rocket Pool",
+    summary: "The ETH liquid-staking options for an agent and the stETH-vs-wstETH gotcha that breaks naive integrations.",
+    scope: ["evm"],
+    prerequisites: ["ETH on Ethereum mainnet"],
+    steps: [
+      { title: "Liquid staking (easiest): Lido", command: "stETH.submit(referralOrZero) with msg.value = amount → mints stETH 1:1", note: "stETH (0xae7ab965…, live-verified) REBASES: your balance grows daily as rewards accrue. Great UX, but many DeFi contracts mishandle rebasing tokens." },
+      { title: "The stETH → wstETH gotcha", command: "wstETH.wrap(stETHamount)  /  wstETH.unwrap(wstETHamount)", note: "wstETH (0x7f39C581…, live-verified) is NON-rebasing: fixed balance, value-per-token grows instead. Use wstETH for lending/LP/bridging; use stETH only where rebasing is understood. Mixing them up under-/over-counts holdings." },
+      { title: "Other routes", note: "Rocket Pool (rETH, more decentralized), or solo staking (32 ETH, run a validator — see the Beacon API endpoint for validator data). Liquid tokens redeem via the protocol or just swap on a DEX for instant exit." },
+      { title: "Exit", note: "Lido withdrawals go through a request+claim queue (can take days when the validator exit queue is long); swapping stETH→ETH on Curve/DEX is the instant path at a small discount." },
+    ],
+    warnings: ["stETH/ETH is NOT hard-pegged — it trades slightly below 1.0 and de-pegged notably during past liquidity crunches. Price it via a feed, don't assume 1:1 (price_oracle_safety)."],
+    references: ["https://docs.lido.fi"],
+  },
+
+  solana_compressed_nfts: {
+    topic: "solana_compressed_nfts",
+    title: "Solana compressed NFTs (cNFTs): read, mint, transfer via DAS",
+    summary: "cNFTs live in Merkle trees, not token accounts — how an agent actually reads and moves them.",
+    scope: ["solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Why they're different", note: "Compressed NFTs (Metaplex Bubblegum, BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY) store state in a concurrent Merkle tree — minting millions costs cents. They are NOT SPL token accounts; getTokenAccountsByOwner will NOT find them." },
+      { title: "Read them via DAS", command: 'POST rpc {"method":"getAssetsByOwner","params":{"ownerAddress":"<addr>","page":1}}', note: "The DAS API (getAsset/getAssetsByOwner) returns both regular AND compressed NFTs. Live-verified on the public mainnet RPC (and on Helius). Filter items by compression.compressed === true." },
+      { title: "Transfer needs a proof", command: "Fetch the asset proof (getAssetProof) → build the Bubblegum transfer with the Merkle proof", note: "Unlike a normal token transfer, you must supply the current proof path; the Metaplex JS SDK (mpl-bubblegum) or Helius helpers build this. A stale proof (tree changed) fails — fetch it right before sending." },
+      { title: "Verify authenticity", note: "A cNFT's collection/creators come from the DAS response, verified against the tree. Don't trust off-chain metadata alone — check grouping (collection) and creator-verified flags." },
+    ],
+    warnings: ["cNFT proofs go stale as the tree updates — always fetch getAssetProof immediately before the transfer, and retry on proof-invalid errors."],
+    references: ["https://developers.metaplex.com/bubblegum"],
+  },
+
   solana_staking: {
     topic: "solana_staking",
     title: "Stake SOL: native staking vs liquid staking (jitoSOL, mSOL)",

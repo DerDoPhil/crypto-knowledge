@@ -15,6 +15,16 @@ export interface AddressEntry {
 
 export const ADDRESSES: AddressEntry[] = [
   {
+    name: "Lido liquid staking (Ethereum)",
+    addresses: { steth: "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84", wsteth: "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0" },
+    note: "stETH (rebasing, balance grows daily — live-verified 'Liquid staked Ether 2.0') vs wstETH (non-rebasing wrapper, use in DeFi that dislikes rebasing — live-verified). submit(referral) to mint stETH; wrap/unwrap on wstETH. See eth_staking guide.",
+  },
+  {
+    name: "Metaplex Bubblegum (Solana compressed NFTs)",
+    addresses: { solana: "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY" },
+    note: "State-compression program for cNFTs (mint millions cheaply into a Merkle tree). cNFTs are NOT normal token accounts — read/transfer them via the DAS API, not getTokenAccountsByOwner. See solana_compressed_nfts guide.",
+  },
+  {
     name: "Aave v3 Pool (lending) — Ethereum",
     addresses: { ethereum: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2" },
     note: "Main lending pool (proxy, live-verified). supply/borrow/repay/withdraw + getUserAccountData(address)→(collateral, debt, availableBorrows, liquidationThreshold, ltv, healthFactor). PoolAddressesProvider resolves per-chain deployments; see defi_lending guide. Base/Arbitrum/etc. have their own Pool addresses via the provider.",
@@ -343,9 +353,9 @@ export const ENDPOINTS: EndpointEntry[] = [
     name: "Solana public RPC",
     baseUrl: "https://api.mainnet-beta.solana.com",
     auth: "none",
-    what: "Official public JSON-RPC (getBalance, getTokenAccountsByOwner, sendTransaction, getRecentPrioritizationFees for priority-fee tuning).",
-    example: 'POST {"jsonrpc":"2.0","id":1,"method":"getRecentPrioritizationFees","params":[[]]}',
-    limits: "Strictly rate-limited and no historical data — production agents should bring a free Helius/Alchemy/QuickNode key. publicnode alternative: https://solana-rpc.publicnode.com.",
+    what: "Official public JSON-RPC (getBalance, getTokenAccountsByOwner, sendTransaction, getRecentPrioritizationFees). NOTE: the DAS methods (getAsset, getAssetsByOwner for NFTs incl. COMPRESSED) work here too now — live-verified.",
+    example: 'POST {"jsonrpc":"2.0","id":1,"method":"getAssetsByOwner","params":{"ownerAddress":"<addr>","page":1}}',
+    limits: "Strictly rate-limited, no historical data — production agents should bring a free Helius/Alchemy/QuickNode key. publicnode alternative: https://solana-rpc.publicnode.com.",
   },
   {
     name: "MEV-protected RPCs (Ethereum)",
@@ -621,7 +631,8 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Bitcoin": ["bitcoin_basics", "bitcoin_ordinals_runes"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "eip7702_smart_eoas", "safe_multisig"],
   "Market, DeFi & social data": ["defi_yield_research", "defi_lending", "perps_funding_data", "dao_governance_data", "farcaster_social"],
-  "Staking": ["solana_staking"],
+  "Staking": ["solana_staking", "eth_staking"],
+  "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Security": ["price_oracle_safety", "wallet_security_checklist"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
