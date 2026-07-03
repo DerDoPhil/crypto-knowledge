@@ -543,6 +543,23 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.ens.domains"],
   },
 
+  safe_multisig: {
+    topic: "safe_multisig",
+    title: "Interact with a Safe (Gnosis Safe) multisig: propose, sign, execute",
+    summary: "How an agent reads a Safe's config and participates in its M-of-N transaction flow — the standard for treasuries and shared control.",
+    scope: ["evm"],
+    prerequisites: ["An owner key (to sign) or read-only for inspection"],
+    steps: [
+      { title: "Read the Safe's config", command: "GET https://safe-transaction-mainnet.safe.global/api/v1/safes/{safe-address}/ → owners[], threshold, nonce", note: "Keyless (live-verified, follow redirects). threshold = how many owner signatures a tx needs (the M in M-of-N)." },
+      { title: "The transaction model", note: "A SafeTx (to, value, data, operation, nonce, …) is hashed (EIP-712) and each owner signs off-chain. Once `threshold` signatures collect, ANYONE can submit execTransaction() with the packed signatures." },
+      { title: "Propose + collect signatures", command: "Use the Safe{Core} SDK (@safe-global/protocol-kit + api-kit): protocolKit.createTransaction(...), signHash, apiKit.proposeTransaction(...)", note: "The Transaction Service stores pending txs + confirmations so owners sign asynchronously; it does NOT hold keys." },
+      { title: "Execute", command: "protocolKit.executeTransaction(safeTx) once confirmations >= threshold", note: "Gas is paid by the executor (any owner or a relayer). The Safe's nonce is sequential — a proposed tx blocks later nonces until executed or rejected." },
+      { title: "Batch calls", note: "Safes execute one tx, but via a MultiSend call you batch many actions atomically — the SDK builds this. Great for approve+swap in one owner approval." },
+    ],
+    warnings: ["Signature ORDER matters in execTransaction (owners sorted ascending by address) — the SDK handles it; hand-packing wrong order reverts."],
+    references: ["https://docs.safe.global"],
+  },
+
   account_abstraction_4337: {
     topic: "account_abstraction_4337",
     title: "ERC-4337 account abstraction: UserOperations, bundlers, paymasters",

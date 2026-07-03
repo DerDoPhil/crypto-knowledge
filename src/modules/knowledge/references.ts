@@ -40,6 +40,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Arachnid proxy = what Foundry uses for `forge create --use-create2`/deterministic scripts; CreateX adds guarded salts + CREATE3. Same addresses across chains — this is how one contract gets one address everywhere. See deterministic_deploys_create2 guide.",
   },
   {
+    name: "Safe (Gnosis Safe) singleton 1.4.1",
+    addresses: { evm: "0x41675C099F32341bf84BFc5382aF534df5C7461a" },
+    note: "Safe smart-account master copy (live-verified, 23.5KB). Proxies are deployed via the SafeProxyFactory 0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67 (deterministic per salt). Individual Safes are their own proxy addresses. See safe_multisig guide.",
+  },
+  {
     name: "ERC-4337 EntryPoint v0.7",
     addresses: { evm: "0x0000000071727De22E5E9d8BAf0edAc6f37da032" },
     note: "Account-abstraction entry point. v0.6 (legacy, still widely used): 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.",
@@ -246,6 +251,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     what: "Fetch Circle's attestation for a CCTP burn so you can mint native USDC on the destination chain — keyless (live-verified).",
     example: "GET /v1/attestations/{messageHash} → {status:'complete', attestation:'0x…'} once signed (poll until complete). Testnet: iris-api-sandbox.circle.com.",
     limits: "Attestation takes seconds-to-minutes after source finality.",
+  },
+  {
+    name: "Safe Transaction Service (multisig API)",
+    baseUrl: "https://safe-transaction-mainnet.safe.global/api",
+    auth: "none",
+    what: "Read/propose Safe multisig transactions, owners, confirmations, balances — keyless (live-verified, follow redirects).",
+    example: "GET /v1/safes/{safe-address}/ (owners, threshold); GET /v1/safes/{addr}/multisig-transactions/; per-chain hosts: safe-transaction-{base,arbitrum,polygon,…}.safe.global.",
+    limits: "Keyless read; proposing a tx still needs owner signatures.",
   },
   {
     name: "The Graph (subgraph queries)",
@@ -606,7 +619,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "NFTs": ["nft_metadata_standards", "ipfs_for_nfts", "seaport_orders"],
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "pumpfun_token2022_gotchas", "solana_pay"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_ordinals_runes"],
-  "Smart accounts & upgrades": ["account_abstraction_4337", "eip7702_smart_eoas"],
+  "Smart accounts & upgrades": ["account_abstraction_4337", "eip7702_smart_eoas", "safe_multisig"],
   "Market, DeFi & social data": ["defi_yield_research", "defi_lending", "perps_funding_data", "dao_governance_data", "farcaster_social"],
   "Staking": ["solana_staking"],
   "Security": ["price_oracle_safety", "wallet_security_checklist"],
