@@ -1,68 +1,35 @@
 {
   "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
   "name": "Crypto-Knowledge",
-  "description": "MCP server that gives AI agents correct on-chain expertise in one call: cross-chain routing (LiFi + deBridge), Solana swaps (Jupiter), pump.fun curve state, ABI decoding for any contract, portfolio balances with USD values, anti-rug security scans, gas and profitability checks, MEV protection, whale watching, EVM simulation and ready-to-run Web3 runbooks across 10 chains. Keystore-free: it never holds keys and returns only unsigned transactions for the agent to sign.",
-  "version": "0.3.1",
-  "endpoint": "https://crypto-knowledge-mcp.vercel.app/mcp",
+  "description": "The on-chain brain for AI agents: retrieve correct, curated Web3 coding knowledge in one call instead of burning reasoning and search credits. Ready-to-run runbooks with real commands (wallets, EVM and Solana deploys, EIP-712 signing, ERC-20 allowance and permit flows, event logs, tx debugging, x402 machine payments, Multicall, SIWE, ERC-8257 tool registration) plus reference tables: canonical contract addresses, keyless free API endpoints with limits, and an error playbook.",
+  "version": "1.0.0",
+  "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/knowledge",
   "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
   "image": "https://crypto-knowledge-mcp.vercel.app/icon.png",
   "inputs": {
     "type": "object",
-    "description": "MCP JSON-RPC 2.0 tool call over Streamable HTTP (POST /mcp). Call the 'catalog' tool first to discover tools and chains, then call any tool with its action and arguments.",
+    "description": "POST this JSON body to the endpoint.",
     "properties": {
-      "method": {
-        "type": "string",
-        "description": "MCP method, e.g. 'tools/call' or 'tools/list'"
-      },
-      "params": {
-        "type": "object",
-        "description": "For tools/call: { name: <tool>, arguments: { action, ... } }"
-      }
+      "action": { "type": "string", "enum": ["list_topics", "get_guide", "search", "reference"], "description": "list_topics (free) lists all guides and reference tables; get_guide returns one runbook; search matches titles/summaries; reference returns a curated table." },
+      "topic": { "type": "string", "description": "Guide id for get_guide, e.g. create_wallet, debug_failed_tx, x402_payments, register_onchain_tool." },
+      "query": { "type": "string", "description": "Free-text query for search." },
+      "kind": { "type": "string", "enum": ["addresses", "endpoints", "errors", "rpc_gotchas"], "description": "Reference table for action=reference." }
     },
-    "required": [
-      "method",
-      "params"
-    ]
+    "required": ["action"]
   },
   "outputs": {
     "type": "object",
-    "description": "Each tool returns a uniform envelope.",
+    "description": "Uniform envelope.",
     "properties": {
-      "ok": {
-        "type": "boolean",
-        "description": "true on success"
-      },
-      "data": {
-        "type": "object",
-        "description": "tool result (structuredContent)"
-      },
-      "warnings": {
-        "type": "array",
-        "description": "non-fatal notes"
-      },
-      "errors": {
-        "type": "array",
-        "description": "canonical error codes on failure"
-      }
+      "ok": { "type": "boolean", "description": "true on success" },
+      "data": { "type": "object", "description": "guide (title, steps with real commands, warnings, references) or reference table entries" },
+      "errors": { "type": "array", "description": "canonical error codes on failure" }
     }
   },
   "tags": [
-    "ai",
-    "defi",
-    "trading",
-    "security",
-    "crypto",
-    "web3",
-    "mcp",
-    "ai-agents",
-    "agent-tools",
-    "cross-chain",
-    "swap",
-    "solana",
-    "ethereum",
-    "base",
-    "x402",
-    "normies"
+    "ai", "knowledge", "knowledge-base", "runbook", "developer-tools", "web3",
+    "crypto", "defi", "agent-tools", "ai-agents", "save-credits", "solana",
+    "ethereum", "base", "x402", "normies"
   ],
   "access": {
     "logic": "OR",
@@ -83,11 +50,11 @@
     "chain": "eip155:1",
     "contract": "0x9Eb6E2025B64f340691e424b7fe7022fFDE12438",
     "collection": "Normies",
-    "description": "Holding a Normies NFT grants free access. Non-holders pay $0.10 USDC per request via x402 on Base."
+    "description": "Holding a Normies NFT grants free access. Non-holders pay $0.10 USDC per request via x402 on Base. Listing topics is free."
   },
   "io.opensea.display": {
     "title": "Crypto-Knowledge",
-    "subtitle": "The on-chain brain for AI agents — 12 MCP tools across 10 chains",
+    "subtitle": "The on-chain brain for AI agents — runbooks, addresses, endpoints, error playbooks",
     "category": "Agent tools",
     "icon": "https://crypto-knowledge-mcp.vercel.app/icon.png"
   },

@@ -4,21 +4,30 @@ import { fail, ok } from "../../core/envelope.js";
 import { ErrorCode } from "../../core/errors.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 import { GUIDES, GUIDE_TOPICS } from "./guides.js";
+import { getReference, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
 
 export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): void {
   server.registerTool(
     "knowledge",
     {
-      title: "Web3 Knowledge Base (ready-to-run runbooks)",
+      title: "Web3 Knowledge Base (runbooks + curated references)",
       description:
-        "Instant, curated step-by-step Web3 how-tos with REAL commands — create a wallet, deploy a contract (EVM & " +
-        "Solana), grind a vanity address per chain, deploy an ERC-20, verify on the explorer, get testnet funds, " +
-        "bridge. Retrieve baked-in expertise instead of spending reasoning/search credits re-deriving it. Actions: " +
-        "list_topics, get_guide, search.",
+        "The chain brain's lookup layer: instant, curated Web3 expertise so agents don't burn reasoning/search " +
+        "credits re-deriving it (or hallucinating an address). Runbooks with REAL commands — wallets, deploys " +
+        "(EVM & Solana), vanity addresses, explorer verification, EIP-712 signing, ERC-20 allowance/permit flows, " +
+        "event-log fetching, tx debugging, x402 machine payments, Multicall batching, SIWE auth, ERC-8257/OpenSea " +
+        "tool registration. Plus reference tables: canonical contract addresses (Multicall3, Permit2, USDC/WETH " +
+        "per chain, Solana programs), keyless/free API endpoints (prices, routing, security, ABIs) with limits, a " +
+        "common-error playbook (pattern → cause → fix) and JSON-RPC gotchas. Actions: list_topics, get_guide, " +
+        "search, reference.",
       inputSchema: {
-        action: z.enum(["list_topics", "get_guide", "search"]).default("list_topics"),
-        topic: z.string().optional().describe("Guide topic id (get_guide), e.g. 'create_wallet', 'vanity_address'."),
+        action: z.enum(["list_topics", "get_guide", "search", "reference"]).default("list_topics"),
+        topic: z.string().optional().describe("Guide topic id (get_guide), e.g. 'create_wallet', 'debug_failed_tx'."),
         query: z.string().optional().describe("Free-text query (search) matched against titles/summaries."),
+        kind: z
+          .enum(REFERENCE_KINDS)
+          .optional()
+          .describe("Reference table (action 'reference'): addresses | endpoints | errors | rpc_gotchas."),
       },
     },
     async (input) => {
@@ -27,7 +36,16 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
 
       if (input.action === "list_topics") {
         const topics = GUIDE_TOPICS.map((t) => ({ topic: t, title: GUIDES[t]!.title, scope: GUIDES[t]!.scope }));
-        return toToolResult(ok({ count: topics.length, topics }, meta));
+        return toToolResult(ok({ count: topics.length, topics, references: [...REFERENCE_KINDS] }, meta));
+      }
+
+      if (input.action === "reference") {
+        if (!input.kind) {
+          return toToolResult(
+            fail({ code: ErrorCode.INVALID_INPUT, message: `'kind' required: ${REFERENCE_KINDS.join(" | ")}` }, meta),
+          );
+        }
+        return toToolResult(ok({ kind: input.kind, ...(getReference(input.kind as ReferenceKind) as object) }, meta));
       }
 
       if (input.action === "search") {

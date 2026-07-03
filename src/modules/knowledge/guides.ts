@@ -210,6 +210,132 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  eip712_signing: {
+    topic: "eip712_signing",
+    title: "Sign and verify EIP-712 typed data",
+    summary: "Structured signatures (permits, orders, SIWE-adjacent auth) with viem — the domain/types/message pattern and the classic pitfalls.",
+    scope: ["evm"],
+    prerequisites: ["viem", "A signer (local account or wallet)"],
+    steps: [
+      { title: "Define domain + types + message", command: "const domain = { name: 'MyApp', version: '1', chainId: 1, verifyingContract: '0x…' };\nconst types = { Order: [ { name: 'maker', type: 'address' }, { name: 'amount', type: 'uint256' }, { name: 'deadline', type: 'uint256' } ] };\nconst message = { maker, amount, deadline };", note: "chainId and verifyingContract MUST match what the contract hashes on-chain, or recovery silently yields a different signer." },
+      { title: "Sign", command: "const signature = await account.signTypedData({ domain, types, primaryType: 'Order', message });" },
+      { title: "Verify off-chain", command: "await verifyTypedData({ address: expectedSigner, domain, types, primaryType: 'Order', message, signature })" },
+      { title: "Verify for smart-contract wallets", note: "EOAs recover via ecrecover; smart wallets (Safe, 4337 accounts) need EIP-1271: call isValidSignature(hash, sig) on the wallet — viem's verifyTypedData/verifyMessage handles 1271 automatically when given a client." },
+    ],
+    warnings: [
+      "uint256 values must be bigint, not number/string — silent type coercion changes the hash.",
+      "Field ORDER inside each type matters; it is part of the type hash.",
+    ],
+    references: ["https://eips.ethereum.org/EIPS/eip-712"],
+  },
+
+  erc20_patterns: {
+    topic: "erc20_patterns",
+    title: "ERC-20 interactions: allowance, approve, permit, transferFrom (unsigned tx)",
+    summary: "The standard token flows as ready-to-encode calldata, including EIP-2612 permit and the USDT approve quirk.",
+    scope: ["evm"],
+    prerequisites: ["viem"],
+    steps: [
+      { title: "Check allowance before anything", command: "call tool \"portfolio\" { action: 'allowance', chain, token, owner, spender }", note: "Or raw: allowance(address,address) selector 0xdd62ed3e." },
+      { title: "Build an approve tx", command: "encodeFunctionData({ abi: erc20Abi, functionName: 'approve', args: [spender, amount] })  // → { to: token, data }", note: "Prefer exact amounts over infinite approvals; an exploited spender drains whatever it is approved for." },
+      { title: "Gasless approval via EIP-2612 permit (if the token supports it)", command: "signTypedData Permit { owner, spender, value, nonce: await token.nonces(owner), deadline } → contract call permit(owner, spender, value, deadline, v, r, s)", note: "Not universal: USDC supports permit; many tokens don't. Probe nonces() existence first." },
+      { title: "transferFrom after approval", command: "encodeFunctionData({ abi: erc20Abi, functionName: 'transferFrom', args: [from, to, amount] })" },
+    ],
+    warnings: [
+      "USDT (mainnet) reverts when changing a non-zero allowance — approve(spender, 0) first, then the new amount.",
+      "Some tokens return no boolean from transfer/approve; use viem's erc20Abi which tolerates it, and treat missing return data as success only for known-legacy tokens.",
+    ],
+    references: ["https://eips.ethereum.org/EIPS/eip-2612"],
+  },
+
+  debug_failed_tx: {
+    topic: "debug_failed_tx",
+    title: "Debug a failing transaction (before or after sending)",
+    summary: "Deterministic debug order that avoids burning gas on reverts: simulate → decode revert → check the usual suspects.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "ALWAYS simulate before signing", command: "call tool \"simulate\" { chain, tx: { from, to, data, value } }", note: "Runs eth_call with your exact params and decodes the revert reason (custom errors via 4byte fallback)." },
+      { title: "Decode unknown calldata/selectors", command: "call tool \"abi\" { action: 'decode_calldata', chain, address, data }", note: "Works for unverified contracts via 4byte." },
+      { title: "Walk the usual suspects", note: "allowance too low → erc20_patterns; nonce/fee errors, rent, blockhash → retrieve knowledge reference kind='errors' for the pattern→cause→fix table." },
+      { title: "For already-mined failures", command: "eth_getTransactionReceipt → status 0x0; then re-run the SAME call via simulate at blockNumber: receipt.blockNumber - 1", note: "Simulating at the pre-inclusion block reproduces the original state and thus the original revert." },
+    ],
+    references: ["https://www.4byte.directory"],
+  },
+
+  fetch_event_logs: {
+    topic: "fetch_event_logs",
+    title: "Fetch contract event logs reliably on free RPCs",
+    summary: "eth_getLogs the way it actually works on public endpoints: topic filters, block chunking, provider limits.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Build topic0 from the event signature", command: "toEventSelector('Transfer(address,address,uint256)')  // viem → 0xddf252ad…" },
+      { title: "Always filter by address + topics", command: "eth_getLogs { address: contract, topics: [topic0, indexedArg1?], fromBlock, toBlock }", note: "Unfiltered getLogs is rejected or truncated almost everywhere." },
+      { title: "Chunk the block range per provider", note: "drpc.org free: <=10,000 blocks. Many public RPCs: 500-2,000. publicnode: may require an archive token for getLogs entirely. Loop in chunks and merge.", command: "for (let from = start; from <= end; from += 9999n) { … toBlock: min(from+9998n, end) … }" },
+      { title: "Or use the ready-made tool", command: "call tool \"whale_watch\" { chain, token, minAmount, blockWindow }", note: "Does the chunking/decoding for ERC-20 Transfers for you." },
+    ],
+    warnings: ["Indexed string/bytes topics are keccak hashes of the value, not the value itself."],
+  },
+
+  x402_payments: {
+    topic: "x402_payments",
+    title: "x402 machine payments — pay for APIs and charge for yours (keyless)",
+    summary: "The HTTP 402 flow agents use to buy API access with USDC on Base, and how to charge for your own endpoint without any account/KYB via the xpay facilitator.",
+    scope: ["evm"],
+    prerequisites: ["A funded Base wallet (USDC) for paying; a treasury address for receiving"],
+    steps: [
+      { title: "As the CLIENT: read the 402", note: "An unpaid request returns HTTP 402 with JSON { x402Version, accepts: [{ scheme: 'exact', network, asset, maxAmountRequired, payTo, … }] }." },
+      { title: "Pay + retry with one wrapper", command: "import { wrapFetchWithPayment } from '@x402/fetch';\nconst fetchWithPay = wrapFetchWithPayment(fetch, walletClient);\nawait fetchWithPay(url, opts);", note: "The wrapper signs the payment payload and retries with the X-PAYMENT header automatically." },
+      { title: "As the SERVER: answer 402 with requirements", note: "Return the accepts[] body for unpaid gated requests (see this server's /mcp: every tools/call except catalog is gated)." },
+      { title: "Verify AND settle via the keyless facilitator", command: "POST https://facilitator.xpay.sh/verify  { x402Version: 1, paymentPayload, paymentRequirements }\nPOST https://facilitator.xpay.sh/settle  (same body)", note: "verify alone moves NO money — you must settle. xpay needs no account, no KYB, payTo is just your address." },
+    ],
+    warnings: ["Asset addresses in requirements are chain-specific: USDC on Base = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 (6 decimals — $0.10 = '100000')."],
+    references: ["https://www.x402.org", "https://facilitator.xpay.sh"],
+  },
+
+  multicall_batching: {
+    topic: "multicall_batching",
+    title: "Batch reads with Multicall3 (one RPC call instead of fifty)",
+    summary: "The portable way to bulk-read on EVM chains — cheaper, faster, and immune to per-endpoint batch limits.",
+    scope: ["evm"],
+    prerequisites: ["viem"],
+    steps: [
+      { title: "With viem (automatic)", command: "await client.multicall({ contracts: [ { address, abi, functionName: 'balanceOf', args: [user] }, … ] })", note: "viem routes through Multicall3 at 0xcA11bde05977b3631167028862bE2a173976CA11 (same address on 250+ chains) and falls back per-call if unsupported." },
+      { title: "Raw (any language)", command: "Multicall3.aggregate3([{ target, allowFailure: true, callData }]) via ONE eth_call", note: "allowFailure:true returns per-call success flags instead of reverting the whole batch." },
+    ],
+    warnings: ["JSON-RPC array batching is NOT the same thing and is capped/disabled on many public endpoints — Multicall3 is the portable option."],
+  },
+
+  siwe_auth: {
+    topic: "siwe_auth",
+    title: "Wallet-based auth: SIWE and lightweight signature gates",
+    summary: "Prove wallet ownership to a server: full EIP-4361 Sign-In with Ethereum, or the minimal dated-message pattern used by this server's NFT gate.",
+    scope: ["evm"],
+    prerequisites: ["viem"],
+    steps: [
+      { title: "Minimal stateless gate (what this server uses)", command: "message = `crypto-knowledge-auth ${wallet.toLowerCase()} ${new Date().toISOString().slice(0,10)}`\nsignature = await account.signMessage({ message })\n// send headers: X-Wallet + X-Wallet-Signature", note: "Server side: verifyMessage({ address, message, signature }) + an on-chain check (e.g. balanceOf) — no session state, replayable only within the date window." },
+      { title: "Full SIWE (EIP-4361) for real sessions", note: "Use the standard message format (domain, address, uri, version, chainId, nonce, issuedAt) with a server-issued nonce to prevent replay; libraries: siwe (npm) or viem's siwe utilities." },
+      { title: "Verify supporting smart wallets too", command: "publicClient.verifyMessage({ address, message, signature })", note: "Falls back to EIP-1271 isValidSignature for contract wallets automatically." },
+    ],
+    references: ["https://eips.ethereum.org/EIPS/eip-4361"],
+  },
+
+  opensea_api: {
+    topic: "opensea_api",
+    title: "Use the OpenSea API + MCP server (NFT data, prices, agent-tool discovery)",
+    summary: "Query NFT/collection data, floor prices, swaps and the ERC-8257 agent-tool registry — with a free API key issued WITHOUT signup.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Get a free API key (no account needed)", command: "curl -X POST https://api.opensea.io/api/v2/auth/keys", note: "Free tier: ~60 reads/min, 5 writes/min. Send it as x-api-key header on every request." },
+      { title: "REST: collection data + floor price", command: "curl -s https://api.opensea.io/api/v2/collections/{slug} -H 'x-api-key: KEY'", note: "Other groups: /chain/{chain}/account/{address}/nfts, listings/offers (Seaport), events (sales/transfers), swap quotes." },
+      { title: "MCP: connect an agent directly", command: "https://mcp.opensea.io/mcp  (Streamable HTTP; auth X-API-KEY or Bearer)", note: "Tools include token prices/swaps, collection research, wallet portfolios, trending assets, drops and SEARCHING the ERC-8257 agent-tool registry. Remember: Accept: application/json, text/event-stream." },
+      { title: "Discover other agent tools on-chain", note: "The ERC-8257 ToolRegistry (see reference kind='addresses') is the source of truth; OpenSea surfaces it at opensea.io/tools. To publish YOUR tool there, follow the register_onchain_tool guide." },
+    ],
+    references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
+  },
+
   bridge_funds: {
     topic: "bridge_funds",
     title: "Move funds across chains",

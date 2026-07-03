@@ -25,8 +25,12 @@ const NORMIES = "0x9Eb6E2025B64f340691e424b7fe7022fFDE12438" as const;
 // Muster: SEPARATE Tools pro Capability mit konkretem Schema. Erstes Tool:
 // "Crypto-Knowledge Security" (Anti-Rug-Scanner) mit eigener REST-Route
 // api/tools/security.ts (gleiches Holder/x402-Gate) und konkretem inputs-Schema.
-const URI = "https://crypto-knowledge-mcp.vercel.app/.well-known/ai-tool/crypto-knowledge-security.json";
-const HASH = "0xfd49b0dd96360d40a8c1009c60fed3dfa2d48486b17595f585e19248bf50f7e3" as Hex;
+// Runde 11 (2026-07-03, Philipps Richtungsentscheid): Fokus = CHAIN-BRAIN, nicht Security.
+// Neues Tool "Crypto-Knowledge" (Wissens-Lookup: 18 Runbooks + 4 Referenz-Tabellen via
+// api/tools/knowledge.ts, list_topics frei, Rest gated). Security-Listing #70 wird erst
+// NACH erfolgreichem Listing des Brains deregistriert.
+const URI = "https://crypto-knowledge-mcp.vercel.app/.well-known/ai-tool/crypto-knowledge.json";
+const HASH = "0x324058c0b970812f21e1b3b297c0b7133188ce8a21cc3eddc51cab9c2a774c5c" as Hex;
 
 const REGISTRY_ABI = parseAbi([
   "function registerTool(string metadataURI, bytes32 manifestHash, address accessPredicate) returns (uint256 toolId)",
