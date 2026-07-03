@@ -11,13 +11,11 @@ import { privateKeyToAccount } from "viem/accounts";
 import { mainnet } from "viem/chains";
 
 const REGISTRY = "0x265BB2DBFC0A8165C9A1941Eb1372F349baD2cf1" as const;
-// #55/#59/#60 wurden 2026-07-02 deregistriert (nie von OpenSea indexiert — #55: falsches
-// URI-Format, #59: un-namespaced Manifest-Felder, #60: crypto-knowledge.json-URI in OpenSeas
-// Fehler-Cache) und final als #62 mit frischer onchain-brain.json-URI registriert.
-const TOOL_ID = 62n;
-// OpenSea indexiert nur das well-known ai-tool-Pfadformat (wie SwarmSkill #25 / AgentRoom #41);
-// der Pfad ist ein vercel.json-Rewrite auf erc8257-manifest.json — gleicher Inhalt, gleicher Hash.
-const URI = "https://crypto-knowledge-eight.vercel.app/.well-known/ai-tool/onchain-brain.json";
+// Seit 2026-07-03 ist das gelistete Tool #71 „Crypto-Knowledge" (das Chain-Brain,
+// Creator #2 0x6f35… — PRIVATE_KEY aus Vault-Abschnitt „Tool-Creator #2" nehmen!).
+// Manifest-Änderungen: Datei editieren → deploy → Hash via tool-sdk@latest → dieses Skript.
+const TOOL_ID = 71n;
+const URI = "https://crypto-knowledge-mcp.vercel.app/.well-known/ai-tool/crypto-knowledge.json";
 
 const ABI = parseAbi([
   "function updateToolMetadata(uint256 toolId, string metadataUrl, bytes32 manifestHash)",

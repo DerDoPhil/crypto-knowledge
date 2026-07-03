@@ -336,6 +336,76 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  bitcoin_basics: {
+    topic: "bitcoin_basics",
+    title: "Bitcoin for agents: UTXOs, fees, PSBT, broadcasting (keyless APIs)",
+    summary: "Everything an agent needs to build and send Bitcoin transactions correctly — address types, sat/vB fees from mempool.space, the PSBT workflow with bitcoinjs-lib, dust and RBF rules.",
+    scope: ["bitcoin"],
+    prerequisites: ["Node 20+, npm i bitcoinjs-lib ecpair tiny-secp256k1 (for building)"],
+    steps: [
+      { title: "Know the address types", note: "P2PKH (1…, legacy, largest vsize), P2SH (3…), P2WPKH (bc1q…, segwit, cheap), P2TR (bc1p…, taproot). Prefer bc1q/bc1p for lower fees; validate with a bech32/bech32m decoder, not regex." },
+      { title: "Fetch the feerate — never guess", command: "curl -s https://mempool.space/api/v1/fees/recommended", note: "Returns sat/vB tiers (fastest/halfHour/hour/economy/minimum). Total fee = feerate × estimated vsize. Bitcoin fees are per VBYTE, not per tx." },
+      { title: "Fetch spendable UTXOs", command: "curl -s https://mempool.space/api/address/{addr}/utxo", note: "Bitcoin has NO account balance on-chain — you spend concrete UTXOs and send change back to yourself. Forgetting the change output donates it to miners." },
+      { title: "Build + sign with PSBT", command: "const psbt = new bitcoin.Psbt({ network });\npsbt.addInput({ hash, index, witnessUtxo: { script, value } });\npsbt.addOutput({ address: dest, value: amount });\npsbt.addOutput({ address: changeAddr, value: total - amount - fee });\npsbt.signAllInputs(keyPair); psbt.finalizeAllInputs();\nconst rawHex = psbt.extractTransaction().toHex();", note: "For segwit inputs witnessUtxo is required; legacy inputs need nonWitnessUtxo (the full previous tx)." },
+      { title: "Broadcast (two independent keyless endpoints)", command: "curl -s -X POST https://mempool.space/api/tx --data-binary $rawHex\n# failover: curl -s -X POST https://blockstream.info/api/tx --data-binary $rawHex" },
+      { title: "Stuck tx? Use RBF", note: "If the tx signals replaceability (sequence < 0xfffffffe), rebuild with the SAME inputs and a higher feerate. Otherwise CPFP: spend the change output with a high-fee child." },
+    ],
+    warnings: [
+      "Outputs below the dust limit (~546 sats P2PKH / ~294 sats P2WPKH) are rejected by relay policy.",
+      "Testnet coordinates: use mempool.space/testnet4/api and bitcoin.networks.testnet.",
+    ],
+    references: ["https://mempool.space/docs/api", "https://github.com/bitcoinjs/bitcoinjs-lib"],
+  },
+
+  chaintrade_p2p_swap: {
+    topic: "chaintrade_p2p_swap",
+    title: "P2P swap of NFTs/tokens with escrow protection (ChainTrade)",
+    summary: "Trustless peer-to-peer trades — NFT for token, token for token, incl. cross-chain — via ChainTrade's V2 escrow contracts. This server builds the unsigned transactions.",
+    scope: ["evm"],
+    prerequisites: ["A funded wallet on the escrow chain"],
+    steps: [
+      { title: "Understand the model", note: "The maker locks assets in an audited escrow contract; a relayer releases to the taker when both sides are locked, or the maker refunds after expiry. No custody by any party. Platform fee: 5% on fungibles; NFTs transfer whole (fee taken on the fungible side)." },
+      { title: "Escrow contracts (V2, live)", command: "ethereum: 0x51A425f516aa3D95B76665D1Bad3Ea56E57be4b6\nbase:     0xD7c9a6b38568c03fbA1f08f4159dD2c032411Ac9\npolygon/arbitrum/apechain: 0x9B2EA7B176D727459233469c88c7352fb060b85B", note: "Same UI for all chains: https://chaintrade.vercel.app" },
+      { title: "Build the lock tx with this server", command: "call tool \"chaintrade\" { action: 'build_lock_eth' | 'build_lock_erc20' | 'build_lock_erc721', chain, offerHash, … }", note: "Returns unsigned transactions (approval + lock where needed) that YOU sign. action 'info' explains the flow, 'get_trade' reads on-chain state." },
+      { title: "Refund path", command: "call tool \"chaintrade\" { action: 'build_refund', chain, offerHash }", note: "Only possible after the trade's expiry — funds are never stuck." },
+    ],
+    warnings: ["ERC-20/721 locks need the approval tx mined BEFORE the lock tx.", "Verify the trade's offerHash and counterparty details before locking — locks are binding until expiry."],
+    references: ["https://chaintrade.vercel.app"],
+  },
+
+  pumpfun_token2022_gotchas: {
+    topic: "pumpfun_token2022_gotchas",
+    title: "pump.fun + Token-2022 trading gotchas (Solana)",
+    summary: "The traps that break naive pump.fun/SPL bots: Token-2022 mints, ATA rent, real launch costs, micro-trade economics.",
+    scope: ["solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Detect the token program — never assume", note: "New pump.fun-era tokens are often Token-2022. The OWNER of the mint account IS the token program (TokenkegQ… = classic SPL, TokenzQdB… = Token-2022). Instructions/ATAs built for the wrong program fail." },
+      { title: "Create ATAs up front", note: "Each new token account costs ~0.002 SOL rent. For small trades, pre-create ATAs so rent + priority fees don't eat the position." },
+      { title: "Budget real launch costs", note: "A pump.fun token creation costs ~0.009 SOL in rent (NOT free) — 0.1 SOL funds only ~11 launches." },
+      { title: "Check quote currency", note: "Some pump.fun coins are USDC-quoted, not SOL-quoted — a SOL-denominated buy path rejects or mis-prices them." },
+      { title: "Read curve state before trading", command: "call tool \"pumpfun\" { mint }", note: "Returns bonding-curve state, price and graduation progress; graduated tokens trade via regular DEX routing (solana_swap tool)." },
+      { title: "Congestion handling", note: "Add a compute-unit price (priority fee) and re-fetch the blockhash right before signing; blockhashes expire in ~60-90s." },
+    ],
+    warnings: ["Never run two bots on the same wallet — parallel sells collide on the same ATAs/nonces."],
+  },
+
+  vercel_dapp_deploy_gotchas: {
+    topic: "vercel_dapp_deploy_gotchas",
+    title: "Deploying Web3 dApps/APIs on Vercel — the gotchas",
+    summary: "Field-tested fixes for the failures that only show up when a chain-touching app hits Vercel's serverless runtime.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "@solana/web3.js may not bundle", note: "Its rpc-websockets dependency can crash serverless builds with ERR_REQUIRE_ESM. Fixes: use pure-JS crypto (@noble/curves + @noble/hashes + bs58) for PDAs/keys, or pin/alias the dependency in your bundler config." },
+      { title: "Pin your toolchain to Node 20+", note: "Solana tooling and modern viem stacks assume Node 20; set \"engines\" and the Vercel project's Node version explicitly." },
+      { title: "Extra .vercel.app domains: assign to the PROJECT", command: "npx vercel domains add <name>.vercel.app <project>", note: "Without the project argument the domain lands in the team scope and serves 404; assigned as a project domain it serves your production deployment. Never use `vercel alias` for this (401 traps)." },
+      { title: "Serve .well-known files statically", note: "Put manifests/verification files as REAL files under public/.well-known/ — rewrites/redirects break strict fetchers (OpenSea's ERC-8257 indexer follows no redirects at all)." },
+      { title: "Pin CDN scripts", note: "Unpinned CDN dependencies (e.g. a Babel standalone) break silently on new majors — always pin exact versions in <script src>." },
+      { title: "Health-check external services after deploy", command: "curl -sf https://<app>/api/<health> && curl -s <manifest-url> | sha256sum", note: "Serverless cold starts + env drift are the top post-deploy failure sources; verify live behavior, not build success." },
+    ],
+  },
+
   bridge_funds: {
     topic: "bridge_funds",
     title: "Move funds across chains",

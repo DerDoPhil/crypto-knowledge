@@ -189,6 +189,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "See rpc_gotchas: eth_getLogs and archive calls are heavily restricted on free tiers.",
   },
   {
+    name: "Solana public RPC",
+    baseUrl: "https://api.mainnet-beta.solana.com",
+    auth: "none",
+    what: "Official public JSON-RPC (getBalance, getTokenAccountsByOwner, sendTransaction, getRecentPrioritizationFees for priority-fee tuning).",
+    example: 'POST {"jsonrpc":"2.0","id":1,"method":"getRecentPrioritizationFees","params":[[]]}',
+    limits: "Strictly rate-limited and no historical data — production agents should bring a free Helius/Alchemy/QuickNode key. publicnode alternative: https://solana-rpc.publicnode.com.",
+  },
+  {
     name: "MEV-protected RPCs (Ethereum)",
     baseUrl: "https://rpc.flashbots.net",
     auth: "none",
@@ -208,6 +216,22 @@ export const ENDPOINTS: EndpointEntry[] = [
     what: "NFT/collection data, floor prices, listings/offers, events, swap quotes across chains.",
     example: "GET /collections/{slug} with header x-api-key: KEY — a free key is issued WITHOUT signup: POST /auth/keys",
     limits: "Free tier ~60 reads/min, 5 writes/min.",
+  },
+  {
+    name: "mempool.space (Bitcoin)",
+    baseUrl: "https://mempool.space/api",
+    auth: "none",
+    what: "Bitcoin fees, addresses, transactions, blocks — fully keyless.",
+    example: "GET /v1/fees/recommended → {fastestFee, halfHourFee, hourFee, economyFee, minimumFee} in sat/vB; GET /address/{addr}; POST /tx (broadcast raw hex)",
+    limits: "Generous public tier; self-hostable.",
+  },
+  {
+    name: "Blockstream Esplora (Bitcoin)",
+    baseUrl: "https://blockstream.info/api",
+    auth: "none",
+    what: "Second independent keyless Bitcoin API (same Esplora schema): addresses, UTXOs, tx broadcast, blocks.",
+    example: "GET /blocks/tip/height; GET /address/{addr}/utxo; POST /tx",
+    limits: "Use as failover for mempool.space (and vice versa).",
   },
   {
     name: "OpenSea MCP server",
@@ -275,6 +299,16 @@ export const COMMON_ERRORS: ErrorEntry[] = [
     pattern: "eth_getLogs: range/limit errors on public RPCs",
     cause: "Free tiers cap block ranges hard (or require archive access).",
     fix: "Chunk requests (drpc.org free allows <=10k blocks; many others 500-2k; publicnode may require an archive token entirely). Filter by topic0 and address to shrink responses.",
+  },
+  {
+    pattern: "Bitcoin: dust output / min relay fee not met",
+    cause: "An output below the dust limit (~546 sats for P2PKH, ~294 for P2WPKH) or a tx paying under ~1 sat/vB is rejected by relay policy.",
+    fix: "Merge tiny outputs into change, and set the feerate from mempool.space /v1/fees/recommended (sat/vB × estimated vsize).",
+  },
+  {
+    pattern: "Bitcoin: bad-txns-inputs-missingorspent",
+    cause: "An input UTXO was already spent (race with another tx, e.g. an RBF replacement) or never existed.",
+    fix: "Re-fetch UTXOs (GET /address/{addr}/utxo) right before building; if you replaced a tx via RBF, the old inputs are gone.",
   },
   {
     pattern: "HTTP 429 / rate limited",

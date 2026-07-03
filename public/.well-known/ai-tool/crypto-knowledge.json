@@ -2,7 +2,7 @@
   "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
   "name": "Crypto-Knowledge",
   "description": "The on-chain brain for AI agents: retrieve correct, curated Web3 coding knowledge in one call instead of burning reasoning and search credits. Ready-to-run runbooks with real commands (wallets, EVM and Solana deploys, EIP-712 signing, ERC-20 allowance and permit flows, event logs, tx debugging, x402 machine payments, Multicall, SIWE, ERC-8257 tool registration) plus reference tables: canonical contract addresses, keyless free API endpoints with limits, and an error playbook.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/knowledge",
   "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
   "image": "https://crypto-knowledge-mcp.vercel.app/icon.png",
@@ -10,26 +10,74 @@
     "type": "object",
     "description": "POST this JSON body to the endpoint.",
     "properties": {
-      "action": { "type": "string", "enum": ["list_topics", "get_guide", "search", "reference"], "description": "list_topics (free) lists all guides and reference tables; get_guide returns one runbook; search matches titles/summaries; reference returns a curated table." },
-      "topic": { "type": "string", "description": "Guide id for get_guide, e.g. create_wallet, debug_failed_tx, x402_payments, register_onchain_tool." },
-      "query": { "type": "string", "description": "Free-text query for search." },
-      "kind": { "type": "string", "enum": ["addresses", "endpoints", "errors", "rpc_gotchas"], "description": "Reference table for action=reference." }
+      "action": {
+        "type": "string",
+        "enum": [
+          "list_topics",
+          "get_guide",
+          "search",
+          "reference"
+        ],
+        "description": "list_topics (free) lists all guides and reference tables; get_guide returns one runbook; search matches titles/summaries; reference returns a curated table."
+      },
+      "topic": {
+        "type": "string",
+        "description": "Guide id for get_guide, e.g. create_wallet, debug_failed_tx, x402_payments, register_onchain_tool."
+      },
+      "query": {
+        "type": "string",
+        "description": "Free-text query for search."
+      },
+      "kind": {
+        "type": "string",
+        "enum": [
+          "addresses",
+          "endpoints",
+          "errors",
+          "rpc_gotchas"
+        ],
+        "description": "Reference table for action=reference."
+      }
     },
-    "required": ["action"]
+    "required": [
+      "action"
+    ]
   },
   "outputs": {
     "type": "object",
     "description": "Uniform envelope.",
     "properties": {
-      "ok": { "type": "boolean", "description": "true on success" },
-      "data": { "type": "object", "description": "guide (title, steps with real commands, warnings, references) or reference table entries" },
-      "errors": { "type": "array", "description": "canonical error codes on failure" }
+      "ok": {
+        "type": "boolean",
+        "description": "true on success"
+      },
+      "data": {
+        "type": "object",
+        "description": "guide (title, steps with real commands, warnings, references) or reference table entries"
+      },
+      "errors": {
+        "type": "array",
+        "description": "canonical error codes on failure"
+      }
     }
   },
   "tags": [
-    "ai", "knowledge", "knowledge-base", "runbook", "developer-tools", "web3",
-    "crypto", "defi", "agent-tools", "ai-agents", "save-credits", "solana",
-    "ethereum", "base", "x402", "normies"
+    "ai",
+    "knowledge",
+    "knowledge-base",
+    "runbook",
+    "developer-tools",
+    "web3",
+    "crypto",
+    "defi",
+    "agent-tools",
+    "ai-agents",
+    "save-credits",
+    "solana",
+    "ethereum",
+    "base",
+    "x402",
+    "normies"
   ],
   "access": {
     "logic": "OR",
@@ -58,5 +106,14 @@
     "category": "Agent tools",
     "icon": "https://crypto-knowledge-mcp.vercel.app/icon.png"
   },
-  "io.dophil.docs": "https://crypto-knowledge-mcp.vercel.app/llms.txt"
+  "io.dophil.docs": "https://crypto-knowledge-mcp.vercel.app/llms.txt",
+  "pricing": [
+    {
+      "amount": "100000",
+      "asset": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "recipient": "eip155:8453:0xbC5CbC5434D3846BC445723e82B51b3932795e6d",
+      "protocol": "x402",
+      "description": "Per-request fee for non-Normies-holders: $0.10 USDC on Base via x402. Normies NFT holders are free; listing topics is free for everyone."
+    }
+  ]
 }
