@@ -53,6 +53,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "6 decimals everywhere. Beware bridged variants (USDC.e) with different addresses — these are the native Circle mints.",
   },
   {
+    name: "Chainlink ETH/USD price feed (Ethereum)",
+    addresses: { ethereum: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" },
+    note: "latestRoundData() selector 0xfeaf968c; answer has 8 decimals. Look up ALL other feed addresses at data.chain.link — do NOT guess them (see the chainlink_price_feeds guide).",
+  },
+  {
     name: "ENS Registry",
     addresses: { ethereum: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e" },
     note: "resolver(node) → resolver contract → addr(node). viem has getEnsAddress/getEnsName built in.",
@@ -94,9 +99,9 @@ export const ENDPOINTS: EndpointEntry[] = [
     name: "DefiLlama prices",
     baseUrl: "https://coins.llama.fi",
     auth: "none",
-    what: "Current + historical token prices by {chain}:{address}, fully keyless.",
-    example: "GET /prices/current/ethereum:0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-    limits: "Generous; batch up to ~100 coins per call.",
+    what: "Current + historical token prices, fully keyless. Keys are {chain}:{address} for on-chain tokens or coingecko:{id} for native assets (coingecko:bitcoin, coingecko:ethereum).",
+    example: "GET /prices/current/ethereum:0xA0b8…,coingecko:bitcoin (batch, comma-separated); /prices/historical/{ts}/{coins}; /chart/{coins}?span=…",
+    limits: "Generous; batch up to ~100 coins per call; returns decimals + confidence per coin.",
   },
   {
     name: "DefiLlama protocols/TVL",

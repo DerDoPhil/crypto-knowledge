@@ -336,6 +336,39 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  eth_jsonrpc_cheatsheet: {
+    topic: "eth_jsonrpc_cheatsheet",
+    title: "Ethereum JSON-RPC methods that matter (and their traps)",
+    summary: "The execution-layer RPC methods agents actually need — fee estimation done right, state overrides, storage reads — with the gotchas that cost real money.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "EIP-1559 fees: use eth_feeHistory, not gasPrice", command: '{"method":"eth_feeHistory","params":["0x5","latest",[25,75]]}', note: "Returns baseFeePerGas history + priority-fee percentiles of real blocks. maxPriorityFeePerGas ≈ 75th percentile, maxFeePerGas ≈ 2×latestBaseFee + priority. eth_gasPrice is legacy and overpays." },
+      { title: "eth_call with state overrides (3rd param)", command: '{"method":"eth_call","params":[{to, data}, "latest", {"0xYourAddr": {"balance": "0xDE0B6B3A7640000"}}]}', note: "Simulate as if an address had balance/code/storage — test a swap without owning the tokens. Not all public RPCs support the override param." },
+      { title: "Read raw storage slots", command: '{"method":"eth_getStorageAt","params":[contract, slot, "latest"]}', note: "EIP-1967 proxy implementation slot: 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc (this server's abi tool follows it automatically)." },
+      { title: "Receipts tell the truth", command: '{"method":"eth_getTransactionReceipt","params":[txHash]}', note: "status 0x1/0x0, effectiveGasPrice, logs. A tx can 'succeed' while an inner call failed silently IF the contract swallows reverts — always check emitted events, not just status." },
+      { title: "Pending state exists", note: "Use block tag 'pending' for nonce (eth_getTransactionCount) when firing sequential txs; 'latest' gives you the mined nonce and causes 'nonce too low' races." },
+      { title: "What free RPCs won't do", note: "debug_traceTransaction / trace_* need archive+debug nodes (paid tiers); eth_getLogs is range-capped (see rpc_gotchas reference). Plan around it: use this server's simulate tool + receipts." },
+    ],
+    references: ["https://ethereum.org/en/developers/docs/apis/json-rpc/"],
+  },
+
+  chainlink_price_feeds: {
+    topic: "chainlink_price_feeds",
+    title: "Read on-chain prices from Chainlink feeds (without guessing addresses)",
+    summary: "The safe pattern for on-chain price data: verified feed lookup, latestRoundData decoding, staleness checks — plus when to prefer a keyless HTTP price API instead.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Look up the feed address — NEVER guess it", note: "Feed proxies differ per chain and get migrated. Verified directory: https://data.chain.link (and docs.chain.link/data-feeds/price-feeds/addresses). Example verified anchor: ETH/USD on Ethereum = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419." },
+      { title: "Call latestRoundData()", command: "selector 0xfeaf968c → (roundId, int256 answer, startedAt, updatedAt, answeredInRound)", note: "answer for USD pairs has 8 decimals (price = answer / 1e8). Verify decimals() (0x313ce567) if unsure." },
+      { title: "ALWAYS check staleness", note: "Reject if now - updatedAt exceeds the feed's heartbeat (ETH/USD: ~1h) — a stale answer during volatility is worse than no answer." },
+      { title: "Off-chain alternative (no RPC needed)", command: "GET https://coins.llama.fi/prices/current/coingecko:ethereum", note: "For agent logic that doesn't need on-chain trust, DefiLlama/CoinGecko are keyless and batchable — cheaper than an eth_call per price." },
+    ],
+    warnings: ["A feed address that returns 0x on eth_call is wrong or deprecated — this exact check caught a wrong 'well-known' BTC/USD address during curation of this guide."],
+    references: ["https://data.chain.link", "https://docs.chain.link/data-feeds"],
+  },
+
   erc_standards_cheatsheet: {
     topic: "erc_standards_cheatsheet",
     title: "ERC interface IDs, selectors and events — the exact constants",
