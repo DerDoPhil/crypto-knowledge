@@ -350,6 +350,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "For validator/staking data — execution-layer data stays on JSON-RPC.",
   },
   {
+    name: "Jito Block Engine (Solana MEV bundles)",
+    baseUrl: "https://mainnet.block-engine.jito.wtf/api/v1",
+    auth: "none",
+    what: "Submit atomic transaction BUNDLES with tips to land txs during congestion / do MEV on Solana — keyless (live-verified).",
+    example: 'POST /bundles {"method":"getTipAccounts"} → tip accounts; sendBundle for an atomic tx group (all-or-nothing).',
+    limits: "Add a tip transfer to a tip account so validators include your bundle; higher tip = better landing odds.",
+  },
+  {
     name: "Jito (Solana MEV / liquid staking)",
     baseUrl: "https://kobe.mainnet.jito.network/api/v1",
     auth: "none",
@@ -649,7 +657,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Market, DeFi & social data": ["defi_yield_research", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social"],
   "Staking": ["solana_staking", "eth_staking"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
-  "Trading & strategies": ["arbitrage_basics", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Trading & strategies": ["arbitrage_basics", "trading_bot_architecture", "mev_strategies", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Security": ["price_oracle_safety", "wallet_security_checklist"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],

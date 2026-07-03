@@ -750,6 +750,41 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.jito.network", "https://docs.marinade.finance"],
   },
 
+  trading_bot_architecture: {
+    topic: "trading_bot_architecture",
+    title: "Build a trading bot that doesn't lose money to its own bugs",
+    summary: "The operational skeleton for sniper / copy-trading / grid bots — the parts that matter more than the strategy: idempotency, risk limits, and not getting rugged by your own infra.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "The loop", note: "detect (WS subscription / mempool / event poll) → decide (strategy + risk checks) → simulate → sign → submit → CONFIRM → record. Never skip simulate/confirm: unconfirmed 'fire and forget' is how bots double-spend or think they hold a position they don't (tx_confirmation_patterns)." },
+      { title: "Idempotency & crash safety", note: "Persist intent (what you're about to do) BEFORE submitting, and the tx id AFTER. On restart, reconcile against chain state — never blindly re-fire. A crashed bot that re-buys on reboot is a classic self-inflicted loss." },
+      { title: "Hard risk limits, enforced in code", note: "Max position size, max slippage, per-token exposure cap, daily loss stop, and a global kill-switch. Pre-flight every counterparty token with the security tool. Sniping a fresh token WITHOUT an anti-rug scan = donating to a honeypot." },
+      { title: "Bot types, briefly", note: "SNIPER: react to a launch (Solana: onLogs the pump.fun program; EVM: mempool/launch event) — speed + priority fees decide. COPY-TRADE: watch a wallet's txs and mirror with size scaling + a blocklist. GRID/DCA: schedule buys/sells around a range — the safest, no latency race." },
+      { title: "Infra realities", note: "Bring your own funded RPC (public RPCs rate-limit you out mid-trade). Submit sensitive txs privately (Flashbots/MEV-Blocker on EVM, Jito bundles on Solana — reference kind='endpoints') so you aren't the one getting sandwiched. Keys in a secret manager, hot wallet holds working capital only (wallet_security_checklist)." },
+    ],
+    warnings: [
+      "Backtests lie: real fills include slippage, MEV, failed-tx gas and latency. Paper-trade live before risking size.",
+      "A public-mempool bot broadcasts its strategy — competitors frontrun it. Private submission is not optional for profitable signals.",
+    ],
+  },
+
+  mev_strategies: {
+    topic: "mev_strategies",
+    title: "MEV explained: sandwich, backrun, liquidation — attack and DEFENSE",
+    summary: "What MEV searchers do to your transactions and how an agent both avoids being a victim and (where legitimate) captures it.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "The main forms", note: "SANDWICH: a searcher buys before your swap (pushing price up) and sells after — you get a worse fill, they pocket the difference. BACKRUN: they trade right after a big price-moving tx (arb/liquidation). LIQUIDATION: they repay an underwater loan to claim the collateral bonus (defi_lending)." },
+      { title: "DEFENSE (do this by default)", note: "1) Private submission: Flashbots Protect / MEV-Blocker RPC (EVM), Jito bundles (Solana) — your tx skips the public mempool so it can't be sandwiched. 2) Tight slippage: a small maxSlippage caps how much a sandwich can extract (too tight = failed tx; balance it). 3) Use aggregators/CoW Swap that batch and MEV-protect natively." },
+      { title: "CAPTURE (the legitimate side)", note: "Backrunning arbitrage and liquidations are permissionless and non-predatory. Landing them needs bundle submission (Flashbots bundles / Jito) with a competitive tip, and atomic revert-if-unprofitable execution (arbitrage_basics)." },
+      { title: "Measure your exposure", command: "call tool \"mev_protection\" { chain } for per-chain sandwich risk + the right private RPC", note: "High-value swaps on public mempools are the ones that get hit; route them privately." },
+    ],
+    warnings: ["Sandwiching ordinary users is predatory and, increasingly, reputationally/legally risky. This guide is for DEFENDING against it and capturing the legitimate (arb/liquidation) forms."],
+    references: ["https://docs.flashbots.net", "https://docs.jito.network"],
+  },
+
   prediction_markets: {
     topic: "prediction_markets",
     title: "Prediction markets for agents: read probabilities, trade, resolve (Polymarket)",
