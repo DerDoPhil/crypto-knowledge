@@ -399,6 +399,49 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  crosschain_message_tracking: {
+    topic: "crosschain_message_tracking",
+    title: "Track cross-chain messages & bridge transfers (LayerZero, Wormhole)",
+    summary: "How an agent confirms an omnichain action actually delivered on the destination — the keyless scan APIs and the 'source-confirmed ≠ delivered' trap.",
+    scope: ["evm", "solana"],
+    prerequisites: [],
+    steps: [
+      { title: "The two-sided reality", note: "A cross-chain tx has TWO confirmations: source (message sent) and destination (message delivered/executed). Your source receipt says nothing about delivery — poll the messaging-layer scan, not just the source chain." },
+      { title: "LayerZero messages", command: "GET https://scan.layerzero-api.com/v1/messages?srcTxHash=0x… → status per message (INFLIGHT / DELIVERED / FAILED)", note: "Keyless (live-verified). GUID identifies the message across both chains." },
+      { title: "Wormhole VAAs", command: "GET https://api.wormholescan.io/api/v1/vaas?limit=1 (or by tx) → the signed VAA + redemption status", note: "A VAA existing = guardians signed; it still must be REDEEMED on the destination to complete. Keyless (live-verified)." },
+      { title: "Prefer a router for the actual move", command: "call tool \"route\" (LiFi + deBridge)", note: "It returns the ready-to-sign tx AND abstracts the delivery mechanism; use the scan APIs above to observe/debug an in-flight transfer." },
+    ],
+    warnings: ["Some bridges auto-redeem on the destination, others require a manual claim tx — check the specific bridge before assuming funds arrive by themselves."],
+  },
+
+  perps_funding_data: {
+    topic: "perps_funding_data",
+    title: "Read perp funding rates & derivatives data (keyless)",
+    summary: "Where agents get funding rates for basis trades and sentiment — on-chain (Hyperliquid) and CEX (Binance/Bybit), all keyless.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "On-chain perps: Hyperliquid", command: 'POST https://api.hyperliquid.xyz/info {"type":"predictedFundings"} → per-asset current + predicted funding across venues', note: "Keyless (live-verified). {\"type\":\"metaAndAssetCtxs\"} gives mark prices, open interest, oracle prices." },
+      { title: "CEX funding (keyless)", command: "GET https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1  (live-verified)\nGET https://api.bybit.com/v5/market/funding/history?category=linear&symbol=BTCUSDT", note: "fundingRate is per interval (usually 8h on CEXes, 1-8h on Hyperliquid — check fundingIntervalHours)." },
+      { title: "Interpret the sign", note: "Positive funding = longs pay shorts (bullish crowding); negative = shorts pay longs. Extreme funding is a mean-reversion / squeeze signal, not a directional guarantee." },
+      { title: "Basis-trade sanity", note: "Funding is annualized as rate × intervals/year. Compare against the cost of the hedge (spot borrow + gas) before calling it 'free yield'." },
+    ],
+  },
+
+  dao_governance_data: {
+    topic: "dao_governance_data",
+    title: "Query DAO governance (proposals, votes) with Snapshot & Tally",
+    summary: "How an agent reads what a DAO is voting on and how — off-chain (Snapshot, keyless) and on-chain (Tally).",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Snapshot: off-chain votes (keyless)", command: 'POST https://hub.snapshot.org/graphql {"query":"{ proposals(first:5, where:{space:\\"aave.eth\\", state:\\"active\\"}){ id title choices scores end } }"}', note: "Live-verified. Most large DAOs signal on Snapshot (gasless); scores = current vote weight per choice." },
+      { title: "Find a space", command: '{"query":"{ spaces(first:5, where:{}){ id name followersCount } }"}', note: "space id is usually an ENS name (aave.eth, uniswapgovernance.eth)." },
+      { title: "On-chain execution: Tally / Governor", note: "Binding votes run through OpenZeppelin Governor contracts (proposal → vote → queue → execute via Timelock). Tally (api.tally.xyz, free key) indexes these; or read the Governor contract directly with the abi tool." },
+      { title: "Voting power", note: "Snapshot strategies compute power off-chain (token balance, delegation, quadratic …) — the 'scores' already reflect the space's strategy; don't re-derive from raw balances." },
+    ],
+  },
+
   deterministic_deploys_create2: {
     topic: "deterministic_deploys_create2",
     title: "Deploy a contract to the SAME address on every chain (CREATE2/CREATE3)",
