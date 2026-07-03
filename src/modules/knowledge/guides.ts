@@ -210,6 +210,41 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  eip7702_smart_eoas: {
+    topic: "eip7702_smart_eoas",
+    title: "EIP-7702: give a normal EOA smart-account powers (Pectra)",
+    summary: "The post-Pectra upgrade that lets a regular wallet temporarily act as a smart account — batching, sponsorship, session keys — and the security cliff it introduces.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "What it does", note: "A new tx type (0x04, SetCode) lets an EOA set its code to POINT AT a smart-contract implementation via a signed authorization. The EOA keeps its address but executes like that contract — batching, gas sponsorship and session keys without deploying a new wallet or migrating funds." },
+      { title: "The authorization", note: "The account signs an authorization tuple (chainId, implementation address, nonce). chainId 0 = valid on all chains (dangerous — see warnings). A relayer/bundler can then submit txs that run the delegated code." },
+      { title: "Delegation is persistent until changed", note: "Unlike a one-shot meta-tx, the delegation STAYS set until the EOA signs a new authorization (including to address(0) to clear it). Your EOA now has code — dapps checking `extcodesize == 0` for 'is EOA' will misjudge it." },
+      { title: "Use a vetted implementation", note: "Point ONLY at an audited delegate (e.g. from a wallet vendor). The implementation has full control of the account when invoked — a malicious one drains everything." },
+      { title: "Tooling", note: "viem supports 7702 (walletClient.signAuthorization + sendTransaction with authorizationList). Combine with ERC-4337 stacks for full AA UX." },
+    ],
+    warnings: [
+      "Signing a chainId-0 authorization to a malicious contract is a full account takeover across ALL chains — treat 7702 auth signatures like handing over your keys.",
+      "Live since the Pectra upgrade; support varies by chain and RPC — verify the target chain enables type-0x04 before relying on it.",
+    ],
+    references: ["https://eips.ethereum.org/EIPS/eip-7702"],
+  },
+
+  solana_pay: {
+    topic: "solana_pay",
+    title: "Solana Pay: request payments via URL / QR (transaction requests)",
+    summary: "The two Solana Pay flows — simple transfer requests and interactive transaction requests — for agent checkout and machine payments on Solana.",
+    scope: ["solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Transfer request (static)", command: "solana:<recipient>?amount=0.1&spl-token=<mint>&reference=<pubkey>&label=Store&message=Order%23123", note: "Encode as a URL/QR; the wallet builds a plain transfer. `reference` (a unique pubkey) lets you find the tx later via getSignaturesForAddress without a callback." },
+      { title: "Transaction request (interactive)", note: "A URL pointing to YOUR https endpoint: GET returns {label, icon}; POST {account} returns a base64 serialized transaction for the wallet to sign. This is how you charge for arbitrary program interactions, not just transfers." },
+      { title: "Detect payment settled", command: "poll getSignaturesForAddress(reference) → then validate the tx transfers the expected amount to the expected recipient", note: "Match amount + recipient + reference before fulfilling — never trust the client's 'paid' claim." },
+      { title: "Agent-to-agent alternative", note: "For pure machine payments prefer x402 (HTTP-native, see x402_payments); Solana Pay shines for wallet/QR human-in-the-loop or on-chain-native checkout." },
+    ],
+    references: ["https://docs.solanapay.com"],
+  },
+
   eip712_signing: {
     topic: "eip712_signing",
     title: "Sign and verify EIP-712 typed data",

@@ -58,6 +58,14 @@ export const ADDRESSES: AddressEntry[] = [
     note: "6 decimals everywhere. Beware bridged variants (USDC.e) with different addresses — these are the native Circle mints.",
   },
   {
+    name: "Pyth Hermes (cross-chain price oracle, keyless)",
+    baseUrl: "https://hermes.pyth.network",
+    auth: "none",
+    what: "Low-latency price feeds for 100s of assets as signed price-update payloads — pull-based oracle used on Solana AND EVM (live-verified).",
+    example: "GET /v2/updates/price/latest?ids[]=<priceFeedId> → binary VAA + parsed price; feed IDs at pyth.network/developers/price-feed-ids",
+    limits: "Keyless. On-chain you submit the returned update to the Pyth contract; off-chain use the parsed price directly.",
+  },
+  {
     name: "Chainlink ETH/USD price feed (Ethereum)",
     addresses: { ethereum: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" },
     note: "latestRoundData() selector 0xfeaf968c; answer has 8 decimals. Look up ALL other feed addresses at data.chain.link — do NOT guess them (see the chainlink_price_feeds guide).",
