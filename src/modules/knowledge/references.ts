@@ -296,6 +296,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "See the x402_payments guide for the full client+server flow.",
   },
   {
+    name: "x402 Router (multi-chain facilitator aggregator)",
+    baseUrl: "https://x402.wgw.lol",
+    auth: "none",
+    what: "One facilitator endpoint that routes x402 verify/settle across chains and providers (Ethereum mainnet with ~1-2s settlement + gas sponsoring, Base, Solana, testnets) — sellers keep their own provider keys; the hosted router stores none.",
+    example: "GET /supported → x402Version 2 kinds per network (eip155:1, …) + extensions (gas sponsoring, bazaar); POST /verify + /settle as usual. Self-hostable: @tunnckocore/x402-router (FSL license).",
+    limits: "Alternative to a single facilitator like xpay when you need multi-chain or mainnet settlement.",
+  },
+  {
     name: "Cloudflare Monetization Gateway (waitlist)",
     baseUrl: "https://blog.cloudflare.com/monetization-gateway/",
     auth: "free-key",
