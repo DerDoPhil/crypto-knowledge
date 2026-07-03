@@ -718,6 +718,37 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://mempool.space/docs/api", "https://github.com/bitcoinjs/bitcoinjs-lib"],
   },
 
+  bitcoin_ordinals_runes: {
+    topic: "bitcoin_ordinals_runes",
+    title: "Bitcoin metaprotocols: Ordinals, Runes, BRC-20 (query & basics)",
+    summary: "What the Bitcoin metaprotocols actually are and how an agent reads inscription/rune/BRC-20 data now that Hiro's API is gone.",
+    scope: ["bitcoin"],
+    prerequisites: [],
+    steps: [
+      { title: "The three, briefly", note: "ORDINALS = arbitrary data 'inscribed' onto individual sats (NFT-like). RUNES = a native fungible-token protocol encoded in OP_RETURN (post-halving, UTXO-based, efficient). BRC-20 = older fungible standard built ON TOP of ordinal inscriptions (JSON in inscriptions) — heavier than Runes, still has volume." },
+      { title: "Query data (Hiro Ordinals API is DEPRECATED — returns 410)", command: "GET https://api.ordiscan.com/v1/address/{btc-addr}/inscriptions | /runes | /brc20", note: "Ordiscan is the practical replacement: keyless via x402 micro-pay (unpaid call → HTTP 402, live-verified) or a free key. Magic Eden also exposes ordinals/marketplace endpoints." },
+      { title: "Runes vs BRC-20 for new work", note: "Prefer Runes for new fungible tokens — UTXO-native, far cheaper to mint/transfer than BRC-20's inscription overhead. BRC-20 mainly matters for existing tokens." },
+      { title: "Base-layer reads still via Esplora", note: "Ordinal/rune INDEXING needs a specialized indexer (Ordiscan); raw UTXOs/txs/fees stay on mempool.space + Blockstream (see bitcoin_basics)." },
+    ],
+    warnings: ["Inscription/rune transfers are still normal Bitcoin txs — respect dust limits and sat-vB fees (bitcoin_basics). Sending an inscribed sat as ordinary change BURNS the inscription."],
+    references: ["https://docs.ordinals.com", "https://docs.ordiscan.com"],
+  },
+
+  farcaster_social: {
+    topic: "farcaster_social",
+    title: "Read Farcaster social data (casts, users, channels)",
+    summary: "How an agent pulls decentralized-social context from Farcaster — the hosted API and the on-protocol reality.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Hosted API (easiest): Neynar", command: "GET https://api.neynar.com/v2/farcaster/user/bulk?fids=3  (header x-api-key: KEY)", note: "Free-key signup; unpaid call returns 402 (live-verified). Also casts, reactions, follows, channels, and posting (with a signer)." },
+      { title: "Identity model", note: "Users are identified by FID (numeric Farcaster ID), not wallet address — though FIDs link to verified Ethereum addresses. Resolve FID ↔ address via the user endpoint." },
+      { title: "On-protocol (no vendor)", note: "Farcaster runs on Snapchain hubs; self-hosted/public hubs expose an HTTP API (/v1/castsByFid etc.) directly and keyless, at the cost of running/finding a hub." },
+      { title: "Agent use", note: "Good for social signals, mention monitoring, or posting agent updates. For token/market data it's orthogonal — combine with the price/security tools." },
+    ],
+    references: ["https://docs.neynar.com", "https://docs.farcaster.xyz"],
+  },
+
   chaintrade_p2p_swap: {
     topic: "chaintrade_p2p_swap",
     title: "P2P swap of NFTs/tokens with escrow protection (ChainTrade)",
