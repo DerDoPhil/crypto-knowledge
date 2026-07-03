@@ -259,6 +259,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "See the x402_payments guide for the full client+server flow.",
   },
   {
+    name: "Cloudflare Monetization Gateway (waitlist)",
+    baseUrl: "https://blog.cloudflare.com/monetization-gateway/",
+    auth: "free-key",
+    what: "Announced 2026-07-01: Cloudflare enforces x402 payment walls at the edge for any resource behind its proxy (web pages, APIs, MCP tools) — price rules as expressions, peer-to-peer stablecoin settlement (USDC/'Open USD') straight to the seller wallet.",
+    example: "Requires: Cloudflare account + your domain proxied by Cloudflare + waitlist access. Agents PAYING via x402 need no account at all.",
+    limits: "Early access via waitlist; origin can sit elsewhere (e.g. Vercel) behind the Cloudflare proxy.",
+  },
+  {
     name: "OpenSea REST API v2",
     baseUrl: "https://api.opensea.io/api/v2",
     auth: "free-key",
