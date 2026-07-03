@@ -58,14 +58,6 @@ export const ADDRESSES: AddressEntry[] = [
     note: "6 decimals everywhere. Beware bridged variants (USDC.e) with different addresses — these are the native Circle mints.",
   },
   {
-    name: "Pyth Hermes (cross-chain price oracle, keyless)",
-    baseUrl: "https://hermes.pyth.network",
-    auth: "none",
-    what: "Low-latency price feeds for 100s of assets as signed price-update payloads — pull-based oracle used on Solana AND EVM (live-verified).",
-    example: "GET /v2/updates/price/latest?ids[]=<priceFeedId> → binary VAA + parsed price; feed IDs at pyth.network/developers/price-feed-ids",
-    limits: "Keyless. On-chain you submit the returned update to the Pyth contract; off-chain use the parsed price directly.",
-  },
-  {
     name: "Chainlink ETH/USD price feed (Ethereum)",
     addresses: { ethereum: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" },
     note: "latestRoundData() selector 0xfeaf968c; answer has 8 decimals. Look up ALL other feed addresses at data.chain.link — do NOT guess them (see the chainlink_price_feeds guide).",
@@ -318,6 +310,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     what: "Announced 2026-07-01: Cloudflare enforces x402 payment walls at the edge for any resource behind its proxy (web pages, APIs, MCP tools) — price rules as expressions, peer-to-peer stablecoin settlement (USDC/'Open USD') straight to the seller wallet.",
     example: "Requires: Cloudflare account + your domain proxied by Cloudflare + waitlist access. Agents PAYING via x402 need no account at all.",
     limits: "Early access via waitlist; origin can sit elsewhere (e.g. Vercel) behind the Cloudflare proxy.",
+  },
+  {
+    name: "Pyth Hermes (cross-chain price oracle, keyless)",
+    baseUrl: "https://hermes.pyth.network",
+    auth: "none",
+    what: "Low-latency price feeds for 100s of assets as signed price-update payloads — pull-based oracle used on Solana AND EVM (live-verified).",
+    example: "GET /v2/updates/price/latest?ids[]=<priceFeedId> → binary VAA + parsed price; feed IDs at pyth.network/developers/price-feed-ids",
+    limits: "Keyless. On-chain you submit the returned update to the Pyth contract; off-chain use the parsed price directly.",
   },
   {
     name: "Snapshot (DAO governance, off-chain votes)",
