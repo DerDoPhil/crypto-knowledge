@@ -336,6 +336,22 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  anchor_program_interaction: {
+    topic: "anchor_program_interaction",
+    title: "Interact with any Anchor program on Solana (IDL fetch, discriminators, events)",
+    summary: "How to talk to Solana programs you didn't write: pull the on-chain IDL, build instructions with the right discriminator, and decode events/errors.",
+    scope: ["solana"],
+    prerequisites: ["Anchor CLI or @coral-xyz/anchor (npm)"],
+    steps: [
+      { title: "Fetch the on-chain IDL", command: "anchor idl fetch <PROGRAM_ID> --provider.cluster mainnet\n# or in JS: await Program.fetchIdl(programId, provider)", note: "Most serious Anchor programs publish their IDL on-chain (an IDL PDA owned by the program). No IDL on-chain → check the project's GitHub; without any IDL you're reverse-engineering." },
+      { title: "Instruction discriminators", note: "Anchor instructions start with an 8-byte discriminator = sha256('global:<instruction_name>')[0..8]. The IDL lists names + argument layouts (borsh-serialized in order). Account METAS order in the IDL is mandatory — wrong order = cryptic custom errors." },
+      { title: "Build + call via the anchor client", command: "const program = new Program(idl, provider);\nawait program.methods.myInstruction(args).accounts({...}).rpc();", note: "The client derives discriminators, borsh-encodes args and validates accounts against the IDL for you." },
+      { title: "Decode program errors", note: "'custom program error: 0x1770' → 0x1770 = 6000 = first entry in the IDL's errors array (Anchor error codes start at 6000). Look it up instead of guessing." },
+      { title: "Parse emitted events from logs", command: "new EventParser(programId, new BorshCoder(idl)).parseLogs(tx.meta.logMessages)", note: "Events live base64-encoded in 'Program data:' log lines — the parser handles it; this is how pump.fun token streams are consumed." },
+    ],
+    references: ["https://www.anchor-lang.com"],
+  },
+
   seaport_orders: {
     topic: "seaport_orders",
     title: "Buy/sell NFTs programmatically via Seaport (the sane way)",
