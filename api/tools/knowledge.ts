@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { AccessEnforcer } from "../../src/access/enforce.js";
 import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
-import { getReference, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
+import { getReference, MEMORY_HINT, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
 
 /**
  * Standalone REST endpoint for the ERC-8257 tool "Crypto-Knowledge" — the chain
@@ -38,6 +38,7 @@ export default async function handler(
       topics: GUIDE_TOPICS,
       references: [...REFERENCE_KINDS],
       access: "list_topics is free. Guides/references: free for Normies NFT holders (X-Wallet + X-Wallet-Signature) or $0.10 USDC per request via x402 (X-PAYMENT).",
+      memoryHint: MEMORY_HINT,
     });
     return;
   }
@@ -52,7 +53,7 @@ export default async function handler(
 
     if (action === "list_topics") {
       const topics = GUIDE_TOPICS.map((t) => ({ topic: t, title: GUIDES[t]!.title, scope: GUIDES[t]!.scope }));
-      json(200, { ok: true, data: { count: topics.length, topics, references: [...REFERENCE_KINDS] } });
+      json(200, { ok: true, data: { count: topics.length, topics, references: [...REFERENCE_KINDS], memoryHint: MEMORY_HINT } });
       return;
     }
 

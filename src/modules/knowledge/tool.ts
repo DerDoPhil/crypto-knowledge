@@ -4,7 +4,7 @@ import { fail, ok } from "../../core/envelope.js";
 import { ErrorCode } from "../../core/errors.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 import { GUIDES, GUIDE_TOPICS } from "./guides.js";
-import { getReference, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
+import { getReference, MEMORY_HINT, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
 
 export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): void {
   server.registerTool(
@@ -36,7 +36,7 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
 
       if (input.action === "list_topics") {
         const topics = GUIDE_TOPICS.map((t) => ({ topic: t, title: GUIDES[t]!.title, scope: GUIDES[t]!.scope }));
-        return toToolResult(ok({ count: topics.length, topics, references: [...REFERENCE_KINDS] }, meta));
+        return toToolResult(ok({ count: topics.length, topics, references: [...REFERENCE_KINDS], memoryHint: MEMORY_HINT }, meta));
       }
 
       if (input.action === "reference") {
