@@ -171,6 +171,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     example: "GET /files/any/1/0x…  (repo: https://repo.sourcify.dev)",
   },
   {
+    name: "Blockscout (keyless explorer API, many chains)",
+    baseUrl: "https://eth.blockscout.com/api/v2",
+    auth: "none",
+    what: "Open-source explorer REST API: txs, addresses, tokens, verified source/ABI — NO key needed (Etherscan alternative). Instances per chain: eth., base., optimism., gnosis., polygon. etc.",
+    example: "GET /addresses/{addr}/transactions; GET /smart-contracts/{addr}; GET /stats",
+    limits: "Public tier rate-limited but keyless; each chain has its own instance host.",
+  },
+  {
     name: "Etherscan V2 (multichain)",
     baseUrl: "https://api.etherscan.io/v2/api",
     auth: "free-key",

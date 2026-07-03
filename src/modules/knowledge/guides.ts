@@ -336,6 +336,36 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  spl_token_basics: {
+    topic: "spl_token_basics",
+    title: "SPL tokens on Solana: ATAs, decimals, transfers, priority fees",
+    summary: "The Solana token model for agents: derive the associated token account, respect raw amounts, detect Token-2022, and tune priority fees from live data.",
+    scope: ["solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Balances live in ATAs, not wallets", command: "ATA = findProgramAddress([owner, tokenProgramId, mint], ATA_PROGRAM)  // @solana/spl-token: getAssociatedTokenAddressSync(mint, owner, false, tokenProgramId)", note: "Pass the CORRECT token program (classic vs Token-2022 — the mint account's owner tells you; see pumpfun_token2022_gotchas)." },
+      { title: "Amounts are raw integers", note: "amount = ui_amount × 10^decimals. Fetch decimals from the mint account — 6 for USDC, 9 for wrapped SOL, arbitrary for memecoins. bigint everywhere." },
+      { title: "Transfers to fresh wallets need ATA creation", note: "createAssociatedTokenAccountIdempotent (payer pays ~0.002 SOL rent) + transferChecked (validates mint/decimals — prefer it over plain transfer)." },
+      { title: "Tune priority fees from live data", command: 'POST rpc {"method":"getRecentPrioritizationFees","params":[[]]} → median of recent fees\n// then prepend ComputeBudgetProgram.setComputeUnitPrice(microLamports)', note: "During congestion 0-fee txs get dropped silently; re-fetch the blockhash right before signing." },
+      { title: "Read balances the easy way", command: "call tool \"portfolio\" { chain: 'solana', address }", note: "Returns native + SPL balances with USD values in one call." },
+    ],
+  },
+
+  wallet_security_checklist: {
+    topic: "wallet_security_checklist",
+    title: "Wallet & key security checklist for agent operators",
+    summary: "The non-negotiables before an agent touches real funds: key storage, approval hygiene, transaction discipline, blast-radius design.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Keys never enter code, logs or chats", note: "Load from env/secret manager only; never echo them (even 'briefly'); .env in .gitignore BEFORE the first commit; a key that ever appeared in terminal output or a paste is considered exposed → rotate." },
+      { title: "Design for blast radius", note: "One purpose = one wallet. Hot agent wallets hold gas + working capital only; treasury/owner keys stay cold and are never in server env vars. A relayer that can only call release() can't drain an escrow." },
+      { title: "Approval hygiene", note: "Approve exact amounts to specific spenders; review and revoke stale allowances periodically (portfolio tool: allowance action / revoke tx). Infinite approvals to upgradeable contracts are standing risk." },
+      { title: "Transaction discipline", note: "Simulate before signing (simulate tool), verify the decoded calldata matches intent (abi tool), never blind-sign eth_sign/personal_sign of hex you didn't construct — signature phishing drains via Permit/Permit2." },
+      { title: "Pre-flight every counterparty token", command: "call tool \"security\" { chain, address }", note: "Honeypot/tax/owner-power scan before the first buy — 0-100 risk score with red flags." },
+    ],
+  },
+
   eth_jsonrpc_cheatsheet: {
     topic: "eth_jsonrpc_cheatsheet",
     title: "Ethereum JSON-RPC methods that matter (and their traps)",
