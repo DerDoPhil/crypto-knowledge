@@ -434,6 +434,39 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  cctp_native_usdc: {
+    topic: "cctp_native_usdc",
+    title: "Bridge NATIVE USDC across chains with Circle CCTP (burn & mint)",
+    summary: "The trust-minimized way to move real USDC (not a wrapped IOU) between chains — burn on source, attest, mint on destination.",
+    scope: ["evm"],
+    prerequisites: ["USDC on the source chain"],
+    steps: [
+      { title: "Why CCTP over a liquidity bridge", note: "CCTP BURNS your USDC on the source and MINTS canonical native USDC on the destination via Circle's attestation — no wrapped USDC.e, no liquidity-pool slippage, no third-party bridge risk. Ideal for treasury moves." },
+      { title: "1) Burn on source", command: "TokenMessenger.depositForBurn(amount, destinationDomain, mintRecipient(bytes32), usdcAddress)", note: "TokenMessenger addresses per chain in reference kind='addresses' (live-verified). destinationDomain is Circle's domain id (Ethereum=0, Avalanche=1, OP=2, Arbitrum=3, Base=6, …), NOT the chainId. mintRecipient is the address left-padded to bytes32." },
+      { title: "2) Get the attestation", command: "messageHash = keccak256(the MessageSent event's message bytes)\nGET https://iris-api.circle.com/v1/attestations/{messageHash}  (poll until status:'complete')", note: "Keyless (live-verified). Takes seconds to minutes after source finality." },
+      { title: "3) Mint on destination", command: "MessageTransmitter.receiveMessage(message, attestation)", note: "Anyone can submit this (the recipient is baked into the burn) — a relayer can complete it for the user." },
+      { title: "Or just use the router", command: "call tool \"route\"", note: "LiFi/deBridge may route via CCTP under the hood and hand you a ready tx; use raw CCTP when you specifically want native mint + full control." },
+    ],
+    warnings: ["destinationDomain ≠ chainId — using the chainId sends funds to the wrong domain. Double-check Circle's domain table."],
+    references: ["https://developers.circle.com/stablecoins/docs/cctp-getting-started"],
+  },
+
+  uniswap_v4_basics: {
+    topic: "uniswap_v4_basics",
+    title: "Uniswap v4 architecture: singleton PoolManager, hooks, flash accounting",
+    summary: "What changed in v4 and how an agent interacts with it — you don't call pools directly anymore.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "One singleton, not a contract per pair", note: "All v4 pools live inside ONE PoolManager (0x000000000004444c5dc75cB358380D2e3dE08A90, live-verified). Pools are identified by a PoolKey (currency0, currency1, fee, tickSpacing, hooks), not a deployed pair address." },
+      { title: "You interact through periphery, not PoolManager", note: "Swaps go via the Universal Router / v4 position & swap routers. The PoolManager uses the 'lock' pattern (flash accounting): callbacks settle net balances at the end of a transaction — hand-calling it is expert-only." },
+      { title: "Hooks = custom pool logic", note: "A pool can attach a hooks contract that runs before/after swap/modifyLiquidity (dynamic fees, TWAMM, limit orders, MEV capture). The hook address is part of the PoolKey — different hooks = different pool." },
+      { title: "Getting quotes / swapping", command: "Use the Uniswap routing API / SDK, or this server's \"route\" tool (aggregates across versions and DEXes) — it abstracts v3 vs v4 vs other venues.", note: "Native ETH is a first-class currency in v4 (address 0), no WETH-wrapping needed for ETH pools." },
+    ],
+    warnings: ["A malicious or buggy hook can trap or skim funds — only trade pools whose hooks you trust; the hooks address is visible in the PoolKey."],
+    references: ["https://docs.uniswap.org/contracts/v4/overview"],
+  },
+
   crosschain_message_tracking: {
     topic: "crosschain_message_tracking",
     title: "Track cross-chain messages & bridge transfers (LayerZero, Wormhole)",

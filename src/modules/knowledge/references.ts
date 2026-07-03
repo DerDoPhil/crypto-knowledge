@@ -68,6 +68,16 @@ export const ADDRESSES: AddressEntry[] = [
     note: "resolver(node) → resolver contract → addr(node). viem has getEnsAddress/getEnsName built in.",
   },
   {
+    name: "Circle CCTP TokenMessenger (native USDC bridging)",
+    addresses: { ethereum: "0xBd3fa81B58Ba92a82136038B25aDec7066af3155", base: "0x1682Ae6375C4E4A97e4B583BC394c861A46D8962" },
+    note: "depositForBurn() burns USDC on the source chain; after Circle's attestation you receiveMessage() on the destination to mint NATIVE USDC (no wrapped/bridged variant). Same MessageTransmitter pattern per chain; see cctp_native_usdc guide. TokenMessenger live-verified (13.5KB code).",
+  },
+  {
+    name: "Uniswap v4 PoolManager (singleton)",
+    addresses: { evm: "0x000000000004444c5dc75cB358380D2e3dE08A90" },
+    note: "One singleton holds ALL pools (v4 architecture); interact via the Universal Router / v4 periphery, not directly. Hooks attach custom logic per pool. Live-verified (24KB code). v3 factory (still huge liquidity): 0x1F98431c8aD98523631AE4a59f267346ea31F984.",
+  },
+  {
     name: "Seaport 1.6 (OpenSea marketplace protocol)",
     addresses: { evm: "0x0000000000000068F116a894984e2DB1123eB395" },
     note: "Same CREATE2 address across chains; Seaport 1.5 (still active for older orders): 0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC. Both live-verified via name(). See the seaport_orders guide.",
@@ -218,6 +228,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     auth: "none",
     what: "Verified contract metadata + ABI by chainId/address (open alternative to explorer APIs).",
     example: "GET /files/any/1/0x…  (repo: https://repo.sourcify.dev)",
+  },
+  {
+    name: "Circle Iris API (CCTP attestations)",
+    baseUrl: "https://iris-api.circle.com",
+    auth: "none",
+    what: "Fetch Circle's attestation for a CCTP burn so you can mint native USDC on the destination chain — keyless (live-verified).",
+    example: "GET /v1/attestations/{messageHash} → {status:'complete', attestation:'0x…'} once signed (poll until complete). Testnet: iris-api-sandbox.circle.com.",
+    limits: "Attestation takes seconds-to-minutes after source finality.",
   },
   {
     name: "The Graph (subgraph queries)",
@@ -564,7 +582,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Getting started & wallets": ["create_wallet", "get_testnet_funds", "wallet_security_checklist", "vanity_address"],
   "Sending & debugging transactions": ["debug_failed_tx", "tx_confirmation_patterns", "eth_jsonrpc_cheatsheet", "fetch_event_logs"],
   "Tokens (ERC-20 / SPL)": ["erc20_patterns", "permit2_usage", "spl_token_basics", "erc_standards_cheatsheet"],
-  "Swaps, bridging & routing": ["bridge_funds", "l2_bridging_basics", "crosschain_message_tracking", "chaintrade_p2p_swap"],
+  "Swaps, bridging & routing": ["bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "uniswap_v4_basics", "chaintrade_p2p_swap"],
   "Deploying contracts": ["deploy_contract_evm", "deploy_contract_solana", "deploy_erc20", "deterministic_deploys_create2", "verify_contract"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
   "NFTs": ["nft_metadata_standards", "ipfs_for_nfts", "seaport_orders"],
