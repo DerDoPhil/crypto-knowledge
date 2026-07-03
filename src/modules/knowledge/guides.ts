@@ -801,6 +801,23 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.polymarket.com"],
   },
 
+  liquidation_bots: {
+    topic: "liquidation_bots",
+    title: "Liquidation bots: find underwater loans and liquidate profitably",
+    summary: "How liquidations work on Aave/Morpho/Compound, how to find liquidatable positions, and the flash-loan pattern that needs no upfront capital.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "The opportunity", note: "When a borrower's healthFactor < 1 (defi_lending), anyone can repay part of their debt and seize collateral at a discount (the liquidation bonus, ~5-15%). Permissionless and competitive — bots race for it." },
+      { title: "Find liquidatable positions", note: "Query the protocol's indexer: Aave subgraph / Morpho API (blue-api.morpho.org/graphql, keyless, live-verified) for positions near healthFactor 1. Or watch price feeds + recompute health on the accounts you track (cheaper than scanning all)." },
+      { title: "The flash-loan pattern (no capital needed)", note: "In ONE atomic tx: flash-borrow the repay asset (Balancer v2 Vault 0xBA12…2C8 offers 0-fee flash loans, live-verified; or Aave) → liquidationCall/liquidate → receive discounted collateral → swap enough to repay the flash loan → keep the spread. Reverts if unprofitable, so you only ever pay gas on failure." },
+      { title: "Win the race", note: "Simulate first (simulate tool), submit via a private RPC / bundle (Flashbots/Jito) with a competitive priority fee — public mempool submission gets frontrun by faster bots. The margin is thin; gas + swap slippage decide profit." },
+      { title: "Protocol specifics differ", note: "Aave: liquidationCall(collateral, debt, user, debtToCover, receiveAToken). Morpho: liquidate(marketParams, borrower, seizedAssets/repaidShares, data). Read the exact signature + close-factor (how much of the debt you may repay at once) per protocol." },
+    ],
+    warnings: ["Liquidations are winner-take-all and bot-saturated on major markets — realistic edges are on smaller/newer markets or during fast price moves. Always net gas + swap costs before firing."],
+    references: ["https://docs.morpho.org", "https://aave.com/docs"],
+  },
+
   arbitrage_basics: {
     topic: "arbitrage_basics",
     title: "On-chain arbitrage: DEX, cross-chain and the costs that eat naive bots",

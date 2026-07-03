@@ -25,6 +25,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "State-compression program for cNFTs (mint millions cheaply into a Merkle tree). cNFTs are NOT normal token accounts — read/transfer them via the DAS API, not getTokenAccountsByOwner. See solana_compressed_nfts guide.",
   },
   {
+    name: "Morpho Blue (lending) — Ethereum",
+    addresses: { ethereum: "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb" },
+    note: "Immutable, isolated-market lending primitive (live-verified, 15.6KB). Markets are (loanToken, collateralToken, oracle, irm, lltv) tuples — supply/borrow via marketParams, no global risk. Data API: blue-api.morpho.org/graphql (keyless). Balancer v2 Vault (flash loans for liquidations): 0xBA12222222228d8Ba445958a75a0704d566BF2C8 (live-verified).",
+  },
+  {
     name: "Aave v3 Pool (lending) — Ethereum",
     addresses: { ethereum: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2" },
     note: "Main lending pool (proxy, live-verified). supply/borrow/repay/withdraw + getUserAccountData(address)→(collateral, debt, availableBorrows, liquidationThreshold, ltv, healthFactor). PoolAddressesProvider resolves per-chain deployments; see defi_lending guide. Base/Arbitrum/etc. have their own Pool addresses via the provider.",
@@ -269,6 +274,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     what: "Read/propose Safe multisig transactions, owners, confirmations, balances — keyless (live-verified, follow redirects).",
     example: "GET /v1/safes/{safe-address}/ (owners, threshold); GET /v1/safes/{addr}/multisig-transactions/; per-chain hosts: safe-transaction-{base,arbitrum,polygon,…}.safe.global.",
     limits: "Keyless read; proposing a tx still needs owner signatures.",
+  },
+  {
+    name: "Morpho API (lending markets/positions)",
+    baseUrl: "https://blue-api.morpho.org/graphql",
+    auth: "none",
+    what: "GraphQL for Morpho Blue + MetaMorpho vaults: markets, rates, positions, liquidatable borrowers — keyless (live-verified).",
+    example: "POST { query: '{ markets(first:5){ items{ loanAsset{symbol} state{ supplyApy borrowApy } } } }' }",
+    limits: "Complexity-capped; request only the fields you need.",
   },
   {
     name: "Curve API (pools, APYs)",
@@ -657,7 +670,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Market, DeFi & social data": ["defi_yield_research", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social"],
   "Staking": ["solana_staking", "eth_staking"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
-  "Trading & strategies": ["arbitrage_basics", "trading_bot_architecture", "mev_strategies", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Trading & strategies": ["arbitrage_basics", "trading_bot_architecture", "mev_strategies", "liquidation_bots", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Security": ["price_oracle_safety", "wallet_security_checklist"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
