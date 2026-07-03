@@ -336,6 +336,37 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  seaport_orders: {
+    topic: "seaport_orders",
+    title: "Buy/sell NFTs programmatically via Seaport (the sane way)",
+    summary: "How OpenSea orders actually work (offer/consideration model) and why agents should fetch fulfillment data from the API instead of hand-building orders.",
+    scope: ["evm"],
+    prerequisites: ["OpenSea API key (free, keyless issuance — see opensea_api guide)"],
+    steps: [
+      { title: "Understand the order model", note: "A Seaport order = offerer + offer[] (what they give) + consideration[] (what they require, incl. fees) + timestamps + conduit. Listings and bids are the SAME structure with sides swapped. Orders are EIP-712-signed off-chain; only fulfillment hits the chain." },
+      { title: "Fetch, don't build: get fulfillment data from the API", command: "POST https://api.opensea.io/api/v2/listings/fulfillment_data  { listing: { hash, chain, protocol_address }, fulfiller: { address } }", note: "Returns the exact transaction (to, calldata, value) to execute a purchase — handles consideration items, fees, conduits and protocol versioning for you. Hand-building fulfillOrder calldata is a classic source of burned gas." },
+      { title: "Find listings first", command: "GET /api/v2/listings/collection/{slug}/best  (cheapest per token)", note: "protocol_address tells you which Seaport version the order targets — pass it through, don't assume 1.6." },
+      { title: "Verify before signing", command: "call tool \"simulate\" with the returned tx + call tool \"abi\" to decode it", note: "The decoded call should be fulfillBasicOrder/fulfillOrder on a LIVE-VERIFIED Seaport address (reference kind='addresses') — anything else is a scam contract." },
+      { title: "Approvals", note: "Selling requires approving the conduit (NOT the Seaport core) for your NFT contract — the fulfillment/creation API responses specify the exact operator address to approve." },
+    ],
+    references: ["https://docs.opensea.io/reference/api-overview", "https://github.com/ProjectOpenSea/seaport"],
+  },
+
+  l2_bridging_basics: {
+    topic: "l2_bridging_basics",
+    title: "Bridging to/from L2s: canonical vs fast bridges (and when each is wrong)",
+    summary: "The decision framework for moving funds between Ethereum and its L2s — withdrawal delays, trust models, and cost realities.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Know the two bridge classes", note: "CANONICAL bridges (the rollup's own) inherit L1 security but are slow to exit: OP-Stack (Base/Optimism) withdrawals take ~7 days (fault-proof window), Arbitrum ~1 week. FAST/liquidity bridges (routed via LiFi/deBridge) settle in minutes but add third-party trust + fees." },
+      { title: "Deposits are always fast", note: "L1→L2 via canonical bridge lands in minutes on both OP-Stack and Arbitrum — no reason for a third-party bridge on the way IN unless you need a token swap en route." },
+      { title: "Choose by amount and urgency", note: "Large/treasury withdrawals → canonical (trust-minimized, plan the 7 days). Working capital → fast bridge via the route tool (compares LiFi + deBridge quotes incl. fees)." },
+      { title: "Get a ready-to-sign route", command: "call tool \"route\" { action: 'quote', fromChain, toChain, fromToken, toToken, amount, fromAddress }", note: "Returns the best route with an unsigned transactionRequest; check tool \"profitability\" for net-cost sanity on small amounts (L1 gas can exceed the bridged value)." },
+      { title: "Mind L2 fee duality", note: "Every L2 tx pays L2 execution + L1 data fees (see rpc_gotchas) — bridging dust is uneconomical." },
+    ],
+  },
+
   tx_confirmation_patterns: {
     topic: "tx_confirmation_patterns",
     title: "Wait for transaction confirmation correctly (EVM, Solana, Bitcoin)",

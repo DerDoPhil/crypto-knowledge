@@ -63,6 +63,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "resolver(node) → resolver contract → addr(node). viem has getEnsAddress/getEnsName built in.",
   },
   {
+    name: "Seaport 1.6 (OpenSea marketplace protocol)",
+    addresses: { evm: "0x0000000000000068F116a894984e2DB1123eB395" },
+    note: "Same CREATE2 address across chains; Seaport 1.5 (still active for older orders): 0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC. Both live-verified via name(). See the seaport_orders guide.",
+  },
+  {
     name: "ERC-8257 ToolRegistry (OpenSea agent tools)",
     addresses: { ethereum: "0x265BB2DBFC0A8165C9A1941Eb1372F349baD2cf1", base: "0x265BB2DBFC0A8165C9A1941Eb1372F349baD2cf1" },
     note: "registerTool/updateToolMetadata/deregisterTool. Canonical ERC721OwnerPredicate for NFT gating: 0xc8721c9A776958FfFfEb602DA1b708bf1D318379 (setCollections). See the register_onchain_tool guide.",
