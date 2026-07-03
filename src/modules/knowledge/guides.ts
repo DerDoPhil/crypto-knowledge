@@ -636,6 +636,38 @@ export const GUIDES: Record<string, Guide> = {
     warnings: ["Metadata that only lives on ONE pinning service disappears when the pin lapses — pin on two services or use a paid pinning plan for anything that matters."],
   },
 
+  defi_lending: {
+    topic: "defi_lending",
+    title: "Lending & borrowing with Aave v3 (supply, borrow, health factor)",
+    summary: "How an agent supplies collateral, borrows, and — critically — monitors liquidation risk on Aave v3.",
+    scope: ["evm"],
+    prerequisites: ["Collateral tokens on the chain"],
+    steps: [
+      { title: "Resolve the Pool per chain", note: "Aave v3 Pool on Ethereum: 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2 (live-verified). Other chains: read PoolAddressesProvider.getPool() — never hardcode across chains." },
+      { title: "Supply collateral", command: "approve(Pool, amount) then Pool.supply(asset, amount, onBehalfOf, referralCode=0)", note: "You receive aTokens (interest-bearing, 1:1 rebasing). Collateral must be enabled to back a borrow." },
+      { title: "Borrow", command: "Pool.borrow(asset, amount, interestRateMode=2 /*variable*/, referralCode=0, onBehalfOf)", note: "Only up to your available borrows; over-borrowing reverts." },
+      { title: "MONITOR the health factor", command: "Pool.getUserAccountData(user) → healthFactor (1e18-scaled)", note: "healthFactor < 1.0 = liquidatable. Agents MUST watch this: a price move against your collateral triggers liquidation (penalty + lost collateral). Keep a safety buffer (e.g. >1.5) and use price_oracle_safety for the price feed." },
+      { title: "Repay / withdraw", command: "Pool.repay(asset, amount, rateMode, onBehalfOf)  ·  Pool.withdraw(asset, amount, to)", note: "Withdraw is blocked if it would push healthFactor below 1." },
+    ],
+    warnings: ["Liquidation is permissionless and instant — no grace period. A funded liquidator bot WILL take your collateral the moment healthFactor < 1."],
+    references: ["https://aave.com/docs"],
+  },
+
+  solana_staking: {
+    topic: "solana_staking",
+    title: "Stake SOL: native staking vs liquid staking (jitoSOL, mSOL)",
+    summary: "The two ways to earn SOL staking yield and which fits an agent that also needs liquidity.",
+    scope: ["solana"],
+    prerequisites: ["SOL"],
+    steps: [
+      { title: "Native staking (locked)", note: "Create a stake account (Stake Program: Stake11111111111111111111111111111111111111), delegate to a validator. Yield ~5-7% but SOL is locked; undelegation takes an epoch (~2-3 days) to cool down." },
+      { title: "Liquid staking (keeps liquidity)", note: "Deposit SOL into a stake pool → receive a liquid token (jitoSOL/Jito, mSOL/Marinade, or via Sanctum) that accrues value and is tradable/usable in DeFi immediately. Jito adds MEV rewards on top." },
+      { title: "Which to use", note: "Agent needs the SOL usable → liquid staking. Pure long-term hold, max decentralization → native + a good validator. jitoSOL/mSOL redeem back to SOL via the pool (or just swap on Jupiter for instant exit, minus a small discount)." },
+      { title: "Data", command: "Jito: https://kobe.mainnet.jito.network/api/v1/validators (keyless, live-verified); prices/APY via the stake-pool account or Jupiter Price.", note: "Compare APYs net of pool fees before choosing." },
+    ],
+    references: ["https://docs.jito.network", "https://docs.marinade.finance"],
+  },
+
   defi_yield_research: {
     topic: "defi_yield_research",
     title: "Research DeFi yields and stablecoin health (keyless, one API family)",

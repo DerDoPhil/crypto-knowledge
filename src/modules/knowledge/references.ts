@@ -15,6 +15,16 @@ export interface AddressEntry {
 
 export const ADDRESSES: AddressEntry[] = [
   {
+    name: "Aave v3 Pool (lending) — Ethereum",
+    addresses: { ethereum: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2" },
+    note: "Main lending pool (proxy, live-verified). supply/borrow/repay/withdraw + getUserAccountData(address)→(collateral, debt, availableBorrows, liquidationThreshold, ltv, healthFactor). PoolAddressesProvider resolves per-chain deployments; see defi_lending guide. Base/Arbitrum/etc. have their own Pool addresses via the provider.",
+  },
+  {
+    name: "Solana Stake Program (native staking)",
+    addresses: { solana: "Stake11111111111111111111111111111111111111" },
+    note: "Native SOL staking (delegate to a validator). For LIQUID staking use a pool: Jito (jitoSOL), Marinade (mSOL), Sanctum. See solana_staking guide.",
+  },
+  {
     name: "Multicall3",
     addresses: { evm: "0xcA11bde05977b3631167028862bE2a173976CA11" },
     note: "Batch many view calls into one eth_call. Same address on 250+ EVM chains. viem's multicall uses it automatically.",
@@ -309,6 +319,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "For validator/staking data — execution-layer data stays on JSON-RPC.",
   },
   {
+    name: "Jito (Solana MEV / liquid staking)",
+    baseUrl: "https://kobe.mainnet.jito.network/api/v1",
+    auth: "none",
+    what: "Jito validator/MEV data and jitoSOL liquid-staking stats — keyless (live-verified). Jito block-engine also offers bundle submission for MEV-aware Solana txs.",
+    example: "GET /validators; jitoSOL price/APY via the stake-pool account.",
+    limits: "Bundle/tip endpoints (mainnet.block-engine.jito.wtf) are the path to landing txs during congestion.",
+  },
+  {
     name: "Solana public RPC",
     baseUrl: "https://api.mainnet-beta.solana.com",
     auth: "none",
@@ -589,7 +607,8 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "pumpfun_token2022_gotchas", "solana_pay"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_ordinals_runes"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "eip7702_smart_eoas"],
-  "Market, DeFi & social data": ["defi_yield_research", "perps_funding_data", "dao_governance_data", "farcaster_social"],
+  "Market, DeFi & social data": ["defi_yield_research", "defi_lending", "perps_funding_data", "dao_governance_data", "farcaster_social"],
+  "Staking": ["solana_staking"],
   "Security": ["price_oracle_safety", "wallet_security_checklist"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
