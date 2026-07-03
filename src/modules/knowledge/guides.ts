@@ -336,6 +336,22 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/reference/api-overview", "https://docs.opensea.io/reference/mcp"],
   },
 
+  defi_yield_research: {
+    topic: "defi_yield_research",
+    title: "Research DeFi yields and stablecoin health (keyless, one API family)",
+    summary: "How an agent screens yield opportunities and monitors stablecoin pegs with DefiLlama's free APIs — including the traps in APY numbers.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Pull the full pool universe", command: "curl -s https://yields.llama.fi/pools", note: "Returns every tracked pool with chain, project, symbol, tvlUsd, apy/apyBase/apyReward. Filter client-side: tvlUsd floor first (e.g. >$1M) — tiny pools show fantasy APYs." },
+      { title: "Read APY correctly", note: "apyBase = organic (fees/interest), apyReward = token emissions (often sell-pressure-decaying), apy = both. For sustainability compare apyBase; a pool living on apyReward alone dies with the incentives." },
+      { title: "Check the pool's history before entering", command: "curl -s https://yields.llama.fi/chart/{pool-id}", note: "A 3-day-old 80% APY pool is a launch spike, not an opportunity." },
+      { title: "Monitor stablecoin pegs", command: "curl -s 'https://stablecoins.llama.fi/stablecoins?includePrices=true'", note: "price notably off 1.00 = depeg signal; also shows circulating per chain (bridge-risk exposure)." },
+      { title: "Cross-check protocol health", command: "curl -s https://api.llama.fi/tvl/{protocol}", note: "Falling TVL + rising APY = exit signal, not entry. Always security-scan the pool's token contracts first (security tool)." },
+    ],
+    references: ["https://api-docs.defillama.com"],
+  },
+
   spl_token_basics: {
     topic: "spl_token_basics",
     title: "SPL tokens on Solana: ATAs, decimals, transfers, priority fees",
