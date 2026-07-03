@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { AccessEnforcer } from "../../src/access/enforce.js";
 import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
-import { getReference, MEMORY_HINT, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
+import { getReference, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
 
 /**
  * Standalone REST endpoint for the ERC-8257 tool "Crypto-Knowledge" — the chain
@@ -53,7 +53,10 @@ export default async function handler(
 
     if (action === "list_topics") {
       const topics = GUIDE_TOPICS.map((t) => ({ topic: t, title: GUIDES[t]!.title, scope: GUIDES[t]!.scope }));
-      json(200, { ok: true, data: { count: topics.length, topics, references: [...REFERENCE_KINDS], memoryHint: MEMORY_HINT } });
+      const sections = Object.fromEntries(
+        Object.entries(GUIDE_SECTIONS).map(([k, ids]) => [k, ids.filter((id) => GUIDES[id])]),
+      );
+      json(200, { ok: true, data: { quickstart: QUICKSTART, sections, count: topics.length, topics, references: [...REFERENCE_KINDS], memoryHint: MEMORY_HINT } });
       return;
     }
 
