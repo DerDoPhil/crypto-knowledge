@@ -5,7 +5,7 @@ Laufender autonomer Ausbau des Chain-Brains (Tool #71 auf OpenSea). Jeder Block:
 list_topics-Check → Hash-Regression (`0x6d9f34e5…`) → commit+push**. Nichts aus dem
 Gedächtnis; jede Adresse/jeder Endpunkt wird vor Einbau live geprüft.
 
-Stand: **64 Guides, 17 Sektionen, ~55 Endpunkte** (Blöcke 1–31 erledigt).
+Stand: **85 Guides, 19 Sektionen, ~60 Endpunkte** (Blöcke 1–46 erledigt; Manifest v1.2.0, Baseline 0x72930764…).
 
 ## ✅ Erledigt (Blöcke 1–31)
 Wallets/Deploys/Vanity/Verify, EIP-712/1271, ERC-20/Permit2, Tx-Debug/Confirm, Event-Logs,
@@ -35,7 +35,7 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [ ] Tenderly Simulation API (free tier)
 - [ ] Etherscan Gas-Oracle (V2) als eigener Eintrag
 - [ ] Solscan / SolanaFM (aktuellen Key-Status verifizieren)
-- [ ] Birdeye (Solana token data, key-status)
+- [x] Birdeye (Solana token data, key-status) — Block42 (Jupiter-Token-API keyless; Birdeye=free-key) ✅
 - [x] DexScreener API (keyless token/pair data) — Block 32 ✅
 - [x] GeckoTerminal API (on-chain DEX prices, keyless) — Block 32 ✅
 - [ ] Blockdaemon / Ankr free-RPC-Status
@@ -43,19 +43,19 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [ ] Farcaster Frames v2 / Warpcast API-Details
 
 ## 🔜 TODO — Strategie / Domänen-Wissen
-- [ ] Copy-Trading-Bot-Detail (Wallet-Discovery, Sizing, Blocklists)
-- [ ] Sniping-Detail (EVM launch-detection vs Solana pump.fun)
-- [ ] Grid/DCA-Bot-Detail (Range, Rebalancing)
-- [ ] Statistical Arbitrage / Basis-Trade (Perp-Funding vs Spot)
+- [x] Copy-Trading-Bot-Detail (Wallet-Discovery, Sizing, Blocklists) — Block41 ✅
+- [x] Sniping-Detail (EVM launch-detection vs Solana pump.fun) — Block41 ✅
+- [x] Grid/DCA-Bot-Detail (Range, Rebalancing) — Block41 ✅
+- [x] Statistical Arbitrage / Basis-Trade (Perp-Funding vs Spot) — Block45 (basis_trade) ✅
 - [ ] JIT-Liquidity / Uniswap-v3-v4-Hook-Strategien
 - [x] Flash-Loan-Muster generell (Aave/Balancer/Morpho, use-cases) — Block38 ✅
-- [ ] Token-Launch-Mechaniken (Fair-Launch, bonding curves, LBPs)
+- [x] Token-Launch-Mechaniken (Fair-Launch, bonding curves, LBPs) — Block43 ✅
 - [x] Airdrop-Farming-Mechanik (Sybil-Risiko, eligibility patterns) — Block38 ✅
-- [ ] Portfolio-Rebalancing / Risk-Parity für Agents
+- [x] Portfolio-Rebalancing / Risk-Parity für Agents — Block45 ✅
 - [x] Stablecoin-Mechaniken (fiat vs crypto-backed vs algo, depeg-Signale) — Block38 ✅
-- [ ] Governance-Attacken / Timelock-Analyse
+- [x] Governance-Attacken / Timelock-Analyse — Block44 ✅
 - [x] Rugpull-Forensik (Post-Mortem-Muster über security-Tool hinaus) — Block40 ✅
-- [ ] Wash-Trading-/Volumen-Fake-Erkennung
+- [x] Wash-Trading-/Volumen-Fake-Erkennung — Block44 ✅
 - [x] Gas-Optimierung für Contracts (Storage-Packing, calldata) — Block37 ✅
 - [x] Upgradeable-Contracts (Proxy-Patterns, Storage-Kollisionen) — Block40 ✅
 
@@ -70,9 +70,9 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [ ] Solana: Priority-Fee-Markt + Jito-Tip-Strategie Detail
 
 ## 🔜 TODO — Tool-/Produkt-Verbesserungen (Aufbau)
-- [ ] `ask` weiter tunen (Synonyme, Stemming light)
-- [ ] Guide-Cross-Links prüfen (referenzierte Topics existieren)
-- [ ] llms.txt um die neuen Kategorien erweitern
+- [x] `ask` weiter tunen (Synonyme, Stemming light) — Block46 (Synonyms+Stopwords) ✅
+- [x] Guide-Cross-Links prüfen (referenzierte Topics existieren) — Block46 (0 tote) ✅
+- [x] llms.txt um die neuen Kategorien erweitern — Block46 ✅
 - [ ] Optional (Philipp-Freigabe): Contribution-Feature (Vault-Idee)
 - [ ] Optional (Philipp-Freigabe): Cloudflare Monetization Gateway anschließen
 
