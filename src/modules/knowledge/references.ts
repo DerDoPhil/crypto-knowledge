@@ -236,6 +236,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "Rate-limited per IP on the free tier.",
   },
   {
+    name: "Jupiter Token API (Solana token resolution)",
+    baseUrl: "https://lite-api.jup.ag/tokens/v2",
+    auth: "none",
+    what: "Resolve/verify Solana tokens: search by symbol/name, verified-tag list with icons + metadata — keyless (live-verified). Use to map a symbol to the RIGHT mint (avoid impostor tokens).",
+    example: "GET /search?query=SOL; GET /tag?query=verified → [{id(mint), symbol, name, icon}]",
+    limits: "lite-api host is keyless. Birdeye (public-api.birdeye.so) has richer Solana data but needs a free key (401 without).",
+  },
+  {
     name: "Jupiter Price API (Solana)",
     baseUrl: "https://lite-api.jup.ag/price/v3",
     auth: "none",

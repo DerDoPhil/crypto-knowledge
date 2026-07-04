@@ -1032,8 +1032,9 @@ export const GUIDES: Record<string, Guide> = {
       { title: "On-chain DEX prices & OHLCV", command: "GET https://api.geckoterminal.com/api/v2/networks/{net}/tokens/{addr} (net: eth, solana, base…)", note: "Keyless (live-verified). Good for candles/pool-level data and trending pools." },
       { title: "ALWAYS gate discovery through safety", command: "call tool \"security\" { chain, address } before any buy", note: "A token showing on DexScreener can still be a honeypot/high-tax scam. Check liquidity depth + lock, holder concentration, and the risk score first (security tool, token_discovery → security → trade)." },
       { title: "Cross-check price", note: "For a canonical USD price use DefiLlama/CoinGecko; DexScreener/GeckoTerminal reflect the specific pool (can be thin/manipulated for microcaps — price_oracle_safety)." },
+      { title: "Solana: resolve the RIGHT mint", command: "GET https://lite-api.jup.ag/tokens/v2/search?query={symbol} (keyless, live-verified)", note: "Impostor SPL tokens reuse popular symbols — match against Jupiter's verified list to get the correct mint before trading (Birdeye has more depth but needs a key)." },
     ],
-    warnings: ["Liquidity USD can be faked with worthless paired tokens — verify the quote asset is real (USDC/WETH/SOL) and the liquidity is locked, not just 'present'."],
+    warnings: ["Liquidity USD can be faked with worthless paired tokens — verify the quote asset is real (USDC/WETH/SOL) and the liquidity is locked, not just 'present'.", "Symbol ≠ identity: always trade by verified contract/mint address, never by ticker (many scams reuse well-known symbols)."],
     references: ["https://docs.dexscreener.com"],
   },
 
