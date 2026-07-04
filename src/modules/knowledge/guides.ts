@@ -1033,6 +1033,38 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.morpho.org", "https://aave.com/docs"],
   },
 
+  portfolio_management: {
+    topic: "portfolio_management",
+    title: "Portfolio management for agents: rebalancing, risk sizing, exposure limits",
+    summary: "The discipline that keeps an autonomous agent solvent — position sizing, rebalancing rules, and exposure caps across chains.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Read the real portfolio first", command: "call tool \"portfolio\" { chain, address } (native + ERC-20 + SPL with USD values)", note: "Aggregate across chains for a true picture. You can't manage risk you can't see — include LP positions, staked/lent balances and pending bridge transfers." },
+      { title: "Size by risk, not conviction", note: "Fixed-fractional: risk a small % of the book per position; cap per-asset and per-chain exposure. Correlated assets (ETH + ETH-LSTs + ETH-perps) count as ONE exposure — don't fool yourself that 3 ETH bets are diversified." },
+      { title: "Rebalancing rules", note: "Threshold rebalancing (act only when an allocation drifts >X%) beats calendar rebalancing on gas — every rebalance pays swap fees + gas (net it via profitability). On expensive chains, widen thresholds; on L2s/Solana you can rebalance tighter." },
+      { title: "Keep dry powder + gas", note: "Always hold native gas per active chain (a stranded position you can't exit is a total loss) and a stable reserve for opportunities/margin calls. An agent that spends its last ETH on a trade can't pay to exit it." },
+      { title: "Define exits and stops in advance", note: "Per-position stop-loss and take-profit, plus a portfolio-level drawdown kill-switch. Autonomous agents fail by holding losers hoping for recovery — encode the exit, don't 'decide' it live." },
+    ],
+    warnings: ["USD valuations use market prices that can be stale/manipulated for illiquid holdings (price_oracle_safety) — a portfolio that looks balanced can be concentrated in something you can't actually sell at 'value'."],
+  },
+
+  basis_trade: {
+    topic: "basis_trade",
+    title: "Basis trading & funding-rate arbitrage (delta-neutral yield)",
+    summary: "Capture perp funding or spot-futures spread while hedged — the mechanics and the risks that turn 'neutral' into a loss.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "The funding-rate trade", note: "When perp funding is strongly positive (longs pay shorts), go SHORT the perp and LONG the equal spot amount → delta-neutral, and you COLLECT funding each interval. Negative funding = flip it (long perp, short/borrow spot). Read funding from perps_funding_data (Hyperliquid/GMX/CEX, keyless)." },
+      { title: "Size the hedge exactly", note: "Delta-neutral means the perp notional == spot notional. Any mismatch leaves directional exposure. Rebalance as price moves so the legs stay equal (costs gas/fees — factor it)." },
+      { title: "Net ALL costs before calling it yield", command: "call tool \"profitability\"", note: "Funding income must exceed: trading fees (both legs), spot borrow cost (if shorting spot), gas/rebalancing, and slippage. A 10% annualized funding can be net-negative after costs on small size." },
+      { title: "The risks that break 'neutral'", note: "1) Liquidation of the perp leg if margin runs low during a spike — keep buffer (defi_lending health logic). 2) Funding flips against you. 3) Exchange/venue risk (CEX insolvency, on-chain perp exploit). 4) Spot-perp basis moving on exit." },
+      { title: "On-chain venues", note: "Hyperliquid (order-book perps), GMX (oracle perps, onchain_perps_gmx). Spot leg via aggregator_swaps / solana_swap. Keep the two legs on venues you can rebalance quickly." },
+    ],
+    warnings: ["'Delta-neutral' is only neutral if both legs stay equal AND solvent — a perp liquidation during a wick leaves you naked directional at the worst moment. Margin buffer is the whole game."],
+  },
+
   arbitrage_basics: {
     topic: "arbitrage_basics",
     title: "On-chain arbitrage: DEX, cross-chain and the costs that eat naive bots",
