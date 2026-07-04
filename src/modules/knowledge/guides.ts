@@ -482,6 +482,40 @@ export const GUIDES: Record<string, Guide> = {
     warnings: ["Some bridges auto-redeem on the destination, others require a manual claim tx — check the specific bridge before assuming funds arrive by themselves."],
   },
 
+  onchain_perps_gmx: {
+    topic: "onchain_perps_gmx",
+    title: "Trade on-chain perps (GMX v2): the 2-step order model + keeper reality",
+    summary: "How on-chain perpetual DEXes like GMX actually execute — you don't get a fill in your own transaction — and what that means for agents.",
+    scope: ["evm"],
+    prerequisites: ["Collateral (USDC/ETH) on Arbitrum or Avalanche"],
+    steps: [
+      { title: "Two-step execution (the key difference from a CEX)", note: "You submit a CreateOrder tx (via the GMX ExchangeRouter) with collateral + params; a KEEPER executes it a moment later at an oracle price. Your create tx does NOT fill the position — poll for the execution/cancellation event." },
+      { title: "Order types", note: "MarketIncrease/Decrease (open/close at oracle price), LimitIncrease/Decrease, StopLoss. Position = (market, collateral, sizeInUsd, isLong). Leverage = sizeInUsd / collateralUsd." },
+      { title: "Read market + price data", command: "GET https://arbitrum-api.gmxinfra.io/prices/tickers (keyless, live-verified) + on-chain DataStore reads via the GMX Reader", note: "Prices are dual (min/max) reflecting spread; funding + borrowing fees accrue continuously against your position." },
+      { title: "Execution fee + slippage", note: "You prepay an execution fee for the keeper (refunded if unused). Set acceptablePrice — if the oracle moves past it before the keeper runs, the order CANCELS (funds returned) rather than filling at a bad price." },
+      { title: "Alternatives", note: "Hyperliquid (its own L1, order-book perps, keyless API — perps_funding_data) is the other major venue. GMX = on-chain-native oracle pricing; Hyperliquid = CLOB speed." },
+    ],
+    warnings: ["Because a keeper executes later, an agent must handle the async gap: the position may open, cancel, or partially fill — never assume the create tx = a live position."],
+    references: ["https://docs.gmx.io"],
+  },
+
+  yield_farming_mechanics: {
+    topic: "yield_farming_mechanics",
+    title: "Yield farming for real: LP returns, impermanent loss, reward decay",
+    summary: "What actually determines whether an LP/farming position is profitable — the costs and risks that the headline APY hides.",
+    scope: ["evm", "solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Where the yield comes from", note: "Trading fees (organic, sustainable), token emissions (apyReward — often inflationary and decaying), and lending interest. Separate them: a farm living on emissions alone bleeds value as the reward token is sold (defi_yield_research)." },
+      { title: "Impermanent loss (the hidden cost)", note: "Providing liquidity to a volatile pair means you end up with MORE of the loser and LESS of the winner vs just holding. IL grows with price divergence — a 2x move ≈ 5.7% IL, 4x ≈ 20%. Fees must out-earn IL for the position to beat holding." },
+      { title: "Pick the pool for the risk", note: "Correlated/stable pairs (USDC/USDT, ETH/wstETH) have minimal IL — safest farming. Volatile pairs need high fee volume to compensate. Concentrated liquidity (Uniswap v3/v4) boosts fees but amplifies IL and needs active range management." },
+      { title: "Net it out before entering", command: "call tool \"profitability\"; check pool history via yields.llama.fi/chart/{pool}", note: "Subtract: entry/exit gas, swap fees to build the LP, IL estimate, and reward-token price risk. Then compare to just holding or to a stableswap/4626 vault (lower effort)." },
+      { title: "Auto-compounding vaults", note: "ERC-4626 vaults (erc4626_vaults) and Solana equivalents auto-harvest+reinvest rewards — less gas/effort than manual farming, at a small performance fee. Often the better risk-adjusted choice for an agent." },
+    ],
+    warnings: ["A 4-digit APY is almost always emissions that will collapse — and the reward token may be worth far less by the time you sell. Always model reward-token price decay, not just the quoted APY."],
+    references: ["https://docs.uniswap.org/concepts/protocol/concentrated-liquidity"],
+  },
+
   perps_funding_data: {
     topic: "perps_funding_data",
     title: "Read perp funding rates & derivatives data (keyless)",
