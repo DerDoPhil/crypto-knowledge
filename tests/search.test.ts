@@ -3,10 +3,11 @@ import { ask, deepSearchGuides, searchReferences } from "../src/modules/knowledg
 
 describe("deepSearchGuides", () => {
   it("finds a guide by BODY content (not just title/summary)", () => {
-    // 'healthFactor' only appears in defi_lending's step text, never the title/summary.
+    // 'healthFactor' only appears in body step text — deep search must find the lending/liquidation guides.
     const hits = deepSearchGuides("healthFactor liquidation");
     expect(hits.length).toBeGreaterThan(0);
-    expect(hits[0]!.topic).toBe("defi_lending");
+    const top3 = hits.slice(0, 3).map((h) => h.topic);
+    expect(top3).toEqual(expect.arrayContaining([expect.stringMatching(/defi_lending|liquidation_bots/)]));
   });
 
   it("finds a guide by a command name buried in steps", () => {
@@ -59,5 +60,16 @@ describe("ask (one-shot)", () => {
     const r = ask("qqzzxx wwvvkk jjhhgg zzptrq");
     expect(r.guides.length).toBe(0);
     expect(r.hint).toBeTruthy();
+  });
+});
+
+describe("synonym expansion (ask tuning)", () => {
+  it("maps 'fees' to gas guides", () => {
+    const hits = deepSearchGuides("how to reduce fees");
+    expect(hits.some((h) => h.topic === "gas_optimization" || h.topic === "eth_jsonrpc_cheatsheet")).toBe(true);
+  });
+  it("maps 'scam token' to rugpull/security guides", () => {
+    const hits = deepSearchGuides("check for scam token");
+    expect(hits.some((h) => h.topic === "rugpull_forensics" || h.topic === "token_discovery")).toBe(true);
   });
 });

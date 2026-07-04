@@ -24,6 +24,18 @@ POST /mcp  — JSON-RPC 2.0 over Streamable HTTP (Model Context Protocol)
 - whale_watch: recent large ERC-20 transfers over a block window
 - simulate: EVM transaction dry-run + revert reason decoding before signing
 - catalog: capabilities + chain discovery
+- knowledge: the chain brain — 85+ live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guides + matching endpoints in ONE call. Also list_topics (free), get_guide, search, reference.
+
+## Knowledge coverage (action 'ask' / 'get_guide')
+
+Coding: wallets, EVM+Solana deploys, EIP-712/1271, ERC-20/Permit2, tx debugging, event logs,
+gas optimization, EIP-4844 blobs, Multicall, SIWE, ERC-8257 registration, ENS, AA-4337, EIP-7702, Safe multisig.
+DeFi: Aave/Morpho lending, ERC-4626 vaults, Curve stableswap, yield farming, DEX aggregators, CCTP, bridges, Uniswap v4.
+Trading strategies: arbitrage, MEV (attack+defense), copy/sniping/grid bots, liquidations, flash loans,
+perps (GMX/Hyperliquid), funding/basis trade, prediction markets, portfolio management, token discovery.
+Security: rugpull forensics, wash-trading detection, governance attacks, proxy/upgrade risks, oracle safety.
+Bitcoin: UTXO/PSBT, Taproot, Ordinals/Runes, Lightning. Plus a directory of keyless/free API endpoints,
+canonical contract addresses and an error playbook.
 
 ## Chains
 

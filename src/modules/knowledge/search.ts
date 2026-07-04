@@ -20,11 +20,44 @@ function guideHaystack(g: Guide): { strong: string; weak: string } {
   return { strong, weak };
 }
 
+/** Light synonym/alias expansion so common phrasings hit the right guide bodies. */
+const SYNONYMS: Record<string, string[]> = {
+  gas: ["fee", "fees", "eip1559", "gas_optimization"],
+  fee: ["gas", "gas_optimization"],
+  fees: ["gas", "gas_optimization"],
+  swap: ["dex", "trade", "exchange", "aggregator"],
+  bridge: ["crosschain", "cross-chain", "cctp"],
+  liquidation: ["healthfactor", "liquidate", "underwater"],
+  price: ["oracle", "quote"],
+  bot: ["automation", "trading"],
+  nft: ["metadata", "collectible"],
+  rug: ["scam", "honeypot", "rugpull"],
+  stake: ["staking", "validator", "steth", "jitosol"],
+  perp: ["perpetual", "funding", "leverage"],
+  wallet: ["key", "keypair", "signer"],
+  approve: ["allowance", "approval", "permit"],
+  vault: ["erc4626", "yield"],
+  register: ["erc8257", "opensea", "listing"],
+};
+
+/** Ubiquitous words that would match nearly every guide body and flatten ranking. */
+const STOPWORDS = new Set([
+  "the", "and", "for", "with", "how", "get", "use", "can", "you", "your", "are", "any",
+  "from", "into", "out", "via", "per", "not", "but", "does", "what", "when", "which",
+  "this", "that", "then", "than", "them", "they", "have", "has", "was", "will", "would",
+  "should", "could", "about", "over", "under", "onto", "off", "all", "one", "two",
+  "to", "of", "in", "on", "is", "it", "or", "an", "as", "at", "by", "be", "do", "my", "we", "up",
+  "reduce", "make", "need", "want", "help", "check", "find", "using", "avoid", "best",
+]);
+
 function tokenize(query: string): string[] {
-  return query
+  const base = query
     .toLowerCase()
     .split(/[^a-z0-9_.]+/)
-    .filter((t) => t.length >= 2);
+    .filter((t) => t.length >= 2 && !STOPWORDS.has(t));
+  const expanded = new Set(base);
+  for (const t of base) for (const syn of SYNONYMS[t] ?? []) expanded.add(syn);
+  return [...expanded];
 }
 
 export interface RankedGuide extends Guide {
