@@ -758,7 +758,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Trading & strategies": ["token_discovery", "arbitrage_basics", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics"],
   "Token launches": ["token_launch_mechanics", "sniping_launches"],
-  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns"],
+  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };

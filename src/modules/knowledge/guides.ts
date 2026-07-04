@@ -436,6 +436,38 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://eips.ethereum.org/EIPS/eip-1967", "https://docs.openzeppelin.com/upgrades-plugins"],
   },
 
+  governance_attacks: {
+    topic: "governance_attacks",
+    title: "DAO governance risks: flash-loan votes, timelock analysis, malicious proposals",
+    summary: "How on-chain governance gets attacked and what an agent checks before trusting a protocol's decentralization or acting on a proposal.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Flash-loan governance attacks", note: "If voting power = token balance measured at vote time, an attacker flash-borrows tokens, passes a malicious proposal, repays — all in patterns that snapshot-at-proposal (not at execution) mitigate. Check whether the Governor snapshots voting power at proposal creation (safe) or live (vulnerable)." },
+      { title: "Read the timelock", note: "Legit governance routes passed proposals through a Timelock (a delay before execution). The delay is your exit window if a malicious proposal passes. NO timelock, or a short one, or an admin that can bypass it = the 'DAO' can rug instantly. Find the timelock + its delay." },
+      { title: "Inspect a proposal's calldata BEFORE it executes", command: "decode the proposal's targets/calldata with the abi tool; simulate the effect", note: "Malicious proposals hide behind innocent descriptions — a 'treasury management' proposal that actually transfers funds or upgrades a contract to attacker code. Decode what it ACTUALLY calls (proxy_upgrade_patterns)." },
+      { title: "Concentration = centralization", note: "Query token distribution (a few wallets holding quorum = they control the DAO), delegate concentration (Tally/Snapshot, dao_governance_data), and whether the team multisig can veto/execute unilaterally. 'Decentralized' with 3 whales isn't." },
+      { title: "As an agent holding governance tokens", note: "Watch active proposals (Snapshot/Tally), and treat a passed-but-timelocked malicious proposal as a signal to EXIT before execution — the delay exists precisely for that." },
+    ],
+    warnings: ["A protocol can be technically sound but governance-captured — an upgradeable contract controlled by a capturable DAO is only as safe as its timelock + voter distribution."],
+  },
+
+  wash_trading_detection: {
+    topic: "wash_trading_detection",
+    title: "Detect wash trading & fake volume (NFTs and tokens)",
+    summary: "The on-chain fingerprints of faked volume so an agent doesn't mistake manipulation for real liquidity/demand.",
+    scope: ["evm", "solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Why it matters", note: "Fake volume makes a token/collection look liquid and in-demand to lure buyers (and to farm reward/ranking systems). Trading on faked liquidity = you're the exit liquidity. Real volume ≠ reported volume." },
+      { title: "Token wash-trade signals", note: "The same few wallets trading back and forth, buys and sells netting ~zero, volume concentrated in a handful of addresses, volume with no corresponding holder growth or price discovery, and round-number repetitive trades. Cross-check DexScreener volume against unique-trader count." },
+      { title: "NFT wash-trade signals", note: "The same NFT flipped between related wallets at rising prices, sales funded from a common source, wallets with no other activity, and 'sales' where buyer+seller are the same entity (often to farm token rewards or fake a floor). Filter marketplace stats to arm's-length trades." },
+      { title: "Verify with holder/flow analysis", command: "whale_watch (large transfers) + holder distribution + fund-source tracing (rugpull_forensics)", note: "Real demand shows broadening holders and organic price action; wash trading shows circular flows among a cluster. Discount volume that doesn't grow the holder base." },
+      { title: "Agent rule", note: "Never size a position on reported volume alone. Require independent signals: unique holders growing, liquidity locked and paired with a real asset, and price action consistent with the volume." },
+    ],
+    warnings: ["Some 'volume' leaderboards and airdrop criteria are gamed by wash trading — don't trust a ranking as a quality signal; verify the underlying flows."],
+  },
+
   rugpull_forensics: {
     topic: "rugpull_forensics",
     title: "Rugpull & scam forensics: the on-chain red flags before and after",
