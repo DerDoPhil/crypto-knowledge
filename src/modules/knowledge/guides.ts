@@ -818,6 +818,54 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.jito.network", "https://docs.marinade.finance"],
   },
 
+  copy_trading_bots: {
+    topic: "copy_trading_bots",
+    title: "Copy-trading bots: mirror smart-money wallets safely",
+    summary: "How to find wallets worth copying, mirror their trades with proper sizing, and avoid the traps that make naive copy-bots lose.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Find wallets worth following", note: "Screen by realized PnL + consistency, not one lucky trade. Sources: DexScreener/GeckoTerminal top traders, on-chain PnL via a subgraph/Dune, or watching wallets that repeatedly enter before pumps. Verify the track record over months, not days." },
+      { title: "Watch their activity in real time", command: "EVM: subscribe to the wallet's txs (mempool or new-block filter); Solana: onLogs / getSignaturesForAddress polling (solana_subscriptions)", note: "You must see the trade fast — copiers who lag get worse fills than the leader." },
+      { title: "Size relative to YOUR book, not theirs", note: "Never mirror absolute amounts (a whale's $100k is your ruin). Scale by a fixed % of your capital per trade, with a per-token cap. Blocklist obvious wash/self-trades and their known-scam tokens." },
+      { title: "Gate every copied token through safety", command: "call tool \"security\" before mirroring a buy", note: "Leaders sometimes buy their own rugs or get exit-liquidity. A copy-bot without a rug filter is a honeypot funnel (rugpull_forensics)." },
+      { title: "Exit logic is yours", note: "Copy entries is easy; exits are where copiers lose — the leader may sell in a venue/size you can't mirror, or off-chain. Define your own take-profit/stop rather than waiting to see their sell." },
+    ],
+    warnings: ["The leader knows they're being copied and can bait copiers (buy to attract, then dump into them). Treat copied signals as ONE input, not gospel."],
+  },
+
+  sniping_launches: {
+    topic: "sniping_launches",
+    title: "Sniping token launches: EVM new-pairs vs Solana pump.fun (fast + safe)",
+    summary: "How launch snipers detect and buy new tokens at block zero — and why speed without safety just funds rugs.",
+    scope: ["evm", "solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Detect the launch", note: "EVM: watch the factory for PairCreated/PoolCreated events (or the mempool for the addLiquidity tx to frontrun the open). Solana: onLogs the pump.fun program for new-mint events (solana_subscriptions, pumpfun_token2022_gotchas)." },
+      { title: "Speed decides the fill", note: "EVM: high priority fee + private submission (so you're not frontrun) + pre-signed tx templates. Solana: priority fee + Jito bundle (reference kind='endpoints') to land in the same slot. Milliseconds and fees separate winners from bag-holders." },
+      { title: "Safety in the same breath", command: "call tool \"security\" { chain, address } + check LP lock + honeypot sim BEFORE buying", note: "Most launches are rugs. A sniper that skips the rug check to save 50ms is just faster at losing money. Set max buy tax, require locked LP, cap position." },
+      { title: "Have an exit before you enter", note: "Set a take-profit ladder and a hard stop. Snipes spike then dump — decide your sell BEFORE buying, and make sure the token is actually SELLABLE (honeypot sim) or your 'gain' is unrealizable." },
+      { title: "Pre-create accounts (Solana)", note: "Pre-make ATAs and warm any ALTs so the buy tx is minimal and fast; rent + fees on the hot path cost you the race (spl_token_basics)." },
+    ],
+    warnings: ["Frontrunning the liquidity-add on EVM can revert or buy into a honeypot before sells are enabled — extreme risk. Sniping is the highest-loss-rate bot type; size tiny."],
+  },
+
+  grid_dca_bots: {
+    topic: "grid_dca_bots",
+    title: "Grid & DCA bots: the low-risk, no-latency-race strategies",
+    summary: "Range-based and time-based accumulation bots — the safest automated strategies for an agent, and how to set them up.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "DCA (dollar-cost averaging)", note: "Buy a fixed amount on a schedule regardless of price. Zero latency race, minimal skill — just automate a recurring swap (aggregator_swaps / solana_swap) with a cron. Best for accumulating a long-term position without timing risk." },
+      { title: "Grid trading", note: "Place staggered buy orders below and sell orders above a price range; each fill flips into the opposite order. Profits from RANGE-BOUND chop. On-chain you emulate it with limit orders (some DEXes) or a bot that swaps at grid levels." },
+      { title: "Set the range from volatility, not hope", note: "Grid works when price oscillates inside your range; a trend blows through one side and leaves you fully in the losing asset. Set bounds from recent volatility (ATR-like) and cap total capital per side." },
+      { title: "Costs still apply", note: "Every grid fill pays gas + swap fees — on expensive chains that eats thin grid margins. Prefer L2s/Solana for grid density; net fees before setting grid spacing (profitability tool)." },
+      { title: "Why agents like these", note: "No mempool race, no frontrun risk, deterministic logic — the easiest to run reliably 24/7. The tradeoff is capped upside vs directional bets." },
+    ],
+    warnings: ["Grid bots quietly accumulate the falling asset in a downtrend ('catching a knife') — pair with a trend filter or a hard stop on the whole grid."],
+  },
+
   trading_bot_architecture: {
     topic: "trading_bot_architecture",
     title: "Build a trading bot that doesn't lose money to its own bugs",
