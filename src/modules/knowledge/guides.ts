@@ -871,6 +871,23 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  aggregator_swaps: {
+    topic: "aggregator_swaps",
+    title: "Best-price swaps via DEX aggregators (which are keyless, and the safety checks)",
+    summary: "How agents get the best same-chain swap route + ready calldata, and the approval/slippage/simulation discipline that prevents losses.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Pick an aggregator by auth cost", note: "KEYLESS: KyberSwap (aggregator-api.kyberswap.com, live-verified) — zero setup, 20+ chains. Odos (keyless, rate-limited). FREE-KEY: 1inch (api.1inch.dev) and 0x (api.0x.org) return 401 without a key. This server's own \"route\" tool aggregates LiFi+deBridge and returns an unsigned tx." },
+      { title: "Get route + calldata", command: "KyberSwap: GET /{chain}/api/v1/routes?tokenIn=&tokenOut=&amountIn=  →  POST /{chain}/api/v1/route/build → {data, routerAddress, value}", note: "Native token uses the 0xEeee…EEeE sentinel. The build step returns the exact tx to sign." },
+      { title: "Approve the ROUTER, exact amount", command: "erc20.approve(routerAddress, amountIn)  // skip for native-token swaps", note: "Approve the aggregator's router (from the build response), not a random address. Prefer exact over infinite (erc20_patterns). Many aggregators route approvals through Permit2 (permit2_usage) — a signature instead of an approve tx." },
+      { title: "Set slippage + simulate", command: "call tool \"simulate\" with the built tx before signing", note: "Set a minOut/slippage the aggregator enforces on-chain; too loose invites sandwiching (mev_strategies). Simulate to catch reverts (stale route, insufficient allowance) before paying gas." },
+      { title: "Compare before trusting one quote", note: "Aggregators differ per pair/chain; for size, compare 2 (e.g. KyberSwap vs the route tool). For cross-CHAIN swaps use bridge routing (bridge_funds), not these same-chain aggregators." },
+    ],
+    warnings: ["A returned route goes stale within seconds on volatile pairs — build → simulate → sign quickly, and rely on the on-chain minOut, not the quoted amount."],
+    references: ["https://docs.kyberswap.com", "https://docs.1inch.io"],
+  },
+
   token_discovery: {
     topic: "token_discovery",
     title: "Discover tokens & new pairs across chains (prices, liquidity, age)",

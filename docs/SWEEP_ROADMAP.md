@@ -36,8 +36,8 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [ ] Etherscan Gas-Oracle (V2) als eigener Eintrag
 - [ ] Solscan / SolanaFM (aktuellen Key-Status verifizieren)
 - [ ] Birdeye (Solana token data, key-status)
-- [ ] DexScreener API (keyless token/pair data — sehr nützlich)
-- [ ] GeckoTerminal API (on-chain DEX prices, keyless)
+- [x] DexScreener API (keyless token/pair data) — Block 32 ✅
+- [x] GeckoTerminal API (on-chain DEX prices, keyless) — Block 32 ✅
 - [ ] Blockdaemon / Ankr free-RPC-Status
 - [ ] Reservoir (NFT aggregator API) / OpenSea Stream
 - [ ] Farcaster Frames v2 / Warpcast API-Details
