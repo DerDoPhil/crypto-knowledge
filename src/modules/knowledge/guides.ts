@@ -989,6 +989,38 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  eip4844_blobs: {
+    topic: "eip4844_blobs",
+    title: "EIP-4844 blob transactions: cheap L2 data (and how to read blob gas)",
+    summary: "What blobs are, why they made L2s ~10x cheaper, and how an agent reads/uses blob gas — mostly relevant if you operate a rollup or post data.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "What a blob is", note: "A type-0x03 tx carries up to 6 'blobs' (~128KB each) of data that is NOT stored in EVM history — it's available for ~18 days then pruned. Rollups post their compressed batch data as blobs instead of expensive calldata → the bulk of the L2-fee drop since Dencun." },
+      { title: "Separate fee market", command: '{"method":"eth_feeHistory","params":["0x5","latest",[]]} → baseFeePerBlobGas + blobGasUsedRatio (live-verified)', note: "Blob gas has its OWN base fee, independent of execution gas. A blob tx pays maxFeePerBlobGas on top of normal fees." },
+      { title: "Building a blob tx", command: "viem: walletClient.sendTransaction({ blobs, kzg, maxFeePerBlobGas, to, ... }) — needs a KZG setup (c-kzg / trusted setup)", note: "Blobs are KZG-committed (versioned hash goes on-chain, data goes to the consensus layer). Almost always done by rollup batchers, not app agents." },
+      { title: "When it matters to an agent", note: "If you post data availability (your own rollup/appchain) or price L2 costs precisely. For ordinary L2 transacting you don't touch blobs directly — but knowing L1 blob base fee explains why L2 fees spike when many rollups post at once." },
+    ],
+    references: ["https://eips.ethereum.org/EIPS/eip-4844"],
+  },
+
+  gas_optimization: {
+    topic: "gas_optimization",
+    title: "Gas optimization for contracts & calls (storage packing, calldata, batching)",
+    summary: "The high-leverage gas savings that matter — for writing contracts and for building cheaper transactions as an agent.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Storage is the dominant cost", note: "SSTORE a fresh slot = 20,000 gas; a warm write far less. Pack multiple small vars into ONE 32-byte slot (e.g. uint128+uint64+uint64 declared adjacently), use uint256 for standalone vars (smaller types cost MORE alone due to masking), and cache storage reads in memory inside loops." },
+      { title: "Calldata is priced per byte", note: "On L2s calldata/blob data is the main cost. Minimize it: pack args tightly, avoid redundant zero-padding, use bytes over string when possible. Zero bytes are cheaper than non-zero (4 vs 16 gas) — a reason some addresses/salts are 'mined' for leading zeros." },
+      { title: "Batch to amortize base cost", command: "Multicall3 (reference kind='addresses') for reads; MultiSend/batch for writes", note: "Every tx pays a 21,000-gas base cost — batching N actions into one saves (N-1)×21k plus per-call overhead. A single agent tx doing approve+swap+stake beats three." },
+      { title: "Cheaper patterns", note: "Use events instead of storage for data you only need off-chain; unchecked{} blocks where overflow is impossible (post-0.8); custom errors instead of require-strings; immutable/constant for deploy-time values (no SLOAD). Measure with forge test --gas-report — don't guess." },
+      { title: "As a caller (no contract changes)", note: "Send during low-base-fee windows (eth_feeHistory), set tight-but-sufficient gas, and prefer aggregators/routers that already batch. profitability tool nets gas against expected value before you commit." },
+    ],
+    warnings: ["Micro-optimizations that hurt readability rarely pay off vs the big three (storage, calldata, batching) — and a gas trick that changes storage layout can break an upgradeable contract (see proxy patterns)."],
+    references: ["https://book.getfoundry.sh/forge/gas-reports"],
+  },
+
   eth_jsonrpc_cheatsheet: {
     topic: "eth_jsonrpc_cheatsheet",
     title: "Ethereum JSON-RPC methods that matter (and their traps)",

@@ -750,7 +750,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Trading & strategies": ["token_discovery", "arbitrage_basics", "trading_bot_architecture", "mev_strategies", "liquidation_bots", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Security": ["price_oracle_safety", "wallet_security_checklist"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
-  "Infra & performance": ["multicall_batching", "fetch_event_logs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
+  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
 export const REFERENCE_KINDS = ["addresses", "endpoints", "errors", "rpc_gotchas"] as const;
