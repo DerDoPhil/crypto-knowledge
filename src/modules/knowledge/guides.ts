@@ -419,6 +419,39 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  proxy_upgrade_patterns: {
+    topic: "proxy_upgrade_patterns",
+    title: "Upgradeable contracts: proxy patterns, storage collisions, and how to read them",
+    summary: "How proxy upgrades work, the storage-layout rules that break them, and how an agent detects/inspects a proxy before trusting it.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "The proxy model", note: "A Proxy holds the STATE and delegatecalls to an Implementation that holds the LOGIC. Upgrading = pointing the proxy at a new implementation. The user always interacts with the proxy address; the logic can change under it." },
+      { title: "Find the implementation (EIP-1967)", command: "eth_getStorageAt(proxy, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc) → implementation address", note: "This server's abi tool follows EIP-1967 proxies automatically. Admin slot: 0xb53127684a568b3173 ...eb1c7 (0xb531…). UUPS keeps the upgrade fn in the implementation; Transparent keeps it in the proxy." },
+      { title: "Storage collision = the classic bug", note: "Because logic runs in the proxy's storage, a new implementation MUST keep the same storage layout and only APPEND new variables. Reordering/inserting a variable corrupts existing state. Use a storage gap (uint256[50] __gap) or ERC-7201 namespaced storage." },
+      { title: "Never let the implementation be initialized/selfdestructed", note: "Implementations use initializer() not constructors (constructors run in the impl's own storage, not the proxy's). An uninitialized UUPS implementation that anyone can initialize + upgrade has been drained before — check it's locked (_disableInitializers)." },
+      { title: "As an agent: assess upgrade risk", note: "A proxy means the code CAN change — check who the admin/owner is (an EOA? a multisig? a timelock?). An upgradeable token/vault controlled by a single EOA is a rug vector; a timelock-guarded one gives you exit time." },
+    ],
+    warnings: ["'Verified source' on a proxy shows the PROXY, not the implementation — always resolve and inspect the implementation address separately (it can be swapped after you check)."],
+    references: ["https://eips.ethereum.org/EIPS/eip-1967", "https://docs.openzeppelin.com/upgrades-plugins"],
+  },
+
+  rugpull_forensics: {
+    topic: "rugpull_forensics",
+    title: "Rugpull & scam forensics: the on-chain red flags before and after",
+    summary: "The concrete signals that a token/protocol is a rug — beyond the automated security score — so an agent can avoid or diagnose one.",
+    scope: ["evm", "solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Start with the automated scan", command: "call tool \"security\" { chain, address }", note: "GoPlus + honeypot sim covers the common flags (honeypot, taxes, mint, blacklist). This guide is the JUDGMENT layer on top." },
+      { title: "Ownership & control red flags", note: "Owner can mint unlimited supply, change fees/taxes arbitrarily, pause transfers, or blacklist sellers. A 'permanent delegate' (Solana Token-2022) or upgradeable proxy controlled by an EOA = issuer can take your funds. Renounced ownership is safer but not sufficient." },
+      { title: "Liquidity red flags", note: "LP NOT locked (or lock expiring soon) → dev can pull liquidity anytime. Tiny liquidity vs market cap → one sell craters it. Liquidity paired with a worthless token instead of USDC/WETH/SOL → fake depth. Check lock via the LP token holder + a locker contract." },
+      { title: "Holder & trade red flags", note: "Top-heavy holder distribution (dev/insiders hold most supply), lots of wallets funded from ONE source (Sybil for fake volume), buys succeed but sells fail (honeypot), organic-looking volume that's actually wash trading between a few wallets." },
+      { title: "Post-mortem (diagnose a rug that happened)", command: "Trace via an explorer / whale_watch: the liquidity-removal tx, the mint-then-dump, or the upgrade tx that changed the logic", note: "Follow the funds to the exit (often a fresh wallet → bridge → CEX). The abi/simulate tools decode the malicious call; the pattern (who called what, when) is the evidence." },
+    ],
+    warnings: ["No single signal is proof — rugs combine several (unlocked LP + mint power + insider concentration). And a 'clean' token today can rug tomorrow if control isn't renounced/timelocked. Re-check before large exposure."],
+  },
+
   price_oracle_safety: {
     topic: "price_oracle_safety",
     title: "Price oracle safety: why spot prices get you drained (TWAP, Chainlink, sanity bands)",
