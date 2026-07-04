@@ -871,6 +871,23 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  token_discovery: {
+    topic: "token_discovery",
+    title: "Discover tokens & new pairs across chains (prices, liquidity, age)",
+    summary: "How an agent finds tokens, checks if they're real/liquid, and spots fresh launches — the keyless data layer before any trade.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Find pairs for a token (any chain)", command: "GET https://api.dexscreener.com/latest/dex/tokens/{tokenAddress}", note: "Keyless (live-verified). Returns every DEX pair, price, liquidity USD, 24h volume and pair age across all chains — one call to see where a token actually trades." },
+      { title: "Search / spot new launches", command: "GET https://api.dexscreener.com/latest/dex/search?q={symbol}  · sort/filter by pairCreatedAt for fresh pairs", note: "For sniping/monitoring, new-pair age + rising liquidity are the signals; combine with a security scan before touching it." },
+      { title: "On-chain DEX prices & OHLCV", command: "GET https://api.geckoterminal.com/api/v2/networks/{net}/tokens/{addr} (net: eth, solana, base…)", note: "Keyless (live-verified). Good for candles/pool-level data and trending pools." },
+      { title: "ALWAYS gate discovery through safety", command: "call tool \"security\" { chain, address } before any buy", note: "A token showing on DexScreener can still be a honeypot/high-tax scam. Check liquidity depth + lock, holder concentration, and the risk score first (security tool, token_discovery → security → trade)." },
+      { title: "Cross-check price", note: "For a canonical USD price use DefiLlama/CoinGecko; DexScreener/GeckoTerminal reflect the specific pool (can be thin/manipulated for microcaps — price_oracle_safety)." },
+    ],
+    warnings: ["Liquidity USD can be faked with worthless paired tokens — verify the quote asset is real (USDC/WETH/SOL) and the liquidity is locked, not just 'present'."],
+    references: ["https://docs.dexscreener.com"],
+  },
+
   defi_yield_research: {
     topic: "defi_yield_research",
     title: "Research DeFi yields and stablecoin health (keyless, one API family)",
