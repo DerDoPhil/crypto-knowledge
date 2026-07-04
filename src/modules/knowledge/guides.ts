@@ -1140,6 +1140,40 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://mempool.space/docs/api", "https://github.com/bitcoinjs/bitcoinjs-lib"],
   },
 
+  bitcoin_taproot: {
+    topic: "bitcoin_taproot",
+    title: "Bitcoin Taproot (P2TR): key-path vs script-path spends, and why it matters",
+    summary: "What Taproot added and how an agent builds/spends P2TR outputs — the basis for modern Bitcoin scripting, Ordinals and better privacy.",
+    scope: ["bitcoin"],
+    prerequisites: ["bitcoinjs-lib or a Taproot-capable library"],
+    steps: [
+      { title: "P2TR addresses (bc1p…)", note: "Taproot outputs use bech32m encoding (bc1p prefix, vs bc1q for segwit v0). A P2TR output commits to an internal public key that can hide a whole script tree — spenders reveal only what they use." },
+      { title: "Key-path spend (cheap, private)", note: "If you just sign with the (tweaked) internal key, the spend looks like a plain signature — no script revealed. Cheapest and most private. Schnorr signatures (BIP-340) replace ECDSA here and enable signature aggregation." },
+      { title: "Script-path spend (reveal a leaf)", note: "To use a spending condition, reveal that ONE script leaf + a Merkle proof — the rest of the tree stays hidden. This is how complex conditions (multisig, timelocks, and Ordinals inscription envelopes) live cheaply in Taproot." },
+      { title: "Building it", command: "bitcoinjs-lib payments.p2tr({ internalPubkey, scriptTree, redeem }) → output script + address; sign with Schnorr", note: "Ordinals inscriptions are a script-path Taproot spend that embeds data in an OP_FALSE OP_IF … envelope (bitcoin_ordinals_runes)." },
+      { title: "Fees & data", note: "Witness data (incl. inscription content) is discounted (~1/4 weight) but large inscriptions still cost real sats at high fee rates — quote sat/vB from mempool.space (bitcoin_basics)." },
+    ],
+    warnings: ["Taproot uses x-only (32-byte) public keys and Schnorr sigs — mixing them up with ECDSA/33-byte keys is a common integration bug. Use a library that handles the key tweaking."],
+    references: ["https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki"],
+  },
+
+  bitcoin_lightning: {
+    topic: "bitcoin_lightning",
+    title: "Lightning Network basics: instant Bitcoin payments via channels & invoices",
+    summary: "How Lightning moves BTC off-chain instantly and what an agent needs to pay or get paid over it.",
+    scope: ["bitcoin"],
+    prerequisites: ["Access to an LN node or a hosted LN API (LNbits, Voltage, an exchange LN endpoint)"],
+    steps: [
+      { title: "The model", note: "Payment channels are 2-of-2 multisig UTXOs; balances update off-chain instantly and only settle on-chain at open/close. Payments route across many channels — you don't need a direct channel to the payee, just a path." },
+      { title: "Invoices (BOLT11)", note: "The payee generates an invoice (lnbc… string) encoding amount, a payment hash and expiry. The payer pays it; the preimage that unlocks the hash IS the proof of payment. No addresses reused — each invoice is one-shot." },
+      { title: "As an agent: pay", command: "Via a node's API (LND REST/gRPC, Core Lightning, or hosted LNbits): decode the invoice, check amount/expiry, then payInvoice(bolt11)", note: "Set a max fee (routing costs a few ppm). A failed route just doesn't pay — funds aren't lost, you retry another path." },
+      { title: "As an agent: receive", note: "Generate an invoice for the amount, watch for settlement (the preimage). Requires inbound liquidity (someone must have a channel balance pointing at you) — the classic onboarding hurdle." },
+      { title: "When to use it vs on-chain / x402", note: "Lightning = tiny, instant, high-frequency BTC payments. For agent-to-service API payments, x402 (USDC/HTTP) is usually simpler; Lightning shines for native-BTC micropayments and streaming." },
+    ],
+    warnings: ["Channel liquidity is directional — you can be unable to receive (no inbound) or send (no outbound) even with a funded node. Hosted LN providers abstract this at the cost of custody."],
+    references: ["https://docs.lightning.engineering"],
+  },
+
   bitcoin_ordinals_runes: {
     topic: "bitcoin_ordinals_runes",
     title: "Bitcoin metaprotocols: Ordinals, Runes, BRC-20 (query & basics)",
