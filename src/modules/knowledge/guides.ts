@@ -901,6 +901,23 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.flashbots.net", "https://docs.jito.network"],
   },
 
+  token_launch_mechanics: {
+    topic: "token_launch_mechanics",
+    title: "Token launch mechanics: bonding curves, fair launch, LBPs",
+    summary: "How tokens actually come to market — the models, their price dynamics, and what each means for a buyer or a launcher.",
+    scope: ["evm", "solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Bonding curve (pump.fun style)", note: "Price rises deterministically as supply is bought along a curve; once a market-cap threshold is hit the token 'graduates' to a real DEX pool with the accumulated liquidity. Early buyers pay less — which is why snipers race the first block (sniping_launches, pumpfun_token2022_gotchas)." },
+      { title: "Fair launch", note: "No pre-sale/pre-mine; everyone buys from the same starting point (often a bonding curve or an open LP add). 'Fair' in theory — in practice bots + snipers get block-zero advantage, so retail rarely gets the bottom." },
+      { title: "Liquidity Bootstrapping Pool (LBP)", note: "A Balancer weighted pool that starts weighted heavily toward the token and shifts over time, pushing price DOWN if demand is flat — designed to deter snipers/whales (buying early is expensive and mean-reverts). Used for more equitable price discovery." },
+      { title: "Pre-sale / IDO", note: "Tokens sold before listing at a fixed price, then TGE (token generation event) + vesting. Watch the unlock schedule — a low float + big cliff unlocks = sell pressure later (defi_yield_research emissions logic applies)." },
+      { title: "As a buyer: the checklist", command: "call tool \"security\" + check LP lock + supply distribution + unlock schedule", note: "New launches are the highest-scam-density surface. Verify sellability (honeypot sim), who holds supply, and whether liquidity is locked before touching it (rugpull_forensics)." },
+    ],
+    warnings: ["'Fair launch' is a marketing term, not a guarantee — insiders/snipers routinely capture the early supply. Assume you are NOT first and price your entry accordingly."],
+    references: ["https://docs.balancer.fi/concepts/pools/liquidity-bootstrapping.html"],
+  },
+
   prediction_markets: {
     topic: "prediction_markets",
     title: "Prediction markets for agents: read probabilities, trade, resolve (Polymarket)",
