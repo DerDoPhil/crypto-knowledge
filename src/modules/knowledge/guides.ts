@@ -922,6 +922,43 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://api-docs.defillama.com"],
   },
 
+  solana_versioned_tx: {
+    topic: "solana_versioned_tx",
+    title: "Solana versioned transactions & Address Lookup Tables (fit more in one tx)",
+    summary: "How to break past Solana's tx account limit — the versioned-tx + ALT pattern every serious DeFi/swap tx now uses.",
+    scope: ["solana"],
+    prerequisites: [],
+    steps: [
+      { title: "The problem", note: "A legacy Solana tx is capped at ~35 accounts by the 1232-byte size limit. A Jupiter swap or multi-hop route needs far more — legacy txs simply can't hold them." },
+      { title: "Address Lookup Tables (ALTs)", note: "An ALT is an on-chain account storing addresses; a versioned tx references them by 1-byte INDEX instead of full 32-byte pubkeys. This compresses accounts so a single tx can touch 64+ accounts. Jupiter etc. return the ALT addresses to use." },
+      { title: "Build a v0 transaction", command: "const msg = new TransactionMessage({ payerKey, recentBlockhash, instructions }).compileToV0Message([lookupTableAccount]);\nconst tx = new VersionedTransaction(msg);\ntx.sign([signer]);", note: "Pass the resolved ALT accounts (fetch via connection.getAddressLookupTable). Aggregator APIs hand you both the instructions and the ALT keys." },
+      { title: "Send it", command: "connection.sendTransaction(tx)  // VersionedTransaction, not the legacy Transaction", note: "Most RPCs default to accepting versioned txs; ensure maxSupportedTransactionVersion:0 when fetching them back (getTransaction)." },
+      { title: "Creating your own ALT", note: "AddressLookupTableProgram.createLookupTable + extendLookupTable if you repeatedly hit the same many accounts (e.g. a market-making bot). Tables need one slot to 'warm up' before use." },
+    ],
+    warnings: ["A referenced ALT must exist and be active on-chain at execution — a tx pointing at a not-yet-warmed or closed table fails."],
+    references: ["https://solana.com/docs/advanced/lookup-tables"],
+  },
+
+  solana_token_extensions: {
+    topic: "solana_token_extensions",
+    title: "Solana Token-2022 extensions: transfer fees, hooks, and the traps",
+    summary: "What Token-2022 (Token Extensions) adds over classic SPL and why naive integrations break on these tokens.",
+    scope: ["solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Detect the program first", note: "Token-2022 mints are owned by TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb (classic = Tokenkeg…). ALWAYS check the mint's owner and pass the correct programId to every ATA/instruction (pumpfun_token2022_gotchas)." },
+      { title: "Transfer Fee extension", note: "The mint can levy a % fee on every transfer, withheld in the recipient account and later harvested by the fee authority. Your 'transfer 100' delivers <100 — read the TransferFeeConfig and use transferCheckedWithFee, or the amount received won't match." },
+      { title: "Transfer Hook extension", note: "The mint can require a callback to an arbitrary program on every transfer (e.g. allowlist, royalty). A plain transfer that omits the hook's extra accounts FAILS — resolve the hook's ExtraAccountMetaList and include them." },
+      { title: "Other extensions to expect", note: "Non-transferable ('soulbound'), permanent delegate (issuer can move/burn your tokens — a rug vector), default-account-state (frozen until allowed), confidential transfers, interest-bearing. Read the mint's TLV extension data before assuming ERC-20-like behavior." },
+      { title: "Use the SDK", command: "@solana/spl-token with the TOKEN_2022_PROGRAM_ID + getMint/getTransferFeeConfig helpers", note: "It parses the extension TLV data for you; hand-parsing is error-prone." },
+    ],
+    warnings: [
+      "A 'permanent delegate' extension lets the token issuer transfer or burn YOUR balance at will — treat such tokens as issuer-controlled; scan with the security tool before holding.",
+      "Transfer-fee and transfer-hook tokens break naive swap/transfer code that assumes classic SPL — always branch on the token program.",
+    ],
+    references: ["https://solana.com/docs/tokens/extensions"],
+  },
+
   spl_token_basics: {
     topic: "spl_token_basics",
     title: "SPL tokens on Solana: ATAs, decimals, transfers, priority fees",
