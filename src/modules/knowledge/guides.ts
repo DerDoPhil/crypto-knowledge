@@ -979,7 +979,7 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Look up the feed address — NEVER guess it", note: "Feed proxies differ per chain and get migrated. Verified directory: https://data.chain.link (and docs.chain.link/data-feeds/price-feeds/addresses). Example verified anchor: ETH/USD on Ethereum = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419." },
       { title: "Call latestRoundData()", command: "selector 0xfeaf968c → (roundId, int256 answer, startedAt, updatedAt, answeredInRound)", note: "answer for USD pairs has 8 decimals (price = answer / 1e8). Verify decimals() (0x313ce567) if unsure." },
       { title: "ALWAYS check staleness", note: "Reject if now - updatedAt exceeds the feed's heartbeat (ETH/USD: ~1h) — a stale answer during volatility is worse than no answer." },
-      { title: "Off-chain alternative (no RPC needed)", command: "GET https://coins.llama.fi/prices/current/coingecko:ethereum", note: "For agent logic that doesn't need on-chain trust, DefiLlama/CoinGecko are keyless and batchable — cheaper than an eth_call per price." },
+      { title: "Off-chain alternatives (no RPC needed)", command: "GET https://coins.llama.fi/prices/current/coingecko:ethereum", note: "For agent logic that doesn't need on-chain trust, several keyless sources exist and can be cross-checked: DefiLlama/CoinGecko (aggregated), DIA (source-auditable), RedStone + Pyth Hermes (signed pull-oracles), GeckoTerminal (per-pool). Batch + compare instead of one eth_call per price." },
     ],
     warnings: ["A feed address that returns 0x on eth_call is wrong or deprecated — this exact check caught a wrong 'well-known' BTC/USD address during curation of this guide."],
     references: ["https://data.chain.link", "https://docs.chain.link/data-feeds"],
