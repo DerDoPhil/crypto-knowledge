@@ -477,9 +477,10 @@ export const GUIDES: Record<string, Guide> = {
       { title: "The two-sided reality", note: "A cross-chain tx has TWO confirmations: source (message sent) and destination (message delivered/executed). Your source receipt says nothing about delivery — poll the messaging-layer scan, not just the source chain." },
       { title: "LayerZero messages", command: "GET https://scan.layerzero-api.com/v1/messages?srcTxHash=0x… → status per message (INFLIGHT / DELIVERED / FAILED)", note: "Keyless (live-verified). GUID identifies the message across both chains." },
       { title: "Wormhole VAAs", command: "GET https://api.wormholescan.io/api/v1/vaas?limit=1 (or by tx) → the signed VAA + redemption status", note: "A VAA existing = guardians signed; it still must be REDEEMED on the destination to complete. Keyless (live-verified)." },
-      { title: "Prefer a router for the actual move", command: "call tool \"route\" (LiFi + deBridge)", note: "It returns the ready-to-sign tx AND abstracts the delivery mechanism; use the scan APIs above to observe/debug an in-flight transfer." },
+      { title: "Chainlink CCIP", note: "For programmable cross-chain messages/token-transfers with Chainlink security: Router.ccipSend(destinationChainSelector, message). The destinationChainSelector is CCIP's OWN id, NOT the chainId — look it up. Router (Ethereum) 0x80226fc0…f7D (live-verified), per-chain addresses differ." },
+      { title: "Prefer a router for the actual move", command: "call tool \"route\" (LiFi + deBridge), or Across for fast fills (reference kind='endpoints')", note: "Routers return the ready-to-sign tx AND abstract the delivery mechanism; use the scan APIs above to observe/debug an in-flight transfer." },
     ],
-    warnings: ["Some bridges auto-redeem on the destination, others require a manual claim tx — check the specific bridge before assuming funds arrive by themselves."],
+    warnings: ["Some bridges auto-redeem on the destination, others require a manual claim tx — check the specific bridge before assuming funds arrive by themselves.", "Every cross-chain protocol uses its OWN chain identifiers (CCIP chainSelector, CCTP domain, LayerZero eid) — never pass a raw chainId."],
   },
 
   onchain_perps_gmx: {

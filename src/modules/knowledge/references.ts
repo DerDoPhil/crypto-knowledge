@@ -98,6 +98,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "resolver(node) → resolver contract → addr(node). viem has getEnsAddress/getEnsName built in.",
   },
   {
+    name: "Chainlink CCIP Router (cross-chain messaging) — Ethereum",
+    addresses: { ethereum: "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D" },
+    note: "Send arbitrary messages + tokens across chains with Chainlink's security. ccipSend(destinationChainSelector, message) — the destinationChainSelector is CCIP's OWN id (NOT chainId), look it up in Chainlink's directory. Per-chain Router addresses differ. Programmable-token-transfer alternative to CCTP (native USDC) and LayerZero.",
+  },
+  {
     name: "Circle CCTP TokenMessenger (native USDC bridging)",
     addresses: { ethereum: "0xBd3fa81B58Ba92a82136038B25aDec7066af3155", base: "0x1682Ae6375C4E4A97e4B583BC394c861A46D8962" },
     note: "depositForBurn() burns USDC on the source chain; after Circle's attestation you receiveMessage() on the destination to mint NATIVE USDC (no wrapped/bridged variant). Same MessageTransmitter pattern per chain; see cctp_native_usdc guide. TokenMessenger live-verified (13.5KB code).",
@@ -206,6 +211,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     what: "Cross-chain + same-chain swap quotes with ready-to-sign transactionRequest.",
     example: "GET /quote?fromChain=…&toChain=…&fromToken=…&toToken=…&fromAmount=…&fromAddress=…&integrator=<your-name>",
     limits: "The `integrator` param is REQUIRED — omitting it returns HTTP 400.",
+  },
+  {
+    name: "Across (fast intent bridge)",
+    baseUrl: "https://app.across.to/api",
+    auth: "none",
+    what: "Fast optimistic bridge (~seconds) — keyless quote of relayer fees + fill time (live-verified: ~2s estimated fill Ethereum→Base).",
+    example: "GET /suggested-fees?inputToken=&outputToken=&originChainId=&destinationChainId=&amount= → fees + fill estimate; then deposit to the SpokePool.",
+    limits: "Best for fast small/medium transfers; canonical bridges for large trust-minimized moves (l2_bridging_basics).",
   },
   {
     name: "deBridge DLN",
