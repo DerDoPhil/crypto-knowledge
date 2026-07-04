@@ -22,16 +22,16 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 
 ## 🔜 TODO — Endpunkte / Protokolle (live-verifizieren!)
 - [ ] Balancer v2/v3 Batch-Swaps + weighted pools (Vault schon als Adresse drin)
-- [ ] 1inch / 0x / Paraswap Swap-Aggregator-APIs (Key-Status prüfen)
-- [ ] Kyberswap Aggregator API (oft keyless)
-- [ ] Odos / Enso Routing-APIs
-- [ ] Dune API (Query-Execution, free tier)
+- [x] 1inch / 0x / Paraswap Swap-Aggregator-APIs (Key-Status prüfen) — Block33 (KyberSwap keyless, 1inch/0x free-key)
+- [x] Kyberswap Aggregator API (oft keyless) — Block33 ✅
+- [x] Odos / Enso Routing-APIs — Block33 (Odos keyless) ✅
+- [x] Dune API (Query-Execution, free tier) — Block35 ✅
 - [ ] Allium / Transpose (falls keyless-tier)
-- [ ] DIA Oracle API (keyless prices)
-- [ ] RedStone Oracle (pull-model, wie Pyth)
-- [ ] Chainlink CCIP (cross-chain, Router-Adresse verifizieren)
-- [ ] Across Protocol (fast bridge) API
-- [ ] Socket/Bungee Bridge-Aggregator API
+- [x] DIA Oracle API (keyless prices) — Block35 ✅
+- [x] RedStone Oracle (pull-model, wie Pyth) — Block35 ✅
+- [x] Chainlink CCIP (cross-chain, Router-Adresse verifizieren) — Block34 ✅
+- [x] Across Protocol (fast bridge) API — Block34 ✅
+- [x] Socket/Bungee Bridge-Aggregator API — Block34 (Socket=free-key) ✅
 - [ ] Tenderly Simulation API (free tier)
 - [ ] Etherscan Gas-Oracle (V2) als eigener Eintrag
 - [ ] Solscan / SolanaFM (aktuellen Key-Status verifizieren)
@@ -48,25 +48,25 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [ ] Grid/DCA-Bot-Detail (Range, Rebalancing)
 - [ ] Statistical Arbitrage / Basis-Trade (Perp-Funding vs Spot)
 - [ ] JIT-Liquidity / Uniswap-v3-v4-Hook-Strategien
-- [ ] Flash-Loan-Muster generell (Aave/Balancer/Morpho, use-cases)
+- [x] Flash-Loan-Muster generell (Aave/Balancer/Morpho, use-cases) — Block38 ✅
 - [ ] Token-Launch-Mechaniken (Fair-Launch, bonding curves, LBPs)
-- [ ] Airdrop-Farming-Mechanik (Sybil-Risiko, eligibility patterns)
+- [x] Airdrop-Farming-Mechanik (Sybil-Risiko, eligibility patterns) — Block38 ✅
 - [ ] Portfolio-Rebalancing / Risk-Parity für Agents
-- [ ] Stablecoin-Mechaniken (fiat vs crypto-backed vs algo, depeg-Signale)
+- [x] Stablecoin-Mechaniken (fiat vs crypto-backed vs algo, depeg-Signale) — Block38 ✅
 - [ ] Governance-Attacken / Timelock-Analyse
-- [ ] Rugpull-Forensik (Post-Mortem-Muster über security-Tool hinaus)
+- [x] Rugpull-Forensik (Post-Mortem-Muster über security-Tool hinaus) — Block40 ✅
 - [ ] Wash-Trading-/Volumen-Fake-Erkennung
-- [ ] Gas-Optimierung für Contracts (Storage-Packing, calldata)
-- [ ] Upgradeable-Contracts (Proxy-Patterns, Storage-Kollisionen)
+- [x] Gas-Optimierung für Contracts (Storage-Packing, calldata) — Block37 ✅
+- [x] Upgradeable-Contracts (Proxy-Patterns, Storage-Kollisionen) — Block40 ✅
 
 ## 🔜 TODO — Chain-spezifische Tiefe (BTC/ETH/SOL Fokus)
-- [ ] Bitcoin: Taproot/Miniscript, PSBT-v2, Lightning-Basics
+- [x] Bitcoin: Taproot/Miniscript, PSBT-v2, Lightning-Basics — Block39 ✅
 - [ ] Bitcoin: Runes-Etching/Minting-Detail
-- [ ] Ethereum: Blob-Txs (EIP-4844) für L2-Kosten
+- [x] Ethereum: Blob-Txs (EIP-4844) für L2-Kosten — Block37 ✅
 - [ ] Ethereum: Verkle/Statelessness-Ausblick (nur wenn stabil)
-- [ ] Solana: Address-Lookup-Tables (Tx-Size)
-- [ ] Solana: Versioned-Transactions-Detail
-- [ ] Solana: Token-Extensions (Token-2022 transfer-hooks/fees) Detail
+- [x] Solana: Address-Lookup-Tables (Tx-Size) — Block36 ✅
+- [x] Solana: Versioned-Transactions-Detail — Block36 ✅
+- [x] Solana: Token-Extensions (Token-2022 transfer-hooks/fees) Detail — Block36 ✅
 - [ ] Solana: Priority-Fee-Markt + Jito-Tip-Strategie Detail
 
 ## 🔜 TODO — Tool-/Produkt-Verbesserungen (Aufbau)
