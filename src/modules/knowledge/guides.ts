@@ -836,6 +836,56 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.polymarket.com"],
   },
 
+  flash_loans: {
+    topic: "flash_loans",
+    title: "Flash loans: borrow millions with no collateral (uses & the atomic rule)",
+    summary: "The one-transaction uncollateralized loan primitive — how it works, which providers are cheapest, and the legitimate use cases.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "The atomic rule", note: "You borrow, do arbitrary things, and repay + fee — ALL in one transaction. If you don't repay by the end, the whole tx reverts as if nothing happened. That's why no collateral is needed: the protocol is never at risk." },
+      { title: "Providers & fees", note: "Balancer v2 Vault (0xBA12…2C8, live-verified): 0% fee — the cheapest. Aave v3 Pool (0x8787…4E2): ~0.05%. Morpho: callback-based, free on Blue. Uniswap v3/v4 flash via swap callbacks. Pick by fee + which token has depth." },
+      { title: "Legitimate uses", note: "Liquidations (borrow the repay asset, seize collateral, repay — liquidation_bots), arbitrage (borrow, arb across DEXes, repay — arbitrage_basics), collateral swaps (avoid unwinding a position), and self-liquidation to exit safely. NOT a money printer — you still need a profitable strategy inside." },
+      { title: "The pattern", command: "vault.flashLoan(receiver, tokens, amounts, userData) → your receiver's callback runs → do the strategy → approve repayment → return", note: "Implement the provider's callback interface (receiveFlashLoan / executeOperation). Simulate the whole thing first (simulate tool) — a revert costs gas for nothing." },
+      { title: "Risk framing", note: "Flash loans remove the CAPITAL requirement, not the COSTS (fee + gas + slippage) or the STRATEGY risk. They're also the tool of choice for oracle-manipulation attacks — which is why you price against manipulation-resistant oracles (price_oracle_safety)." },
+    ],
+    warnings: ["A flash-loan strategy that isn't atomically profitable just reverts and wastes gas — there's no 'partial' outcome. Model every cost before deploying."],
+    references: ["https://docs.aave.com/developers/guides/flash-loans"],
+  },
+
+  airdrop_farming: {
+    topic: "airdrop_farming",
+    title: "Airdrop farming: earn eligibility without getting Sybil-flagged",
+    summary: "How airdrops actually select recipients and the patterns that get farmers either rewarded or filtered out.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "What projects actually reward", note: "Genuine usage over time: real volume, providing liquidity, bridging, holding through volatility, governance participation, multi-week activity. Snapshot dates are usually SECRET and retroactive — you can't cram the day before." },
+      { title: "How Sybil filters work", note: "Projects cluster wallets by funding source (all funded from one address/CEX withdrawal in a batch), identical behavior/timing, tiny uniform amounts, and no organic activity. Clustered wallets get ZEROED — the most common farmer failure." },
+      { title: "Legitimate multi-wallet hygiene (if you do it)", note: "Independent funding paths, varied amounts and timing, genuinely different usage per wallet, real holding periods. This is operationally expensive — and many projects now explicitly penalize obvious multi-accounting. One well-used wallet often beats 50 farmed ones." },
+      { title: "Find opportunities without the noise", note: "Target protocols that are live, unincentivized, VC-backed and token-less (the classic setup). Track via the community, not 'airdrop lists' (which flood the target with Sybils and lower per-user allocation)." },
+      { title: "Costs are real", note: "Gas across many wallets/chains + capital at risk + time. Model expected value soberly: most farmed airdrops underpay vs the gas+opportunity cost, and unlock/vesting can gut the headline number." },
+    ],
+    warnings: ["Interacting with an unaudited 'airdrop' contract to 'claim' is a top scam vector — verify the contract (abi/security tools) before signing; fake claim sites harvest approvals/Permit2 signatures."],
+  },
+
+  stablecoin_mechanics: {
+    topic: "stablecoin_mechanics",
+    title: "Stablecoin mechanics: fiat-backed vs crypto-backed vs algo, and depeg signals",
+    summary: "How each stablecoin type holds its peg, where the risk sits, and the on-chain signals that warn of a depeg before the price moves.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Fiat-backed (USDC, USDT)", note: "1:1 reserves at a custodian, redeemable by authorized parties. Risk = issuer/banking (USDC briefly depegged when reserves sat in a failed bank). Trust the attestations + redemption path; on-chain it's just an ERC-20." },
+      { title: "Crypto-backed (DAI, crvUSD, GHO)", note: "Over-collateralized by crypto in vaults; peg held by liquidations + arbitrage. Risk = collateral crash faster than liquidations clear (bad debt). Watch the collateralization ratio and the backing mix (DAI holds significant USDC → inherits its risk)." },
+      { title: "Algorithmic / hybrid", note: "Peg via mint/burn incentives, sometimes under-collateralized. Historically fragile (UST collapse = death spiral when the arb broke). Treat purely-algo pegs as high-risk; hybrids (partial collateral) sit in between." },
+      { title: "Depeg early-warning signals (on-chain)", command: "stablecoins.llama.fi (peg price per coin) + Curve pool balances (get_virtual_price / imbalance, stableswap_pools)", note: "A stableswap pool going heavily imbalanced toward one coin = the market dumping the OTHER = depeg in progress, often BEFORE the aggregated price reflects it. Falling protocol collateralization is the crypto-backed warning." },
+      { title: "Agent rule", note: "Don't treat 'stablecoin' as 'always $1'. Price it (DefiLlama/oracle), check the pool health, and prefer the most battle-tested (USDC/USDT/DAI) for treasury; size exposure to riskier ones accordingly." },
+    ],
+    warnings: ["Bridged/wrapped stablecoins (USDC.e, multichain variants) carry BRIDGE risk on top of issuer risk — a bridge hack can depeg the wrapped version while native is fine. Know which one you hold (addresses reference)."],
+    references: ["https://docs.llama.fi"],
+  },
+
   liquidation_bots: {
     topic: "liquidation_bots",
     title: "Liquidation bots: find underwater loans and liquidate profitably",
