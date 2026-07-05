@@ -1410,12 +1410,34 @@ export const GUIDES: Record<string, Guide> = {
     prerequisites: [],
     steps: [
       { title: "The three, briefly", note: "ORDINALS = arbitrary data 'inscribed' onto individual sats (NFT-like). RUNES = a native fungible-token protocol encoded in OP_RETURN (post-halving, UTXO-based, efficient). BRC-20 = older fungible standard built ON TOP of ordinal inscriptions (JSON in inscriptions) — heavier than Runes, still has volume." },
-      { title: "Query data (Hiro Ordinals API is DEPRECATED — returns 410)", command: "GET https://api.ordiscan.com/v1/address/{btc-addr}/inscriptions | /runes | /brc20", note: "Ordiscan is the practical replacement: keyless via x402 micro-pay (unpaid call → HTTP 402, live-verified) or a free key. Magic Eden also exposes ordinals/marketplace endpoints." },
+      { title: "Query data (Hiro Ordinals API is DEPRECATED — returns 410)", command: 'GET https://ordinals.com/rune/{NAME} with "Accept: application/json" (keyless, live-verified) — or Ordiscan (x402/free key) for address-level indexing', note: "ordinals.com answers JSON for /rune, /runes and /inscription when you send the Accept header. Ordiscan adds per-address inscriptions/runes/brc20 (unpaid call → HTTP 402). Magic Eden has keyless Runes market data. Etching/minting mechanics: bitcoin_runes_minting guide." },
       { title: "Runes vs BRC-20 for new work", note: "Prefer Runes for new fungible tokens — UTXO-native, far cheaper to mint/transfer than BRC-20's inscription overhead. BRC-20 mainly matters for existing tokens." },
       { title: "Base-layer reads still via Esplora", note: "Ordinal/rune INDEXING needs a specialized indexer (Ordiscan); raw UTXOs/txs/fees stay on mempool.space + Blockstream (see bitcoin_basics)." },
     ],
     warnings: ["Inscription/rune transfers are still normal Bitcoin txs — respect dust limits and sat-vB fees (bitcoin_basics). Sending an inscribed sat as ordinary change BURNS the inscription."],
     references: ["https://docs.ordinals.com", "https://docs.ordiscan.com"],
+  },
+
+  bitcoin_runes_minting: {
+    topic: "bitcoin_runes_minting",
+    title: "Runes etching & minting in detail: runestones, commitments, edicts, cenotaphs",
+    summary: "The exact mechanics of creating and minting a Bitcoin Rune — and the malformed-runestone trap that burns tokens.",
+    scope: ["bitcoin"],
+    prerequisites: ["bitcoin_basics (UTXOs, PSBT, fees)"],
+    steps: [
+      { title: "A runestone is an OP_RETURN message", note: "Protocol data lives in the FIRST output scripting `OP_RETURN OP_13 <payload>` (OP_13 is the Runes magic number). The payload is varint-encoded tag/value pairs. One runestone per tx; it can etch, mint and transfer in the same message." },
+      { title: "Etching = creating the rune", note: "Fields: name (modified base-26, A=0…Z=25, AA=26…), spacers (bitfield rendering '•' separators — DOG•GO•TO•THE•MOON), divisibility (decimal places), symbol (one char, e.g. 🐕), premine (allocated to the etcher), and optional terms {amount per mint, cap, height/offset window}. Verified against the live DOG entry: id 840000:3, divisibility 5, premine 10_000_000_000_000_000." },
+      { title: "Name commitment — 6 blocks, or the etch is ignored", note: "Non-reserved names must be COMMITTED first: a data-push of the name in an input's witness tapscript whose spent output has ≥6 confirmations. This anti-frontrun step means etching is a commit-reveal flow over ~1 hour minimum — plan the two txs (ord wallet does this for you: `ord wallet etch`)." },
+      { title: "Name availability follows the unlock schedule", note: "From block 840,000, names of 13+ chars were open; one character length unlocks every 17,500 blocks (~4 months) down to 1 char by ~block 1,050,000. Check current height (mempool.space) against the schedule before planning a short name." },
+      { title: "Minting", command: 'check first: GET https://ordinals.com/rune/{NAME} ("Accept: application/json") → mintable, terms, mints vs cap', note: "A mint tx carries a runestone with the Mint field = the rune's ID (block:tx of the etching, e.g. 840000:3). Valid only while terms allow: mints < cap and height inside the window. Each mint issues exactly terms.amount — competitive mints are a fee race (bitcoin_basics RBF/fee sizing)." },
+      { title: "Transfers via edicts", note: "Edict = {id, amount, output}: move `amount` of rune `id` to output index `output` (amount 0 = all remaining; id 0:0 = the rune being etched in this tx). Unassigned runes default to the first non-OP_RETURN output. Runes ride on UTXOs — spending a rune-bearing UTXO without a runestone moves ALL its runes to output 0 implicitly." },
+      { title: "Market/holder data", command: "GET https://api-mainnet.magiceden.dev/v2/ord/btc/runes/market/{NAME}/info (keyless, live-verified); Ordiscan for per-address balances", note: "Supply math: totalSupply = premine + mints×amount − burned; divisibility applies for display only (amounts are raw integers, like ERC-20)." },
+    ],
+    warnings: [
+      "CENOTAPH: any malformed runestone (unrecognized even tag, bad varint, edict pointing to a nonexistent output) burns ALL runes entering the tx — and a cenotaph mint still counts against the cap while its tokens burn. Never hand-roll the encoding; use ord or a battle-tested library and test on signet first.",
+      "The etch commitment reveals nothing, but the REVEAL tx is public the moment you broadcast — a hot name can still be fee-sniped between broadcast and confirmation. Use a competitive fee for the reveal.",
+    ],
+    references: ["https://docs.ordinals.com/runes/specification.html"],
   },
 
   farcaster_social: {
