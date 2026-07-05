@@ -1038,6 +1038,27 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.llama.fi"],
   },
 
+  jit_liquidity: {
+    topic: "jit_liquidity",
+    title: "JIT liquidity & Uniswap v3/v4 LP strategy: why passive LPs earn less than expected",
+    summary: "Just-in-time liquidity mechanics on concentrated-liquidity DEXes, what v4 hooks change, and what it means whether you run it or LP against it.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Concentrated liquidity is the precondition", note: "On Uniswap v3 (NonfungiblePositionManager 0xC36442b4a4522E871399CD717aBDD847Ab11FE88, live-verified 'Uniswap V3 Positions NFT-V1') an LP chooses a tick range. Fees from a swap go only to positions ACTIVE at the traded ticks, pro-rata to their liquidity share — that's the lever JIT exploits." },
+      { title: "The JIT play (3 steps, 1 block)", note: "A searcher spots a large pending swap → (1) mint a huge position in a razor-thin range around the current tick, (2) the target swap executes and pays fees almost entirely to that fresh position, (3) burn the position + collect. Requires bundle atomicity (Flashbots on EVM) so steps can't be separated or front-run; inventory risk exists only within that block." },
+      { title: "The economics", note: "Profit = swap fees captured + spread vs impermanent move during the swap − gas (3 heavy txs) − bundle tip. Only large swaps on high-fee-tier pools clear that bar; in practice JIT concentrates on a handful of blue-chip pools (ETH/USDC 5bps+). It does NOT steal from the swapper — the swapper often gets a slightly BETTER price (more depth); it dilutes the fees of passive LPs in that pool." },
+      { title: "If you LP passively, price this in", note: "On pools with active JIT competition, realized fee APR for passive ranges is materially below the naive volume×fee estimate — the biggest swaps (most fees) get JIT-diluted. Check realized fee growth of your own position (collect-simulation) instead of pool-level averages, and prefer pools/fee tiers where JIT is uneconomical (smaller swaps, exotic pairs)." },
+      { title: "What v4 hooks change", note: "On v4 (PoolManager singleton 0x000000000004444c5dc75cB358380D2e3dE08A90, live-verified) each pool can attach a hook contract; which callbacks it implements is encoded in the hook ADDRESS bits. Hooks can charge dynamic fees, restrict who can add liquidity in-range, add TWAMM/auction order flow, or explicitly neutralize JIT (e.g. minimum-hold-time or fee-share rules for fresh liquidity). Read a pool's hook before assuming v3-style LP economics (uniswap_v4_basics)." },
+      { title: "Running JIT yourself — the realistic bar", note: "You compete with established searchers on latency, mempool visibility (private order flow!), gas efficiency and bundle-tip sizing. Entry path: simulate historical big swaps first (fetch Swap events, recompute what a JIT position would have earned), then live with strict revert-if-unprofitable checks. Most agents get better risk-adjusted returns from the defensive knowledge than from running it (trading_bot_architecture, mev_strategies)." },
+    ],
+    warnings: [
+      "A JIT bundle that lands AFTER the target swap (mis-ordering, missed slot) leaves you holding a concentrated position through real price moves — the burn must be in the same bundle, never 'next block'.",
+      "v4 hook contracts are arbitrary code: a malicious hook can rug LPs (fee capture, withdrawal gating). Audit the hook address before LPing into a hooked pool (security tool + proxy_upgrade_patterns thinking).",
+    ],
+    references: ["https://docs.uniswap.org"],
+  },
+
   liquidation_bots: {
     topic: "liquidation_bots",
     title: "Liquidation bots: find underwater loans and liquidate profitably",

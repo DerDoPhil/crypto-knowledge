@@ -115,7 +115,7 @@ export const ADDRESSES: AddressEntry[] = [
   {
     name: "Uniswap v4 PoolManager (singleton)",
     addresses: { evm: "0x000000000004444c5dc75cB358380D2e3dE08A90" },
-    note: "One singleton holds ALL pools (v4 architecture); interact via the Universal Router / v4 periphery, not directly. Hooks attach custom logic per pool. Live-verified (24KB code). v3 factory (still huge liquidity): 0x1F98431c8aD98523631AE4a59f267346ea31F984.",
+    note: "One singleton holds ALL pools (v4 architecture); interact via the Universal Router / v4 periphery, not directly. Hooks attach custom logic per pool. Live-verified (24KB code). v3 factory (still huge liquidity): 0x1F98431c8aD98523631AE4a59f267346ea31F984; v3 NonfungiblePositionManager (LP NFTs): 0xC36442b4a4522E871399CD717aBDD847Ab11FE88 (live-verified). See jit_liquidity for LP-strategy implications.",
   },
   {
     name: "Seaport 1.6 (OpenSea marketplace protocol)",
@@ -768,7 +768,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social"],
   "Staking": ["solana_staking", "eth_staking"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
-  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics"],
   "Token launches": ["token_launch_mechanics", "sniping_launches"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
