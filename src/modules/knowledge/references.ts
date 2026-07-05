@@ -372,8 +372,8 @@ export const ENDPOINTS: EndpointEntry[] = [
     baseUrl: "https://api.etherscan.io/v2/api",
     auth: "free-key",
     what: "ABIs, source, txlists for 60+ chains through ONE endpoint via chainid=…",
-    example: "GET ?chainid=8453&module=contract&action=getabi&address=0x…&apikey=KEY",
-    limits: "One free key covers all chains (V2). 5 req/s free tier.",
+    example: "GET ?chainid=8453&module=contract&action=getabi&address=0x…&apikey=KEY. Gas oracle works even WITHOUT a key at 1 req/5s (live-verified): ?chainid=1&module=gastracker&action=gasoracle → Safe/Propose/FastGasPrice + suggestBaseFee + gasUsedRatio.",
+    limits: "One free key covers all chains (V2). 5 req/s free tier; keyless = 1 req/5s.",
   },
   {
     name: "DexScreener (DEX pairs, all chains)",

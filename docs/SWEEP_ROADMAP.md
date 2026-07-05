@@ -2,10 +2,20 @@
 
 Laufender autonomer Ausbau des Chain-Brains (Tool #71 auf OpenSea). Jeder Block:
 **recherchieren → LIVE verifizieren (curl/eth_call) → einbauen → tsc + vitest → deploy →
-list_topics-Check → Hash-Regression (`0x6d9f34e5…`) → commit+push**. Nichts aus dem
-Gedächtnis; jede Adresse/jeder Endpunkt wird vor Einbau live geprüft.
+list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk hash, Baseline
+`0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
+Endpunkt wird vor Einbau live geprüft.
 
-Stand: **85 Guides, 19 Sektionen, ~60 Endpunkte** (Blöcke 1–46 erledigt; Manifest v1.2.0, Baseline 0x72930764…).
+Stand: **93 Guides, 19 Sektionen, 61+ Endpunkte** (Blöcke 1–62 erledigt; Manifest v1.2.0 + featured.jpg, Baseline `0x6305190e…240e`).
+
+### Blöcke 47–62 (2026-07-04/06)
+47/48 Endpoint-Livecheck-Script · 49 related-Cross-Links · 50/51 ask-Scoring + stats-Action ·
+52 ABIS-Referenztabelle (Selektoren/Topics inline) · 53 Balancer v2/v3 (queryBatchSwap live) ·
+54 Solana Priority-Fees + Jito-Tips (Zwei-Markt-Modell) · 55 JIT-Liquidity/v4-Hooks ·
+56 Runes-Etching/Minting (ordinals.com-JSON-Fund!) · 57 Solscan/Tenderly-Key-Status +
+Reservoir-tot-Error · 58 EigenLayer-Restaking (Stacked-Risk) · 59 Intents (CoW-Flow live,
+UniswapX Sourcify-verifiziert) · 60 OP-Stack-Fees (getL1Fee live auf Base) ·
+61 Hyperliquid-Trading (930 Märkte, API-Wallets, HyperEVM) · 62 Etherscan-Gas-Oracle keyless.
 
 ## ✅ Erledigt (Blöcke 1–31)
 Wallets/Deploys/Vanity/Verify, EIP-712/1271, ERC-20/Permit2, Tx-Debug/Confirm, Event-Logs,
@@ -21,7 +31,7 @@ Uniswap-Lists, CoW, Snapshot, Hyperliquid, LayerZero/Wormholescan, MagicEden, Or
 Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 
 ## 🔜 TODO — Endpunkte / Protokolle (live-verifizieren!)
-- [ ] Balancer v2/v3 Batch-Swaps + weighted pools (Vault schon als Adresse drin)
+- [x] Balancer v2/v3 Batch-Swaps — Block53 ✅ + weighted pools (Vault schon als Adresse drin)
 - [x] 1inch / 0x / Paraswap Swap-Aggregator-APIs (Key-Status prüfen) — Block33 (KyberSwap keyless, 1inch/0x free-key)
 - [x] Kyberswap Aggregator API (oft keyless) — Block33 ✅
 - [x] Odos / Enso Routing-APIs — Block33 (Odos keyless) ✅
@@ -32,14 +42,14 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [x] Chainlink CCIP (cross-chain, Router-Adresse verifizieren) — Block34 ✅
 - [x] Across Protocol (fast bridge) API — Block34 ✅
 - [x] Socket/Bungee Bridge-Aggregator API — Block34 (Socket=free-key) ✅
-- [ ] Tenderly Simulation API (free tier)
-- [ ] Etherscan Gas-Oracle (V2) als eigener Eintrag
-- [ ] Solscan / SolanaFM (aktuellen Key-Status verifizieren)
+- [x] Tenderly Simulation API (free tier) — Block57 (free-key, public gateway rate-limitet tenderly_*) ✅
+- [x] Etherscan Gas-Oracle (V2) als eigener Eintrag — Block62 (keyless 1req/5s, live verif.) ✅
+- [x] Solscan / SolanaFM (aktuellen Key-Status verifizieren) — Block57 (Solscan=free-key, 401 ohne) ✅
 - [x] Birdeye (Solana token data, key-status) — Block42 (Jupiter-Token-API keyless; Birdeye=free-key) ✅
 - [x] DexScreener API (keyless token/pair data) — Block 32 ✅
 - [x] GeckoTerminal API (on-chain DEX prices, keyless) — Block 32 ✅
-- [ ] Blockdaemon / Ankr free-RPC-Status
-- [ ] Reservoir (NFT aggregator API) / OpenSea Stream
+- [x] Blockdaemon / Ankr free-RPC-Status — Block62 (Ankr braucht Key jetzt; publicnode weiter keyless) ✅
+- [x] Reservoir (NFT aggregator API) / OpenSea Stream — Block57 (Reservoir TOT/DNS weg -> COMMON_ERROR) ✅
 - [ ] Farcaster Frames v2 / Warpcast API-Details
 
 ## 🔜 TODO — Strategie / Domänen-Wissen
@@ -47,7 +57,7 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [x] Sniping-Detail (EVM launch-detection vs Solana pump.fun) — Block41 ✅
 - [x] Grid/DCA-Bot-Detail (Range, Rebalancing) — Block41 ✅
 - [x] Statistical Arbitrage / Basis-Trade (Perp-Funding vs Spot) — Block45 (basis_trade) ✅
-- [ ] JIT-Liquidity / Uniswap-v3-v4-Hook-Strategien
+- [x] JIT-Liquidity / Uniswap-v3-v4-Hook-Strategien — Block55 ✅
 - [x] Flash-Loan-Muster generell (Aave/Balancer/Morpho, use-cases) — Block38 ✅
 - [x] Token-Launch-Mechaniken (Fair-Launch, bonding curves, LBPs) — Block43 ✅
 - [x] Airdrop-Farming-Mechanik (Sybil-Risiko, eligibility patterns) — Block38 ✅
@@ -61,13 +71,13 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 
 ## 🔜 TODO — Chain-spezifische Tiefe (BTC/ETH/SOL Fokus)
 - [x] Bitcoin: Taproot/Miniscript, PSBT-v2, Lightning-Basics — Block39 ✅
-- [ ] Bitcoin: Runes-Etching/Minting-Detail
+- [x] Bitcoin: Runes-Etching/Minting-Detail — Block56 ✅
 - [x] Ethereum: Blob-Txs (EIP-4844) für L2-Kosten — Block37 ✅
 - [ ] Ethereum: Verkle/Statelessness-Ausblick (nur wenn stabil)
 - [x] Solana: Address-Lookup-Tables (Tx-Size) — Block36 ✅
 - [x] Solana: Versioned-Transactions-Detail — Block36 ✅
 - [x] Solana: Token-Extensions (Token-2022 transfer-hooks/fees) Detail — Block36 ✅
-- [ ] Solana: Priority-Fee-Markt + Jito-Tip-Strategie Detail
+- [x] Solana: Priority-Fee-Markt + Jito-Tip-Strategie Detail — Block54 ✅
 
 ## 🔜 TODO — Tool-/Produkt-Verbesserungen (Aufbau)
 - [x] `ask` weiter tunen (Synonyme, Stemming light) — Block46 (Synonyms+Stopwords) ✅
@@ -75,6 +85,16 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [x] llms.txt um die neuen Kategorien erweitern — Block46 ✅
 - [ ] Optional (Philipp-Freigabe): Contribution-Feature (Vault-Idee)
 - [ ] Optional (Philipp-Freigabe): Cloudflare Monetization Gateway anschließen
+
+## 🔜 Kandidaten für Blöcke 63+ (2026-07-06 gesammelt)
+- [ ] NFT-Lending/-Perps (Blend-Mechanik, floor-price-Risiko)
+- [ ] CEX-Marktdaten keyless (Binance/Coinbase/Kraken public REST — Key-Status live prüfen)
+- [ ] Tokenized RWAs/Treasuries (Ondo/BUIDL — Adressen live verifizieren)
+- [ ] Solana-Sandwich/Sniper-Defense-Detail (Jito-Bundles defensiv)
+- [ ] pump.fun Graduation→PumpSwap Mechanik-Update (falls stabil dokumentierbar)
+- [ ] ERC-4337 v0.8 + EIP-7702-Kombination (falls Bundler-Support live prüfbar)
+- [ ] Aave v3.x GHO / sGHO (live verifizieren)
+- [ ] Farcaster Frames v2 (aus alter Liste)
 
 > Reihenfolge flexibel; DeFi-Aggregatoren (DexScreener/GeckoTerminal/1inch) und
 > Strategie-Tiefe zuerst, da höchster Agent-Nutzen.
