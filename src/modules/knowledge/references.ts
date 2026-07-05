@@ -30,6 +30,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Immutable, isolated-market lending primitive (live-verified, 15.6KB). Markets are (loanToken, collateralToken, oracle, irm, lltv) tuples — supply/borrow via marketParams, no global risk. Data API: blue-api.morpho.org/graphql (keyless). Balancer v2 Vault (flash loans for liquidations): 0xBA12222222228d8Ba445958a75a0704d566BF2C8 (live-verified).",
   },
   {
+    name: "OP-Stack predeploys (Base, OP Mainnet, Zora, Mode …)",
+    addresses: { gas_price_oracle: "0x420000000000000000000000000000000000000F", l1_block: "0x4200000000000000000000000000000000000015", l2_standard_bridge: "0x4200000000000000000000000000000000000010", weth: "0x4200000000000000000000000000000000000006" },
+    note: "Identical on every OP-Stack chain. GasPriceOracle.getL1Fee(rawTx) prices the L1 data fee that eth_estimateGas misses (live-verified on Base); L1Block.number() reads the L1 block the L2 sees. See opstack_l2_fees guide.",
+  },
+  {
     name: "EigenLayer core (restaking) — Ethereum",
     addresses: { strategy_manager: "0x858646372CC42E1A627fcE94aa7A7033e7CF075A", delegation_manager: "0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A", steth_strategy: "0x93c4b944D05dfe6df7645A86cd2206016c51564D" },
     note: "All proxies (live-verified; stETH-Strategy.underlyingToken() cross-checked = Lido stETH). LRTs: weETH 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee, ezETH 0xbf5495Efe5DB9ce00f80364C8B423567e58d2110 (symbols live-verified). See restaking_eigenlayer guide for the stacked-risk model.",
@@ -807,7 +812,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Token launches": ["token_launch_mechanics", "sniping_launches"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
-  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
+  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "opstack_l2_fees", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
 export interface AbiInterface {

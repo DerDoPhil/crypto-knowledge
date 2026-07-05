@@ -1294,6 +1294,27 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.jito.wtf", "https://solana.com/docs/core/fees"],
   },
 
+  opstack_l2_fees: {
+    topic: "opstack_l2_fees",
+    title: "OP-Stack chains (Base/OP/…): the two-part fee, predeploys, deposits & withdrawals",
+    summary: "What's different when your agent runs on an OP-Stack L2 — the L1 data fee that eth_estimateGas doesn't show, the 0x4200… predeploys, and the asymmetric bridge timings.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Every tx pays TWO fees", note: "Total cost = L2 execution gas (normal EIP-1559, usually sub-cent) + L1 DATA fee for publishing the tx to Ethereum. eth_estimateGas covers ONLY the L2 part — the classic bug is a balance check that passes, then 'insufficient funds' on send because the L1 fee wasn't budgeted." },
+      { title: "Read the L1 fee, don't compute it", command: "GasPriceOracle (predeploy 0x420000000000000000000000000000000000000F).getL1Fee(serializedUnsignedTx) → wei", note: "Live-verified on Base: 201-byte sample tx → ~1.06e9 wei at l1BaseFee 0.108 gwei, baseFeeScalar 2269, blobBaseFeeScalar 1055762, isFjord=true. Post-Fjord the formula is FastLZ-compression-estimated size × (baseFeeScalar×l1BaseFee + blobBaseFeeScalar×blobBaseFee) — parameters change with upgrades, the oracle call stays correct." },
+      { title: "The 0x4200… predeploy family (same on every OP-Stack chain)", note: "L1Block 0x4200000000000000000000000000000000000015 → number() gives the L1 block the L2 currently sees (live-verified; useful for cross-layer logic). L2StandardBridge 0x4200000000000000000000000000000000000010. WETH 0x4200000000000000000000000000000000000006. Receipts include l1Fee/l1GasUsed fields — reconcile real costs from there (profitability tool)." },
+      { title: "Cheap-calldata discipline pays double here", note: "The L1 fee scales with COMPRESSED tx size: shorter and more compressible calldata = cheaper. Zero bytes and repeated patterns compress well; random-looking bytes don't. For small txs the L1 fee often exceeds the L2 fee — batching several actions into one tx (multicall_batching) amortizes the fixed overhead." },
+      { title: "Deposits L1→L2: fast and censorship-resistant", note: "OptimismPortal.depositTransaction on L1 lands on L2 in minutes and works even if the sequencer censors you — it's the escape hatch. Normal path: bridge UI / L1StandardBridge." },
+      { title: "Withdrawals L2→L1: 7 days and TWO L1 txs", note: "initiate (L2) → wait for the output root → prove (L1 tx) → 7-day challenge window → finalize (L1 tx). Agents must budget BOTH L1 gas costs and track the two-step state; for UX-speed exits use a fast bridge and pay the spread (l2_bridging_basics, bridge_funds)." },
+    ],
+    warnings: [
+      "Gas estimates from mainnet habits transfer badly: an L2 tx that 'costs nothing' in execution can still cost real money in data fee during L1 congestion — always price via getL1Fee before batching decisions.",
+      "The scalar parameters (baseFeeScalar/blobBaseFeeScalar) are governance-settable per chain and change on upgrades (Ecotone→Fjord) — hardcoding the fee formula rots; hardcode only the oracle ADDRESS.",
+    ],
+    references: ["https://docs.optimism.io/stack/transactions/fees", "https://docs.base.org"],
+  },
+
   wallet_security_checklist: {
     topic: "wallet_security_checklist",
     title: "Wallet & key security checklist for agent operators",
