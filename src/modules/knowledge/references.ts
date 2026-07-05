@@ -405,6 +405,22 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "Free tier is generous; the public solana RPC has no DAS API at all.",
   },
   {
+    name: "Solscan Pro API (Solana explorer data)",
+    baseUrl: "https://public-api.solscan.io",
+    auth: "free-key",
+    what: "Solana account/token/tx explorer data (holders, token meta, tx lists). NOT keyless — every route answers 401 'Token is missing' without a key (live-verified).",
+    example: "GET /chaininfo with header 'token: KEY' — get a free key at solscan.io/apis",
+    limits: "For keyless Solana data prefer: public RPC (+DAS getAssetsByOwner), Jupiter token API, DexScreener.",
+  },
+  {
+    name: "Tenderly (EVM simulation, free key)",
+    baseUrl: "https://mainnet.gateway.tenderly.co",
+    auth: "free-key",
+    what: "Full-trace transaction simulation (tenderly_simulateTransaction: status, gas, logs, decoded trace, asset changes) + standard RPC. Public gateway answers plain RPC keyless (live-verified eth_blockNumber) but rate-limits tenderly_* methods immediately — simulation effectively needs a (free) account key.",
+    example: 'POST / {"method":"tenderly_simulateTransaction","params":[{from,to,data},"latest"]} on your keyed gateway URL',
+    limits: "Keyless alternatives that cover most agent needs: this server's simulate tool, eth_call with state overrides (eth_jsonrpc_cheatsheet), debug_traceCall on some public RPCs.",
+  },
+  {
     name: "Neynar (Farcaster social graph)",
     baseUrl: "https://api.neynar.com/v2",
     auth: "free-key",
@@ -689,6 +705,11 @@ export const COMMON_ERRORS: ErrorEntry[] = [
     pattern: "HTTP 429 / rate limited",
     cause: "Free API/RPC tier exhausted.",
     fix: "Exponential backoff + failover to the next public endpoint (this server's chain registry ships multiple RPCs per chain). Cache aggressively.",
+  },
+  {
+    pattern: "api.reservoir.tools: DNS failure / connection refused",
+    cause: "The Reservoir NFT-aggregator API was shut down (team pivoted to Relay). Old tutorials and LLM training data still recommend it heavily.",
+    fix: "Use OpenSea REST v2 (free key WITHOUT signup — see endpoints) or Magic Eden for NFT market data. Same graveyard: Hiro Ordinals API (410 Gone) → ordinals.com JSON / Ordiscan.",
   },
 ];
 
