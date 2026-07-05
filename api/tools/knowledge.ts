@@ -3,7 +3,7 @@ import { AccessEnforcer } from "../../src/access/enforce.js";
 import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
 import { getReference, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
-import { ask, deepSearchGuides } from "../../src/modules/knowledge/search.js";
+import { ask, deepSearchGuides, relatedGuides } from "../../src/modules/knowledge/search.js";
 
 /**
  * Standalone REST endpoint for the ERC-8257 tool "Crypto-Knowledge" — the chain
@@ -101,7 +101,7 @@ export default async function handler(
         json(404, { ok: false, errors: [{ code: "NOT_FOUND", message: `unknown topic '${topic}' — action list_topics shows all` }] });
         return;
       }
-      json(200, { ok: true, data: guide });
+      json(200, { ok: true, data: { ...guide, related: relatedGuides(topic) } });
       return;
     }
 

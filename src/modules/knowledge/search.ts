@@ -65,6 +65,29 @@ export interface RankedGuide extends Guide {
 }
 
 /**
+ * Related guides, derived at runtime: other guide topic-ids that THIS guide already
+ * mentions in its body text (guides cross-reference each other in prose, e.g.
+ * "(defi_lending)" / "see solana_pay"). No per-guide maintenance needed.
+ */
+export function relatedGuides(topic: string, limit = 6): string[] {
+  const g = GUIDES[topic];
+  if (!g) return [];
+  const hay = [
+    g.summary,
+    ...g.steps.flatMap((s) => [s.title, s.note ?? "", s.command ?? ""]),
+    ...(g.warnings ?? []),
+  ].join(" ").toLowerCase();
+  const related: string[] = [];
+  for (const id of Object.keys(GUIDES)) {
+    if (id === topic) continue;
+    // Word-boundary match so 'defi_lending' doesn't match inside another id.
+    if (new RegExp(`\\b${id}\\b`).test(hay)) related.push(id);
+    if (related.length >= limit) break;
+  }
+  return related;
+}
+
+/**
  * Score every guide against the query (term hits: strong fields ×3, body ×1) and
  * return the best matches as FULL guides, ranked. Empty query → no results.
  */

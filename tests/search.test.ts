@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ask, deepSearchGuides, searchReferences } from "../src/modules/knowledge/search.js";
+import { ask, deepSearchGuides, relatedGuides, searchReferences } from "../src/modules/knowledge/search.js";
 
 describe("deepSearchGuides", () => {
   it("finds a guide by BODY content (not just title/summary)", () => {
@@ -71,5 +71,18 @@ describe("synonym expansion (ask tuning)", () => {
   it("maps 'scam token' to rugpull/security guides", () => {
     const hits = deepSearchGuides("check for scam token");
     expect(hits.some((h) => h.topic === "rugpull_forensics" || h.topic === "token_discovery")).toBe(true);
+  });
+});
+
+describe("relatedGuides", () => {
+  it("derives related topics from body cross-references", () => {
+    const rel = relatedGuides("liquidation_bots");
+    expect(rel.length).toBeGreaterThan(0);
+    // liquidation_bots references defi_lending + flash-loan/simulate concepts in its steps
+    expect(rel).toContain("defi_lending");
+  });
+  it("never returns the guide itself and only valid ids", () => {
+    const rel = relatedGuides("cctp_native_usdc");
+    expect(rel).not.toContain("cctp_native_usdc");
   });
 });

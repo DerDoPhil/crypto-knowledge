@@ -5,7 +5,7 @@ import { ErrorCode } from "../../core/errors.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 import { GUIDES, GUIDE_TOPICS } from "./guides.js";
 import { getReference, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
-import { ask, deepSearchGuides } from "./search.js";
+import { ask, deepSearchGuides, relatedGuides } from "./search.js";
 
 export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): void {
   server.registerTool(
@@ -75,7 +75,7 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
           fail({ code: ErrorCode.NOT_FOUND, message: `unknown topic '${input.topic}'. Try action 'list_topics'.` }, meta),
         );
       }
-      return toToolResult(ok(guide, meta));
+      return toToolResult(ok({ ...guide, related: relatedGuides(input.topic!) }, meta));
     },
   );
 }
