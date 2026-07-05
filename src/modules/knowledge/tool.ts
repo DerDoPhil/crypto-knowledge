@@ -31,7 +31,7 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
         kind: z
           .enum(REFERENCE_KINDS)
           .optional()
-          .describe("Reference table (action 'reference'): addresses | endpoints | errors | rpc_gotchas."),
+          .describe("Reference table (action 'reference'): addresses | endpoints | errors | rpc_gotchas | abis (inline selectors/topics for ERC-20/721/1155/4626)."),
       },
     },
     async (input) => {

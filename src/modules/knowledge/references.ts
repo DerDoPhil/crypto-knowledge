@@ -763,7 +763,104 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
-export const REFERENCE_KINDS = ["addresses", "endpoints", "errors", "rpc_gotchas"] as const;
+export interface AbiInterface {
+  name: string;
+  interfaceId?: string;
+  functions: { sig: string; selector: string; note?: string }[];
+  events?: { sig: string; topic0: string; note?: string }[];
+}
+
+/**
+ * Inline function selectors + event topic0 hashes for the standards agents hit
+ * constantly — so calldata/log decoding needs no external fetch. All values
+ * computed with viem (toFunctionSelector/toEventSelector) and verified.
+ */
+export const ABIS: AbiInterface[] = [
+  {
+    name: "ERC-20",
+    functions: [
+      { sig: "transfer(address,uint256)", selector: "0xa9059cbb" },
+      { sig: "transferFrom(address,address,uint256)", selector: "0x23b872dd" },
+      { sig: "approve(address,uint256)", selector: "0x095ea7b3", note: "USDT: approve 0 before changing a non-zero allowance" },
+      { sig: "balanceOf(address)", selector: "0x70a08231" },
+      { sig: "allowance(address,address)", selector: "0xdd62ed3e" },
+      { sig: "totalSupply()", selector: "0x18160ddd" },
+      { sig: "decimals()", selector: "0x313ce567", note: "ERC-20 has NO ERC-165 id — probe decimals()/balanceOf() to detect it" },
+      { sig: "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)", selector: "0xd505accf", note: "EIP-2612 gasless approval; not all tokens support it (probe nonces())" },
+    ],
+    events: [
+      { sig: "Transfer(address,address,uint256)", topic0: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", note: "shares topic0 with ERC-721 Transfer — ERC-721 has 4 topics (tokenId indexed), ERC-20 has 3" },
+      { sig: "Approval(address,address,uint256)", topic0: "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925" },
+    ],
+  },
+  {
+    name: "ERC-721",
+    interfaceId: "0x80ac58cd",
+    functions: [
+      { sig: "ownerOf(uint256)", selector: "0x6352211e" },
+      { sig: "safeTransferFrom(address,address,uint256)", selector: "0x42842e0e" },
+      { sig: "approve(address,uint256)", selector: "0x095ea7b3" },
+      { sig: "setApprovalForAll(address,bool)", selector: "0xa22cb465" },
+      { sig: "isApprovedForAll(address,address)", selector: "0xe985e9c5" },
+      { sig: "tokenURI(uint256)", selector: "0xc87b56dd", note: "ERC-721Metadata interfaceId 0x5b5e139f" },
+      { sig: "balanceOf(address)", selector: "0x70a08231" },
+    ],
+    events: [
+      { sig: "Transfer(address,address,uint256)", topic0: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", note: "tokenId is indexed → 4 topics total" },
+      { sig: "ApprovalForAll(address,address,bool)", topic0: "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31" },
+    ],
+  },
+  {
+    name: "ERC-1155",
+    interfaceId: "0xd9b67a26",
+    functions: [
+      { sig: "balanceOf(address,uint256)", selector: "0x00fdd58e" },
+      { sig: "balanceOfBatch(address[],uint256[])", selector: "0x4e1273f4" },
+      { sig: "safeTransferFrom(address,address,uint256,uint256,bytes)", selector: "0xf242432a" },
+      { sig: "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)", selector: "0x2eb2c2d6" },
+      { sig: "setApprovalForAll(address,bool)", selector: "0xa22cb465" },
+    ],
+    events: [
+      { sig: "TransferSingle(address,address,address,uint256,uint256)", topic0: "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62" },
+      { sig: "TransferBatch(address,address,address,uint256[],uint256[])", topic0: "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb" },
+    ],
+  },
+  {
+    name: "ERC-4626 (tokenized vault)",
+    functions: [
+      { sig: "asset()", selector: "0x38d52e0f" },
+      { sig: "deposit(uint256,address)", selector: "0x6e553f65", note: "assets, receiver → shares" },
+      { sig: "redeem(uint256,address,address)", selector: "0xba087652", note: "shares, receiver, owner → assets" },
+      { sig: "convertToShares(uint256)", selector: "0xc6e6f592" },
+      { sig: "convertToAssets(uint256)", selector: "0x07a2d13a" },
+      { sig: "totalAssets()", selector: "0x01e1d114" },
+    ],
+  },
+  {
+    name: "ERC-165 + common interfaceIds",
+    functions: [
+      { sig: "supportsInterface(bytes4)", selector: "0x01ffc9a7" },
+    ],
+    events: [],
+  },
+  {
+    name: "Multicall3",
+    functions: [
+      { sig: "aggregate3((address,bool,bytes)[])", selector: "0x82ad56cb", note: "allowFailure per call; at 0xcA11bde05977b3631167028862bE2a173976CA11 on 250+ chains" },
+    ],
+  },
+];
+
+// Extra ERC-165 interface ids worth knowing (not tied to one ABI above).
+export const INTERFACE_IDS: Record<string, string> = {
+  "ERC-721": "0x80ac58cd",
+  "ERC-721Metadata": "0x5b5e139f",
+  "ERC-1155": "0xd9b67a26",
+  "ERC-2981 (royalties)": "0x2a55205a",
+  "ERC-4906 (metadata update)": "0x49064906",
+};
+
+export const REFERENCE_KINDS = ["addresses", "endpoints", "errors", "rpc_gotchas", "abis"] as const;
 export type ReferenceKind = (typeof REFERENCE_KINDS)[number];
 
 /** Coverage snapshot so an agent (or a human) can see the tool's breadth at a glance. */
@@ -778,6 +875,7 @@ export function getStats(guideCount: number, sectionTopics: Record<string, strin
       keylessEndpoints: ENDPOINTS.filter((e) => e.auth === "none").length,
       errors: COMMON_ERRORS.length,
       rpc_gotchas: RPC_GOTCHAS.length,
+      abis: ABIS.length,
     },
     chains: ["bitcoin", "ethereum", "solana", "base", "arbitrum", "optimism", "polygon", "bnb", "avalanche", "cronos", "apechain"],
     note: "All endpoints are periodically live-checked (scripts/livecheck-endpoints.ts). Use action 'ask' with a question for the fastest path.",
@@ -794,5 +892,7 @@ export function getReference(kind: ReferenceKind): unknown {
       return { count: COMMON_ERRORS.length, entries: COMMON_ERRORS };
     case "rpc_gotchas":
       return { count: RPC_GOTCHAS.length, entries: RPC_GOTCHAS };
+    case "abis":
+      return { count: ABIS.length, entries: ABIS, interfaceIds: INTERFACE_IDS };
   }
 }

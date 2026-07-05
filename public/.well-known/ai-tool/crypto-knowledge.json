@@ -6,7 +6,7 @@
   "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/knowledge",
   "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
   "image": "https://crypto-knowledge-mcp.vercel.app/icon.png",
-  "featuredImage": "https://crypto-knowledge-mcp.vercel.app/featured.png",
+  "featuredImage": "https://crypto-knowledge-mcp.vercel.app/featured.jpg",
   "inputs": {
     "type": "object",
     "description": "POST this JSON body to the endpoint.",
