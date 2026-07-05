@@ -433,8 +433,8 @@ export const ENDPOINTS: EndpointEntry[] = [
     baseUrl: "https://mainnet.block-engine.jito.wtf/api/v1",
     auth: "none",
     what: "Submit atomic transaction BUNDLES with tips to land txs during congestion / do MEV on Solana — keyless (live-verified).",
-    example: 'POST /bundles {"method":"getTipAccounts"} → tip accounts; sendBundle for an atomic tx group (all-or-nothing).',
-    limits: "Add a tip transfer to a tip account so validators include your bundle; higher tip = better landing odds.",
+    example: 'POST /bundles {"method":"getTipAccounts"} → 8 tip accounts; sendBundle for an atomic tx group (all-or-nothing). Tip sizing: GET https://bundles.jito.wtf/api/v1/bundles/tip_floor → landed-tip percentiles in SOL (keyless, live-verified).',
+    limits: "Add a tip transfer to a tip account so validators include your bundle; higher tip = better landing odds. See solana_priority_fees guide for the full fee/tip strategy.",
   },
   {
     name: "Jito (Solana MEV / liquid staking)",
@@ -762,7 +762,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Deploying contracts": ["deploy_contract_evm", "deploy_contract_solana", "deploy_erc20", "deterministic_deploys_create2", "verify_contract"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
   "NFTs": ["nft_metadata_standards", "ipfs_for_nfts", "seaport_orders"],
-  "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "pumpfun_token2022_gotchas", "solana_pay"],
+  "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "pumpfun_token2022_gotchas", "solana_pay"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_lightning"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "eip7702_smart_eoas", "safe_multisig"],
   "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social"],
@@ -773,7 +773,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Token launches": ["token_launch_mechanics", "sniping_launches"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
-  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
+  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
 export interface AbiInterface {

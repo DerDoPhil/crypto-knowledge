@@ -1204,9 +1204,31 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Balances live in ATAs, not wallets", command: "ATA = findProgramAddress([owner, tokenProgramId, mint], ATA_PROGRAM)  // @solana/spl-token: getAssociatedTokenAddressSync(mint, owner, false, tokenProgramId)", note: "Pass the CORRECT token program (classic vs Token-2022 — the mint account's owner tells you; see pumpfun_token2022_gotchas)." },
       { title: "Amounts are raw integers", note: "amount = ui_amount × 10^decimals. Fetch decimals from the mint account — 6 for USDC, 9 for wrapped SOL, arbitrary for memecoins. bigint everywhere." },
       { title: "Transfers to fresh wallets need ATA creation", note: "createAssociatedTokenAccountIdempotent (payer pays ~0.002 SOL rent) + transferChecked (validates mint/decimals — prefer it over plain transfer)." },
-      { title: "Tune priority fees from live data", command: 'POST rpc {"method":"getRecentPrioritizationFees","params":[[]]} → median of recent fees\n// then prepend ComputeBudgetProgram.setComputeUnitPrice(microLamports)', note: "During congestion 0-fee txs get dropped silently; re-fetch the blockhash right before signing." },
+      { title: "Tune priority fees from live data", command: 'POST rpc {"method":"getRecentPrioritizationFees","params":[[]]} → median of recent fees\n// then prepend ComputeBudgetProgram.setComputeUnitPrice(microLamports)', note: "During congestion 0-fee txs get dropped silently; re-fetch the blockhash right before signing. Full fee/tip strategy incl. Jito: solana_priority_fees guide." },
       { title: "Read balances the easy way", command: "call tool \"portfolio\" { chain: 'solana', address }", note: "Returns native + SPL balances with USD values in one call." },
     ],
+  },
+
+  solana_priority_fees: {
+    topic: "solana_priority_fees",
+    title: "Solana priority fees & Jito tips: land transactions during congestion",
+    summary: "The two separate markets for Solana block space — compute-unit pricing and Jito tips — and how an agent sizes each from live data.",
+    scope: ["solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Understand the two knobs", note: "Priority fee = ComputeBudget instructions inside your tx (paid per compute unit, goes to the leader). Jito tip = a plain SOL transfer to a tip account (only useful when submitting through the Jito block engine). They are independent markets — a huge tip does nothing for a tx sent to the public RPC, and vice versa." },
+      { title: "Set BOTH compute-budget instructions", command: "ComputeBudgetProgram.setComputeUnitLimit({units}) + ComputeBudgetProgram.setComputeUnitPrice({microLamports})", note: "Cost = units × microLamports / 1e6 lamports. Default limit is 200k/instruction (max 1.4M per tx). ALWAYS right-size the limit: simulate first, take consumed units × ~1.1 — a smaller CU footprint is cheaper AND schedules better, since leaders pack blocks by compute." },
+      { title: "Size the CU price from live data — percentiles, not median", command: 'POST rpc {"method":"getRecentPrioritizationFees","params":[["<program or account you touch>"]]}', note: "Returns the fee paid per recent slot for txs locking those accounts. Live measurement (Jupiter program): median 0, max ~209k microLamports — most slots are empty, so take a high percentile (p75–p90) of the NON-ZERO values for the accounts you contend on. Passing [] gives global fees, which underestimates hot-account contention. Helius getPriorityFeeEstimate (free key) does this aggregation for you." },
+      { title: "Jito path: tip + bundle for atomicity", command: 'getTipAccounts via POST https://mainnet.block-engine.jito.wtf/api/v1/bundles → pick one of the 8 tip accounts AT RANDOM; append a SystemProgram.transfer to it as the LAST instruction (or last tx of a bundle)', note: "Random tip-account choice avoids write-lock contention with everyone else tipping the same account. Bundles (≤5 txs) execute atomically all-or-nothing — the tool for snipes, arb legs and liquidations. If the bundle fails, the tip isn't paid (it's inside the failed bundle)." },
+      { title: "Size the tip from the live floor", command: "GET https://bundles.jito.wtf/api/v1/bundles/tip_floor", note: "Keyless (live-verified). Returns landed-tip percentiles in SOL: p25 ≈ 1e-6, p50 ≈ 2e-6, p95 ≈ 1e-3 at measurement time — tips are a fat-tailed auction. For routine inclusion pay ~p50–p75; only chase p95+ when racing (sniping_launches)." },
+      { title: "Choose the path per situation", note: "Normal tx → priority fee on public/own RPC is enough. Congestion or must-land → Jito sendTransaction/sendBundle with tip (plus a modest priority fee — belt and braces). Atomic multi-tx (arb, liquidation) → bundle, nothing else gives atomicity. MEV-sensitive swap → bundle also hides you from the public mempool-equivalent (see mev_strategies)." },
+      { title: "Landing is never guaranteed — build the retry loop", note: "Re-fetch a fresh blockhash right before signing, resubmit on expiry, and make handlers idempotent (tx_confirmation_patterns). A dropped Solana tx costs nothing — dropping and re-sending with a higher fee/tip IS the fee-bump mechanism (there is no EVM-style replace-by-nonce)." },
+    ],
+    warnings: [
+      "Fee/tip numbers in examples are point-in-time measurements — always read getRecentPrioritizationFees / tip_floor live; hardcoded values go stale within days.",
+      "Never send tips as a standalone tx outside the bundle/Jito submission — you'd pay for nothing if your target tx doesn't land.",
+    ],
+    references: ["https://docs.jito.wtf", "https://solana.com/docs/core/fees"],
   },
 
   wallet_security_checklist: {
