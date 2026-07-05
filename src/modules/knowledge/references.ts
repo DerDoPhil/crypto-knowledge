@@ -30,6 +30,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Immutable, isolated-market lending primitive (live-verified, 15.6KB). Markets are (loanToken, collateralToken, oracle, irm, lltv) tuples — supply/borrow via marketParams, no global risk. Data API: blue-api.morpho.org/graphql (keyless). Balancer v2 Vault (flash loans for liquidations): 0xBA12222222228d8Ba445958a75a0704d566BF2C8 (live-verified).",
   },
   {
+    name: "Balancer Vaults (v2 + v3)",
+    addresses: { evm_v2: "0xBA12222222228d8Ba445958a75a0704d566BF2C8", ethereum_v3: "0xbA1333333333a1BA1108E8412f11850A5C319bA9" },
+    note: "v2 Vault holds ALL v2 pool liquidity behind one contract (live-verified byte-identical on Ethereum/Arbitrum/Base). poolId = 32 bytes (pool address + specialization + nonce); getPoolTokens(poolId) → tokens/balances; flash loans currently 0-fee. v3 Vault (live-verified, Ethereum) is interacted with via its Router, pools are plain contract addresses. See balancer_swaps guide.",
+  },
+  {
     name: "Aave v3 Pool (lending) — Ethereum",
     addresses: { ethereum: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2" },
     note: "Main lending pool (proxy, live-verified). supply/borrow/repay/withdraw + getUserAccountData(address)→(collateral, debt, availableBorrows, liquidationThreshold, ltv, healthFactor). PoolAddressesProvider resolves per-chain deployments; see defi_lending guide. Base/Arbitrum/etc. have their own Pool addresses via the provider.",
@@ -327,6 +332,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     what: "Curve pool data, balances, APYs, gauge rewards across chains — keyless (live-verified).",
     example: "GET /getPools/ethereum/main → pool addresses, coins, tvl, volume; /getVolumes/ethereum",
     limits: "Static-ish JSON; cache it.",
+  },
+  {
+    name: "Balancer API (GraphQL)",
+    baseUrl: "https://api-v3.balancer.fi",
+    auth: "none",
+    what: "Balancer v2+v3 pool discovery: type (WEIGHTED/STABLE/GYROE…), tokens, TVL, APR — keyless GraphQL (live-verified).",
+    example: 'POST / {"query":"{ poolGetPools(first:5, where:{chainIn:[MAINNET]}, orderBy: totalLiquidity, orderDirection: desc){ id name type dynamicData{ totalLiquidity } } }"}',
+    limits: "Covers both protocol versions; v2 ids are 32-byte poolIds, v3 ids are plain pool addresses. See balancer_swaps guide.",
   },
   {
     name: "The Graph (subgraph queries)",
@@ -745,7 +758,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Getting started & wallets": ["create_wallet", "get_testnet_funds", "wallet_security_checklist", "vanity_address"],
   "Sending & debugging transactions": ["debug_failed_tx", "tx_confirmation_patterns", "eth_jsonrpc_cheatsheet", "fetch_event_logs"],
   "Tokens (ERC-20 / SPL)": ["erc20_patterns", "permit2_usage", "spl_token_basics", "erc_standards_cheatsheet"],
-  "Swaps, bridging & routing": ["aggregator_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "uniswap_v4_basics", "chaintrade_p2p_swap"],
+  "Swaps, bridging & routing": ["aggregator_swaps", "balancer_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "uniswap_v4_basics", "chaintrade_p2p_swap"],
   "Deploying contracts": ["deploy_contract_evm", "deploy_contract_solana", "deploy_erc20", "deterministic_deploys_create2", "verify_contract"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
   "NFTs": ["nft_metadata_standards", "ipfs_for_nfts", "seaport_orders"],

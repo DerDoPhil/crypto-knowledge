@@ -786,6 +786,28 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.curve.finance"],
   },
 
+  balancer_swaps: {
+    topic: "balancer_swaps",
+    title: "Balancer v2/v3: batch swaps, weighted pools, 0-fee flash loans",
+    summary: "How an agent quotes and executes swaps against the Balancer Vault directly — and when to use it over an aggregator.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Know the architecture", note: "Balancer v2 keeps ALL pool liquidity in ONE Vault (0xBA12222222228d8Ba445958a75a0704d566BF2C8, live-verified byte-identical on Ethereum/Arbitrum/Base). Pools only do math; tokens sit in the Vault. A v2 poolId is 32 bytes: pool address (20) + specialization (2) + nonce (10) — the first 20 bytes ARE the pool contract." },
+      { title: "Discover pools", command: 'POST https://api-v3.balancer.fi/ {"query":"{ poolGetPools(first:10, where:{chainIn:[MAINNET]}, orderBy: totalLiquidity, orderDirection: desc){ id name type dynamicData{ totalLiquidity } } }"}', note: "Keyless GraphQL (live-verified). type: WEIGHTED (e.g. 80/20), STABLE, GYROE… Weighted 80/20 pools reduce impermanent loss for the dominant asset — that's why veBAL uses 80BAL/20WETH." },
+      { title: "Read a pool's tokens on-chain", command: "Vault.getPoolTokens(poolId) → (tokens[], balances[], lastChangeBlock)", note: "Live-verified against the veBAL pool. Token order here defines the assets[] indices for swaps." },
+      { title: "Quote via queryBatchSwap (eth_call only!)", command: "Vault.queryBatchSwap(kind, swaps[], assets[], funds) → int256[] assetDeltas", note: "kind: 0=GIVEN_IN, 1=GIVEN_OUT. swaps[] = {poolId, assetInIndex, assetOutIndex, amount, userData:'0x'}. Deltas are signed from the VAULT's perspective: positive = you pay, negative = you receive. Live-verified: 0.1 WETH GIVEN_IN → ~1868 BAL. The function is declared state-changing — call it with eth_call/simulate, NEVER send it as a transaction." },
+      { title: "Execute with batchSwap", command: "Vault.batchSwap(kind, swaps, assets, funds, limits, deadline)", note: "funds = {sender, fromInternalBalance:false, recipient, toInternalBalance:false}. limits[] = per-asset signed caps (max in / min out — derive from the query minus slippage), deadline = unix timestamp. Multi-hop routes chain several swap steps through one settlement (cheaper than sequential swaps)." },
+      { title: "v3 is different", note: "v3 Vault 0xbA1333333333a1BA1108E8412f11850A5C319bA9 (live-verified, Ethereum): you interact via its Router (resolve current address from docs.balancer.fi deployments — don't hardcode), pools are plain ERC-20 addresses (no 32-byte poolIds), and boosted pools auto-lend idle liquidity. The GraphQL API covers both versions." },
+      { title: "Or just route", note: "For best-price execution across ALL DEXes use this server's route tool or an aggregator (aggregator_swaps). Direct Vault interaction wins when you target a specific pool (LBP entries, veBAL, custom weighted pools) or need its 0-fee flash loans (flash_loans guide)." },
+    ],
+    warnings: [
+      "queryBatchSwap as a real transaction wastes gas and settles nothing useful — it's a simulation helper. Always eth_call it.",
+      "batchSwap without tight limits[] and deadline is MEV bait — a sandwich bot will take the slack (mev_strategies has the defense playbook).",
+    ],
+    references: ["https://docs.balancer.fi"],
+  },
+
   defi_lending: {
     topic: "defi_lending",
     title: "Lending & borrowing with Aave v3 (supply, borrow, health factor)",
