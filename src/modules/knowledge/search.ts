@@ -91,20 +91,41 @@ export function relatedGuides(topic: string, limit = 6): string[] {
  * Score every guide against the query (term hits: strong fields ×3, body ×1) and
  * return the best matches as FULL guides, ranked. Empty query → no results.
  */
+/** Count non-overlapping occurrences of a term in a haystack (frequency signal). */
+function countOccurrences(hay: string, term: string): number {
+  if (!term) return 0;
+  let n = 0;
+  let i = hay.indexOf(term);
+  while (i !== -1) {
+    n++;
+    i = hay.indexOf(term, i + term.length);
+  }
+  return n;
+}
+
 export function deepSearchGuides(query: string, limit = 5): RankedGuide[] {
   const terms = tokenize(query);
   if (terms.length === 0) return [];
+  const q = query.toLowerCase();
   const scored: RankedGuide[] = [];
   for (const g of Object.values(GUIDES)) {
     const { strong, weak } = guideHaystack(g);
     let score = 0;
+    let matchedTerms = 0;
     for (const t of terms) {
-      if (strong.includes(t)) score += 3;
-      if (weak.includes(t)) score += 1;
+      const inStrong = strong.includes(t);
+      // Title/topic/summary hit dominates; body hits add with diminishing frequency weight.
+      const strongScore = inStrong ? 5 : 0;
+      const weakHits = countOccurrences(weak, t);
+      const weakScore = weakHits > 0 ? 1 + Math.min(2, Math.log2(weakHits + 1)) : 0; // 1..3, saturating
+      if (inStrong || weakHits > 0) matchedTerms++;
+      score += strongScore + weakScore;
     }
-    // Small bonus when the whole phrase appears verbatim.
-    if (query.trim().length >= 3 && (strong.includes(query.toLowerCase()) || weak.includes(query.toLowerCase()))) score += 2;
-    if (score > 0) scored.push({ ...g, score });
+    // Reward guides that match MORE of the distinct query terms (coverage), not just one term many times.
+    if (matchedTerms > 1) score += matchedTerms;
+    // Verbatim phrase bonus.
+    if (q.length >= 4 && (strong.includes(q) || weak.includes(q))) score += 3;
+    if (score > 0) scored.push({ ...g, score: Math.round(score * 100) / 100 });
   }
   return scored.sort((a, b) => b.score - a.score).slice(0, limit);
 }

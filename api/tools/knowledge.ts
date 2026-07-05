@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { AccessEnforcer } from "../../src/access/enforce.js";
 import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
-import { getReference, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
+import { getReference, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
 import { ask, deepSearchGuides, relatedGuides } from "../../src/modules/knowledge/search.js";
 
 /**
@@ -58,6 +58,11 @@ export default async function handler(
         Object.entries(GUIDE_SECTIONS).map(([k, ids]) => [k, ids.filter((id) => GUIDES[id])]),
       );
       json(200, { ok: true, data: { quickstart: QUICKSTART, sections, count: topics.length, topics, references: [...REFERENCE_KINDS], memoryHint: MEMORY_HINT } });
+      return;
+    }
+
+    if (action === "stats") {
+      json(200, { ok: true, data: getStats(GUIDE_TOPICS.length, GUIDE_SECTIONS) });
       return;
     }
 

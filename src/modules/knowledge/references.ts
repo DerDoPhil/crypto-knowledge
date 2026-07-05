@@ -766,6 +766,24 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
 export const REFERENCE_KINDS = ["addresses", "endpoints", "errors", "rpc_gotchas"] as const;
 export type ReferenceKind = (typeof REFERENCE_KINDS)[number];
 
+/** Coverage snapshot so an agent (or a human) can see the tool's breadth at a glance. */
+export function getStats(guideCount: number, sectionTopics: Record<string, string[]>): unknown {
+  return {
+    guides: guideCount,
+    sections: Object.keys(sectionTopics).length,
+    sectionCounts: Object.fromEntries(Object.entries(sectionTopics).map(([k, v]) => [k, v.length])),
+    references: {
+      addresses: ADDRESSES.length,
+      endpoints: ENDPOINTS.length,
+      keylessEndpoints: ENDPOINTS.filter((e) => e.auth === "none").length,
+      errors: COMMON_ERRORS.length,
+      rpc_gotchas: RPC_GOTCHAS.length,
+    },
+    chains: ["bitcoin", "ethereum", "solana", "base", "arbitrum", "optimism", "polygon", "bnb", "avalanche", "cronos", "apechain"],
+    note: "All endpoints are periodically live-checked (scripts/livecheck-endpoints.ts). Use action 'ask' with a question for the fastest path.",
+  };
+}
+
 export function getReference(kind: ReferenceKind): unknown {
   switch (kind) {
     case "addresses":
