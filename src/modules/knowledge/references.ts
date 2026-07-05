@@ -30,6 +30,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Immutable, isolated-market lending primitive (live-verified, 15.6KB). Markets are (loanToken, collateralToken, oracle, irm, lltv) tuples — supply/borrow via marketParams, no global risk. Data API: blue-api.morpho.org/graphql (keyless). Balancer v2 Vault (flash loans for liquidations): 0xBA12222222228d8Ba445958a75a0704d566BF2C8 (live-verified).",
   },
   {
+    name: "EigenLayer core (restaking) — Ethereum",
+    addresses: { strategy_manager: "0x858646372CC42E1A627fcE94aa7A7033e7CF075A", delegation_manager: "0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A", steth_strategy: "0x93c4b944D05dfe6df7645A86cd2206016c51564D" },
+    note: "All proxies (live-verified; stETH-Strategy.underlyingToken() cross-checked = Lido stETH). LRTs: weETH 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee, ezETH 0xbf5495Efe5DB9ce00f80364C8B423567e58d2110 (symbols live-verified). See restaking_eigenlayer guide for the stacked-risk model.",
+  },
+  {
     name: "Balancer Vaults (v2 + v3)",
     addresses: { evm_v2: "0xBA12222222228d8Ba445958a75a0704d566BF2C8", ethereum_v3: "0xbA1333333333a1BA1108E8412f11850A5C319bA9" },
     note: "v2 Vault holds ALL v2 pool liquidity behind one contract (live-verified byte-identical on Ethereum/Arbitrum/Base). poolId = 32 bytes (pool address + specialization + nonce); getPoolTokens(poolId) → tokens/balances; flash loans currently 0-fee. v3 Vault (live-verified, Ethereum) is interacted with via its Router, pools are plain contract addresses. See balancer_swaps guide.",
@@ -795,7 +800,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "eip7702_smart_eoas", "safe_multisig"],
   "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social"],
-  "Staking": ["solana_staking", "eth_staking"],
+  "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics"],

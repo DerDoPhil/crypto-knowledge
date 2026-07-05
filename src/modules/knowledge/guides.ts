@@ -841,6 +841,27 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.lido.fi"],
   },
 
+  restaking_eigenlayer: {
+    topic: "restaking_eigenlayer",
+    title: "Restaking: EigenLayer, LRTs (weETH/ezETH) and the stacked-risk model",
+    summary: "How restaking reuses staked-ETH security for extra yield, the three entry paths, and why an agent must price the stacked risks — not just the APY.",
+    scope: ["evm"],
+    prerequisites: ["eth_staking (stETH/wstETH model)"],
+    steps: [
+      { title: "The idea", note: "Restaking pledges already-staked ETH as security for additional services (AVSs — data availability, oracles, bridges…). Extra yield for extra slashing exposure: an operator misbehaving on an AVS can burn part of your stake. It is leverage on TRUST, not on capital." },
+      { title: "Three entry paths", note: "(a) NATIVE: run a validator whose withdrawal credentials point to an EigenPod — full control, 32-ETH granularity. (b) LST restaking: deposit stETH & co into an EigenLayer Strategy. (c) LRT: hold a Liquid Restaking Token (weETH = ether.fi, ezETH = Renzo — both live-verified via symbol()) and let the protocol do (a)/(b). Most agents touch only (c)." },
+      { title: "LST deposit flow (path b)", command: "approve(StrategyManager, amount) → StrategyManager.depositIntoStrategy(strategy, token, amount) → shares; then DelegationManager.delegateTo(operator, …)", note: "Core contracts (all proxies, live-verified): StrategyManager 0x858646372CC42E1A627fcE94aa7A7033e7CF075A, DelegationManager 0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A, stETH-Strategy 0x93c4b944D05dfe6df7645A86cd2206016c51564D (underlyingToken() = stETH, cross-verified). Delegating picks WHOSE operator behavior you're exposed to — that choice IS the risk decision." },
+      { title: "Withdrawals are queued", note: "Exit = queueWithdrawal → wait the protocol withdrawal delay (days, parameter-dependent) → completeQueuedWithdrawal. No instant exit at the protocol level; the instant path is selling the LRT on a DEX at whatever discount the market charges." },
+      { title: "Price LRTs like a risk asset, not like ETH", note: "An LRT stacks FOUR risk layers: ETH staking + LST contract + EigenLayer contracts + LRT protocol (plus operator/AVS slashing). ezETH famously depegged ~2% in April 2024 on an airdrop announcement — thin DEX liquidity plus leveraged loopers = gap risk. Price via oracle/DEX quote (price_oracle_safety), never assume 1:1, and check DEX depth before sizing (token_discovery)." },
+      { title: "Where the yield data lives", command: "GET https://yields.llama.fi/pools → filter project ilike 'ether.fi'/'renzo'/'eigen'", note: "Compare LRT APY vs plain wstETH: the restaking premium is often small — if the spread doesn't pay for the extra risk layers, plain LST staking wins (defi_yield_research: apyBase vs apyReward — points/airdrop hopes are not cash flow)." },
+    ],
+    warnings: [
+      "Looped LRT strategies (deposit LRT as collateral → borrow ETH → buy more LRT) turn a 2% depeg into a liquidation cascade — the April-2024 ezETH event liquidated exactly those loops (defi_lending health-factor discipline applies doubly).",
+      "AVS slashing is the tail risk everyone ignores while farming points: read WHICH AVSs an operator/LRT secures before delegating — 'restaked' does not mean 'diversified'.",
+    ],
+    references: ["https://docs.eigenlayer.xyz"],
+  },
+
   solana_compressed_nfts: {
     topic: "solana_compressed_nfts",
     title: "Solana compressed NFTs (cNFTs): read, mint, transfer via DAS",
