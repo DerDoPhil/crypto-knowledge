@@ -1,7 +1,7 @@
 {
   "name": "crypto-knowledge",
   "version": "0.1.0",
-  "description": "The on-chain brain for autonomous AI agents — an MCP server for cross-chain routing, contract decoding, portfolio/allowance management, gas/profit estimation and anti-rug security checks.",
+  "description": "The on-chain brain for autonomous AI agents \u2014 an MCP server for cross-chain routing, contract decoding, portfolio/allowance management, gas/profit estimation and anti-rug security checks.",
   "type": "module",
   "license": "MIT",
   "bin": {
@@ -24,7 +24,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "livecheck": "tsx scripts/livecheck.ts",
-    "smoke": "tsx scripts/smoke.ts"
+    "smoke": "tsx scripts/smoke.ts",
+    "livecheck:endpoints": "tsx scripts/livecheck-endpoints.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
