@@ -1165,6 +1165,27 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.kyberswap.com", "https://docs.1inch.io"],
   },
 
+  intent_based_trading: {
+    topic: "intent_based_trading",
+    title: "Intent-based trading: CoW Protocol & UniswapX (sign the WHAT, not the HOW)",
+    summary: "Instead of building a swap tx, you sign an order and let solvers compete to fill it — gasless, MEV-protected, better for size. The full CoW flow an agent can run keyless.",
+    scope: ["evm"],
+    prerequisites: ["eip712_signing", "erc20_patterns (approvals)"],
+    steps: [
+      { title: "The model", note: "You sign an INTENT ('sell 1 WETH for ≥X USDC, valid until T') off-chain. Competing solvers/fillers find the execution (AMMs, private inventory, other users' opposite orders) and settle on-chain, paying the gas. No public-mempool tx from you = nothing to sandwich (mev_strategies). Trade-off: settlement is asynchronous — seconds to minutes, or the order expires unfilled." },
+      { title: "CoW Protocol — the open path (keyless API)", command: 'POST https://api.cow.fi/mainnet/api/v1/quote {"sellToken","buyToken","sellAmountBeforeFee","kind":"sell","from"} → quote (live-verified: 1 WETH → ~1797 USDC incl. fee + validTo)', note: "Batch auctions with a uniform clearing price: all orders in a batch trade at the same price, and opposite orders match peer-to-peer (a 'Coincidence of Wants' — no AMM fee at all). Also on base/arbitrum/gnosis via /{chain}/api/v1." },
+      { title: "CoW step 2: approve the RIGHT contract", command: "ERC20.approve(0xC92E8bdf79f0507f65a392b0ab4667716BFE0110, amount)  // GPv2VaultRelayer — Sourcify exact_match", note: "Approvals go to the VaultRelayer, NOT to the Settlement contract (GPv2Settlement 0x9008D19f58AAbD9eD0D60971565AA8510560ab41, verified). Settlement never needs your approval — an 'approve the settlement' request is a phishing tell." },
+      { title: "CoW step 3: sign & submit the order", command: "sign EIP-712 GPv2Order {sellToken, buyToken, sellAmount, buyAmount(min), validTo, appData, feeAmount, kind, partiallyFillable} → POST /orders → orderUid; track via GET /orders/{uid} + /trades", note: "buyAmount is your limit — solvers must beat it, surplus goes to YOU (better fill than quoted is common). partiallyFillable:true lets big orders fill across batches. Limit orders = same flow with your own price and long validTo." },
+      { title: "UniswapX — Dutch auctions", note: "Orders start at a good price for you and decay toward your worst-acceptable; the first filler for whom it's profitable executes via a Reactor (ExclusiveDutchOrderReactor 0x6000da47483062A0D734Ba3dc7576Ce6A0B645C4, V2DutchOrderReactor 0x00000011F84B9aa48e5f8aA8B9897600006289Be — both Sourcify-verified). Permit2-based, gasless. In practice order creation runs through Uniswap's interface/trading API — less open for standalone agents than CoW's API." },
+      { title: "When intents beat aggregators", note: "Size (batch price + P2P matching beats walking the AMM curve), MEV-sensitive pairs, gasless UX (agent wallet holds no ETH), and limit orders without infrastructure. When they DON'T: you need guaranteed instant execution (arb legs, liquidations) — an intent that fills 'usually' is not an atomic leg (arbitrage_basics)." },
+    ],
+    warnings: [
+      "An expired-unfilled order is a silent no-op — always check order status instead of assuming execution, and re-quote before re-submitting (tx_confirmation_patterns thinking applies to orders too).",
+      "The quote's feeAmount and price are only valid until validTo; signing a stale quote either fails or fills at a worse-than-market limit you set yourself.",
+    ],
+    references: ["https://docs.cow.fi", "https://docs.uniswap.org/contracts/uniswapx/overview"],
+  },
+
   token_discovery: {
     topic: "token_discovery",
     title: "Discover tokens & new pairs across chains (prices, liquidity, age)",

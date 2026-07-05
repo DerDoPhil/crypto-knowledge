@@ -792,7 +792,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Getting started & wallets": ["create_wallet", "get_testnet_funds", "wallet_security_checklist", "vanity_address"],
   "Sending & debugging transactions": ["debug_failed_tx", "tx_confirmation_patterns", "eth_jsonrpc_cheatsheet", "fetch_event_logs"],
   "Tokens (ERC-20 / SPL)": ["erc20_patterns", "permit2_usage", "spl_token_basics", "erc_standards_cheatsheet"],
-  "Swaps, bridging & routing": ["aggregator_swaps", "balancer_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "uniswap_v4_basics", "chaintrade_p2p_swap"],
+  "Swaps, bridging & routing": ["aggregator_swaps", "intent_based_trading", "balancer_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "uniswap_v4_basics", "chaintrade_p2p_swap"],
   "Deploying contracts": ["deploy_contract_evm", "deploy_contract_solana", "deploy_erc20", "deterministic_deploys_create2", "verify_contract"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
   "NFTs": ["nft_metadata_standards", "ipfs_for_nfts", "seaport_orders"],
