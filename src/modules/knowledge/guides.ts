@@ -1165,6 +1165,27 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.kyberswap.com", "https://docs.1inch.io"],
   },
 
+  hyperliquid_trading: {
+    topic: "hyperliquid_trading",
+    title: "Hyperliquid for agents: keyless data, signed trading, API wallets",
+    summary: "The perp DEX most agent-friendly by design — full market data without a key, order placement via signed actions, and agent wallets that can trade but never withdraw.",
+    scope: ["evm"],
+    prerequisites: ["USDC collateral (deposits run over the Arbitrum bridge)"],
+    steps: [
+      { title: "Market data — no key, no auth, everything", command: 'POST https://api.hyperliquid.xyz/info {"type":"allMids"} → 900+ mids (live-verified); {"type":"l2Book","coin":"ETH"} → full order book; {"type":"metaAndAssetCtxs"} → leverage caps, open interest, funding', note: "Also clearinghouseState (positions/margin of any address — the whole book is public!), fundingHistory, predictedFundings (231 assets incl. cross-venue Binance/Bybit predictions, live-verified). This is the richest keyless perp dataset anywhere — use it even if you trade elsewhere (basis_trade, perps_funding_data)." },
+      { title: "Trading = signed actions, not txs", command: 'POST https://api.hyperliquid.xyz/exchange {"action":{…order…}, "nonce": Date.now(), "signature": …}', note: "No gas, no mempool — the L1 is a purpose-built CLOB. nonce = current timestamp in ms and must strictly increase per wallet: serialize your order submissions, parallel sends with equal/backwards nonces get rejected." },
+      { title: "Order types", note: "Limit orders with tif: 'Gtc' (rest), 'Ioc' (fill-or-kill the remainder), 'Alo' (post-only — cancels instead of taking). Trigger orders carry triggerPx + tpsl ('tp'/'sl') for stop-loss/take-profit server-side — an agent doesn't need its own price-watcher loop for exits." },
+      { title: "API wallets: the blast-radius pattern built in", note: "approveAgent authorizes a SEPARATE keypair that can trade but can NOT withdraw funds (1 unnamed + up to 3 named per account, +2 per subaccount). Run your bot on the agent key, keep the funded key cold — this is exactly the wallet_security_checklist blast-radius rule as a protocol feature. Use the official Python SDK (hyperliquid-python-sdk) for the signing details instead of hand-rolling." },
+      { title: "Sizing & execution discipline", note: "allMids is a MID — quote real execution from l2Book (best bid/ask + depth). Check the asset's max leverage and isolated-vs-cross margin in meta before sizing; funding settles hourly and flips sign (perps_funding_data)." },
+      { title: "HyperEVM", note: "A normal EVM chain (chainId 999, RPC https://rpc.hyperliquid.xyz/evm, live-verified) attached to the same L1 — standard EVM tooling works, with precompiles exposing exchange state to contracts. Useful when you want on-chain logic reacting to the order book." },
+    ],
+    warnings: [
+      "The entire account state is public via clearinghouseState — anyone can read your positions, and copy-/counter-trading bots do exactly that (copy_trading_bots). Randomize sizing/timing if that matters.",
+      "Perp liquidations are the default failure mode: a leveraged position + hourly funding against you + no stop = slow-motion liquidation. Set tpsl triggers at order time, not 'later'.",
+    ],
+    references: ["https://hyperliquid.gitbook.io/hyperliquid-docs"],
+  },
+
   intent_based_trading: {
     topic: "intent_based_trading",
     title: "Intent-based trading: CoW Protocol & UniswapX (sign the WHAT, not the HOW)",
