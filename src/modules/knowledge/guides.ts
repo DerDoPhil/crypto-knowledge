@@ -1315,6 +1315,27 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.jito.wtf", "https://solana.com/docs/core/fees"],
   },
 
+  robinhood_chain: {
+    topic: "robinhood_chain",
+    title: "Robinhood Chain: the tokenized-stocks L2 (connect, read, trade context)",
+    summary: "Robinhood's Arbitrum-based L2 went mainnet 2026-07-01 with equities as ERC-20s. What an agent needs: connection data, the token landscape, and the regulatory caveats.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Connect (all live-verified)", command: "Mainnet: chainId 4663, RPC https://rpc.mainnet.chain.robinhood.com, explorer https://robinhoodchain.blockscout.com (keyless Blockscout API). Testnet: chainId 46630, RPC https://rpc.testnet.chain.robinhood.com/rpc.", note: "Gas token is ETH. Fully EVM-compatible (Solidity/Vyper unmodified; Hardhat/Foundry/viem work as-is) and contract deployment is permissionless — official docs. Multicall3 is deployed at the canonical address (live-verified)." },
+      { title: "What it is", note: "An Arbitrum-stack ('Dedicated Blockchains') L2 settling to Ethereum, launched by Robinhood for tokenized stocks and RWAs. Sequencing is first-come-first-served — like Arbitrum One there's no priority-fee auction, so execution priority is LATENCY, not gas bidding (changes your MEV/sniping assumptions vs mainnet: mev_strategies)." },
+      { title: "The token landscape (from the live explorer)", command: "GET https://robinhoodchain.blockscout.com/api/v2/tokens", note: "Live-verified day-5 snapshot: equity tokens named '<Company> • Robinhood Token' (NVDA, TSLA, AMD, COIN, CRCL …) as plain ERC-20s, plus stables (USDG 'Global Dollar', Ethena USDe) and DeFi tokens (VIRTUAL). Uniswap, 1inch, Lighter and Arcus deployed from day one — standard DeFi composability applies (aggregator_swaps, token_discovery)." },
+      { title: "Read equity-token data like any ERC-20", note: "balanceOf/decimals/Transfer events — the ABIS reference table applies unchanged. Price feeds: DEX pools on-chain (price_oracle_safety rules apply — thin early liquidity!) or off-chain equity prices as sanity check. 24/7 on-chain trading vs. market-hours underlying = expect basis/gap risk around open/close." },
+      { title: "Bridging in and out", note: "LayerZero is the official omnichain messaging/bridging partner (docs); the Arbitrum portal handles the canonical path (testnet parent per Chainlist = Sepolia). Standard L2 rules from opstack_l2_fees do NOT all transfer — this is Arbitrum-stack, not OP-stack — but the two-part-fee intuition (L1 data cost) is the same family (l2_bridging_basics)." },
+      { title: "Regulatory reality check before trading", note: "Tokenized equities are jurisdiction-gated products: Robinhood's stock tokens launched for EU users as price-tracking instruments, NOT direct share ownership (no voting rights; dividends per product terms), and US persons are excluded. An agent buying the ERC-20 on a DEX may sidestep the app's KYC but NOT the legal nature of the asset — read the current terms at docs.robinhood.com/chain before sizing." },
+    ],
+    warnings: [
+      "A '• Robinhood Token' ERC-20 tracking a stock is an issuer-dependent claim — its peg to the underlying depends on Robinhood's redemption/backing mechanics, not on-chain collateral you can verify. Treat depeg risk like a stablecoin's (stablecoin_mechanics), and check the token address against the explorer's verified list — ticker-squatting scams will come.",
+      "The chain is days old (mainnet 2026-07-01): expect parameter changes, thin DEX liquidity and evolving docs — re-verify RPC/explorer facts before hardcoding them into agents.",
+    ],
+    references: ["https://docs.robinhood.com/chain/", "https://robinhoodchain.blockscout.com"],
+  },
+
   opstack_l2_fees: {
     topic: "opstack_l2_fees",
     title: "OP-Stack chains (Base/OP/…): the two-part fee, predeploys, deposits & withdrawals",

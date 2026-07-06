@@ -603,6 +603,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "The Accept header is REQUIRED (otherwise HTML). Some routes (e.g. /status) stay disabled — the rune/inscription core works. Community instance: be gentle, cache responses.",
   },
   {
+    name: "Robinhood Chain (RPC + Blockscout)",
+    baseUrl: "https://rpc.mainnet.chain.robinhood.com",
+    auth: "none",
+    what: "Robinhood's Arbitrum-based L2 for tokenized stocks/RWAs (mainnet live 2026-07-01). Keyless public RPC (live-verified chainId 4663) + keyless Blockscout explorer API.",
+    example: 'POST / {"method":"eth_chainId"} → 0x1237 (4663). Explorer: https://robinhoodchain.blockscout.com/api/v2/tokens | /stats (live-verified: 7.4M+ txs). Testnet: chainId 46630, https://rpc.testnet.chain.robinhood.com/rpc.',
+    limits: "ETH is the gas token. Stock tokens (NVDA/TSLA/… '• Robinhood Token') are ERC-20s on this chain. See robinhood_chain guide.",
+  },
+  {
     name: "OpenSea REST API v2",
     baseUrl: "https://api.opensea.io/api/v2",
     auth: "free-key",
@@ -804,7 +812,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "pumpfun_token2022_gotchas", "solana_pay"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "eip7702_smart_eoas", "safe_multisig"],
-  "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social"],
+  "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
@@ -812,7 +820,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Token launches": ["token_launch_mechanics", "sniping_launches"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
-  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "opstack_l2_fees", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
+  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
 export interface AbiInterface {
