@@ -826,6 +826,56 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.lido.fi"],
   },
 
+  playbook_memecoin_launch_analysis: {
+    topic: "playbook_memecoin_launch_analysis",
+    title: "PLAYBOOK: analyze a fresh memecoin launch in 5 calls (Solana + EVM)",
+    summary: "The decision tree for a just-launched token: curve state, security, holders, liquidity — with abort conditions at every step.",
+    scope: ["all"],
+    prerequisites: ["token_launch_mechanics (how launches work)"],
+    steps: [
+      { title: "1 — Curve state (is it even tradeable yet?)", command: 'Solana: call tool "pumpfun" { "mint": "<mint>" } → bonding-curve progress + graduation status. BNB: four.meme progress toward the ~18-BNB graduation (bnb_chain_playbook)', note: "Pre-graduation = curve pricing, thin exits, antisniper taxes possible. Post-graduation = real AMM pool, normal rules. Know which regime you're in before anything else." },
+      { title: "2 — Security scan", command: 'call tool "security" { "chain": …, "address": … }', note: "ABORT on: honeypot flag, mint authority live (Solana: mint/freeze not revoked), owner can blacklist/upgrade, sell tax >10%. On Solana also check Token-2022 transfer hooks (pumpfun_token2022_gotchas)." },
+      { title: "3 — Holder concentration", command: "Solana: DAS getTokenAccounts / Helius. EVM: Blockscout /api/v2/tokens/{addr}/holders (keyless where available)", note: "Top-10 holders >30% (excluding curve/LP) = one seller controls the chart. Fresh-wallet clusters funded from one source = the dev's sybil bags (wash_trading_detection)." },
+      { title: "4 — Liquidity reality", command: "GET https://api.dexscreener.com/latest/dex/tokens/{token}", note: "LP burned/locked? Volume real or wash (volume >> unique traders = fake)? Your exit size vs pool depth decides max position." },
+      { title: "5 — Decide + execute small", note: "All green → playbook_pre_trade_check steps 3-4 (simulate + protected execution), position sized to the SELL side. Any red → skip; there are hundreds of launches per day, the edge is selectivity, not speed (sniping_launches for the speed game)." },
+    ],
+    warnings: ["Most launches are designed to extract from exactly this kind of analysis-lite buyer: passing 4 of 5 checks is a FAIL. The playbook is a veto chain, not a scorecard."],
+    references: ["https://api.dexscreener.com"],
+  },
+
+  playbook_cross_chain_arbitrage: {
+    topic: "playbook_cross_chain_arbitrage",
+    title: "PLAYBOOK: cross-chain price gap — detect, cost out, execute (5 tool calls)",
+    summary: "The full chain from spotting a cross-venue price gap to a costed, simulated, tracked execution — and why most detected gaps die in step 3.",
+    scope: ["all"],
+    prerequisites: ["arbitrage_basics (the cost framework)"],
+    steps: [
+      { title: "1 — Detect the gap from independent sources", command: "DEX leg: GET https://api.dexscreener.com/latest/dex/tokens/{token} · reference leg: CEX public data (Binance/Coinbase/Kraken endpoint) or DefiLlama prices", note: "A 'gap' measured from one indexer is often just a stale cache. Two independent quotes or it doesn't exist (price_oracle_safety)." },
+      { title: "2 — Cost the whole route BEFORE moving", command: 'call tool "profitability" { … } — include both swap fees, bridge fee, gas on BOTH chains (L2s: L1 data fee, opstack_l2_fees), slippage at your size', note: "This is where most gaps die: a 0.8% gap minus 2×0.25% swap fees minus bridge fee minus gas is usually negative." },
+      { title: "3 — Get the bridge route", command: 'call tool "route" { "fromChain": …, "toChain": …, "fromToken": …, "amount": … } → LiFi + deBridge in parallel, best + alternatives, unsigned tx', note: "Bridge time (seconds–minutes) is your exposure window — the gap can close in transit. Cross-chain arb is NOT atomic (arbitrage_basics)." },
+      { title: "4 — Simulate both legs", command: 'call tool "simulate" on the swap legs; inspect the route tool unsigned txs before signing', note: "A reverted leg = a one-sided directional position, not an arb." },
+      { title: "5 — Execute + track to completion", command: "Bridge status: deBridge /Orders tracking or Across /deposit/status; confirm balances on BOTH chains via the portfolio tool", note: "Idempotent state machine per tx_confirmation_patterns — detect bridge limbo instead of double-sending; log realized vs expected PnL to calibrate profitability inputs." },
+    ],
+    warnings: ["Pre-positioned inventory on both chains turns this into two local swaps — the professional version. Bridging inside the arb loop is the beginner version that pays the exposure window."],
+    references: ["https://docs.debridge.finance", "https://docs.across.to"],
+  },
+
+  playbook_pre_trade_check: {
+    topic: "playbook_pre_trade_check",
+    title: "PLAYBOOK: the pre-trade check — never buy a token blind (4 tool calls)",
+    summary: "The exact tool-call sequence this server recommends before ANY token buy — rug scan, liquidity reality, dry-run, protected execution.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "1 — Security scan (kills 90% of bad trades)", command: 'call tool "security" { "chain": "<chain>", "address": "<token>" }', note: "0-100 risk score from GoPlus + honeypot.is: honeypot flags, buy/sell tax, owner powers (mint/blacklist/upgrade), LP lock. Hard rules: honeypot → abort; sell tax >10% → abort unless you explicitly trade taxed tokens; owner can mint/blacklist → treat as rug-capable (rugpull_forensics)." },
+      { title: "2 — Liquidity & price reality", command: "GET https://api.dexscreener.com/latest/dex/tokens/{token} (keyless)", note: "Real pool depth, 24h volume, price impact for YOUR size. A token you can buy but not SELL at size is a soft honeypot — size ≤ what the sell side absorbs (token_discovery has the full checklist)." },
+      { title: "3 — Dry-run the exact trade", command: 'call tool "simulate" { "chain": "<chain>", "from": "<you>", "to": "<router>", "data": "<swap calldata>" } — or for Solana: call tool "solana_swap" (Jupiter builds the unsigned tx) and inspect it', note: "Catches reverts, unexpected taxes and approval issues BEFORE gas is spent; decode unknown calldata with the abi tool first." },
+      { title: "4 — Execute protected", command: 'call tool "mev_protection" { "chain": "<chain>" } → use the returned private RPC (Flashbots/MEV-Blocker) or Jito bundle on Solana', note: "Tight slippage + deadline; verify the fill afterwards via portfolio. Full defense rationale: mev_strategies." },
+    ],
+    warnings: ["No single step substitutes for the others: a clean security scan with thin liquidity, or deep liquidity with an unverified proxy owner, are both losing trades. The sequence is the product."],
+    references: ["https://api.dexscreener.com"],
+  },
+
   ethena_usde_mechanics: {
     topic: "ethena_usde_mechanics",
     title: "Ethena USDe/sUSDe: the delta-hedged 'synthetic dollar' and its real risks",
