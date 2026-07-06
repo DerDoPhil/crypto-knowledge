@@ -138,21 +138,6 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://book.getfoundry.sh/forge/deploying#verifying", "https://docs.etherscan.io/etherscan-v2"],
   },
 
-  get_testnet_funds: {
-    topic: "get_testnet_funds",
-    title: "Get testnet funds (faucets)",
-    summary: "Fund a wallet on testnets/devnet for free before spending real money.",
-    scope: ["all"],
-    prerequisites: ["create_wallet"],
-    steps: [
-      { title: "Solana devnet", command: "solana airdrop 2 <ADDRESS> --url devnet", note: "Up to ~2 SOL per request; rate-limited." },
-      { title: "Ethereum Sepolia", note: "Use a faucet such as sepoliafaucet.com or the Alchemy/QuickNode faucets (often require a mainnet balance to deter abuse)." },
-      { title: "Base Sepolia", note: "Coinbase Developer Platform faucet, or bridge Sepolia ETH via the Base bridge." },
-      { title: "Check balance (EVM)", command: "cast balance <ADDRESS> --rpc-url <TESTNET_RPC>" },
-    ],
-    references: ["https://docs.anza.xyz/cli/examples/test-validator"],
-  },
-
   register_onchain_tool: {
     topic: "register_onchain_tool",
     title: "Register an agent tool on-chain (ERC-8257 / OpenSea)",
@@ -1313,6 +1298,29 @@ export const GUIDES: Record<string, Guide> = {
       "Never send tips as a standalone tx outside the bundle/Jito submission — you'd pay for nothing if your target tx doesn't land.",
     ],
     references: ["https://docs.jito.wtf", "https://solana.com/docs/core/fees"],
+  },
+
+  testnets_and_faucets: {
+    topic: "testnets_and_faucets",
+    title: "Testnets & faucets: the map (ETH/SOL/BTC/L2s) and how an agent funds itself autonomously",
+    summary: "Which testnet to use per chain (all RPCs live-verified) and the funding paths ranked by how autonomously an agent can walk them — local forks first, then API airdrops, PoW faucets, and bridges.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Rule 0: a local fork beats every faucet", command: "EVM: anvil --fork-url <mainnet-rpc>  ·  Solana: solana-test-validator  ·  Bitcoin: bitcoind -regtest", note: "Unlimited funds (anvil pre-funds 10 accounts with 10k ETH; anvil_setBalance mints at will), real mainnet state if forked, zero rate limits, fully autonomous. Use PUBLIC testnets only when you genuinely need other parties (indexers, bridges, faucet-gated protocols) — not for logic tests." },
+      { title: "The EVM testnet map (chainIds live-verified)", note: "Sepolia 11155111 (THE app testnet; https://ethereum-sepolia-rpc.publicnode.com) · Hoodi 560048 (staking/validator testnet, Holesky's successor; ethereum-hoodi-rpc.publicnode.com) · Holesky: DEPRECATED — publicnode already dropped it (live-checked). L2s mirror Sepolia: Base Sepolia 84532 (sepolia.base.org), Arbitrum Sepolia 421614 (sepolia-rollup.arbitrum.io/rpc), OP Sepolia 11155420 (sepolia.optimism.io). Robinhood Chain testnet: 46630 (robinhood_chain). Full registry: chainid.network/chains.json." },
+      { title: "Solana: requestAirdrop is the autonomous path — with limits", command: 'POST https://api.devnet.solana.com {"method":"requestAirdrop","params":["<pubkey>", 100000000]}  // or: solana airdrop 1 --url devnet', note: "Live-measured reality: the public faucet answers 429 'reached your airdrop limit today or the faucet has run dry' when exhausted (per-IP + per-address limits) and testnet-cluster airdrops often throw 'Internal error'. Strategy: ask small (0.1–1 SOL), retry hours later, fall back to faucet.solana.com (web, CAPTCHA) or a Helius devnet key. Devnet = where programs are tested; testnet cluster = validator/core testing, not for you." },
+      { title: "Sepolia ETH without logins: PoW faucets", note: "https://sepolia-faucet.pk910.de and https://hoodi-faucet.pk910.de (both live-checked reachable): you MINE for testnet ETH in a JS/WASM session — no account, no CAPTCHA, no mainnet-balance gate → the most automatable ETH-testnet source. Provider faucets (Alchemy/QuickNode/Google Cloud) require accounts and often a mainnet balance — NOT autonomous. Budget mining time: minutes per 0.05–1 ETH depending on load." },
+      { title: "L2 testnet gas: bridge it, don't faucet it", note: "Once you hold Sepolia ETH, the canonical bridges move it autonomously by contract call: Arbitrum Sepolia via the portal/Inbox depositEth, Base/OP Sepolia via the Superchain L1StandardBridge (send ETH to the bridge address = depositETH). ~Minutes to arrive (opstack_l2_fees deposit path). One PoW-mined pot funds ALL your L2 testnets." },
+      { title: "Test tokens: deploy your own before hunting faucets", note: "For ERC-20/SPL flows just deploy a mint-anything mock (deploy_erc20 / spl_token_basics) — fully autonomous and you control decimals/supply. Circle's official testnet USDC faucet (faucet.circle.com, live-checked) exists but is web+CAPTCHA; only needed when a protocol hardcodes the canonical testnet-USDC address (e.g. CCTP testing, cctp_native_usdc)." },
+      { title: "Bitcoin: regtest locally, signet publicly", note: "testnet4 (current public testnet, block height live-verified via mempool.space/testnet4/api) and signet (mempool.space/signet/api) both work with Esplora-style APIs (bitcoin_basics). Their faucets are CAPTCHA web pages — not autonomous — so: regtest for logic (generatetoaddress mines yourself = unlimited), signet when you need a live network and fund it once manually." },
+    ],
+    warnings: [
+      "Testnets get deprecated on a schedule (Ropsten→Rinkeby→Goerli→Holesky all died) — re-verify via chainid.network before hardcoding, and expect faucet URLs to rot faster than RPCs.",
+      "Never reuse a key between testnet and mainnet: faucet keys end up in logs/CI configs, and muscle-memory sends real funds to test addresses. One throwaway keypair per testnet campaign (wallet_security_checklist).",
+      "Faucet limits are per-IP AND per-address — parallel agents behind one NAT share the budget; a 429 today usually resets within 24h.",
+    ],
+    references: ["https://chainid.network", "https://faucet.solana.com"],
   },
 
   robinhood_chain: {

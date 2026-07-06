@@ -603,6 +603,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "The Accept header is REQUIRED (otherwise HTML). Some routes (e.g. /status) stay disabled — the rune/inscription core works. Community instance: be gentle, cache responses.",
   },
   {
+    name: "Public testnet RPCs + autonomous faucets",
+    baseUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+    auth: "none",
+    what: "The live-verified testnet map: Sepolia 11155111, Hoodi 560048 (Holesky is dead), Base Sepolia 84532 (sepolia.base.org), Arbitrum Sepolia 421614 (sepolia-rollup.arbitrum.io/rpc), OP Sepolia 11155420 (sepolia.optimism.io), Solana devnet (api.devnet.solana.com), BTC testnet4/signet (mempool.space/testnet4/api, /signet/api).",
+    example: 'Autonomous funding: Solana {"method":"requestAirdrop","params":["<pubkey>",100000000]} (429 when daily limit/dry — live-measured); Sepolia via PoW mining faucets sepolia-faucet.pk910.de / hoodi-faucet.pk910.de (no login/CAPTCHA); L2 gas by bridging Sepolia ETH.',
+    limits: "Local forks (anvil --fork-url / solana-test-validator / bitcoind -regtest) are unlimited and fully autonomous — prefer them. Full playbook: testnets_and_faucets guide.",
+  },
+  {
     name: "Robinhood Chain (RPC + Blockscout)",
     baseUrl: "https://rpc.mainnet.chain.robinhood.com",
     auth: "none",
@@ -802,7 +810,7 @@ export const QUICKSTART = {
  * human/agent-friendly grouping, not an exhaustive registry.
  */
 export const GUIDE_SECTIONS: Record<string, string[]> = {
-  "Getting started & wallets": ["create_wallet", "get_testnet_funds", "wallet_security_checklist", "vanity_address"],
+  "Getting started & wallets": ["create_wallet", "testnets_and_faucets", "wallet_security_checklist", "vanity_address"],
   "Sending & debugging transactions": ["debug_failed_tx", "tx_confirmation_patterns", "eth_jsonrpc_cheatsheet", "fetch_event_logs"],
   "Tokens (ERC-20 / SPL)": ["erc20_patterns", "permit2_usage", "spl_token_basics", "erc_standards_cheatsheet"],
   "Swaps, bridging & routing": ["aggregator_swaps", "intent_based_trading", "balancer_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "uniswap_v4_basics", "chaintrade_p2p_swap"],
