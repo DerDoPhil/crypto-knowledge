@@ -7,3 +7,4 @@ dist/
 coverage/
 .vercel
 manifest-host/
+Groks-*.md
