@@ -826,6 +826,44 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.lido.fi"],
   },
 
+  ethena_usde_mechanics: {
+    topic: "ethena_usde_mechanics",
+    title: "Ethena USDe/sUSDe: the delta-hedged 'synthetic dollar' and its real risks",
+    summary: "Where the sUSDe yield actually comes from (perp funding, not lending), the verified contracts, and why the loop unwinds violently when funding flips.",
+    scope: ["evm"],
+    prerequisites: ["basis_trade (funding-rate mechanics)", "stablecoin_mechanics"],
+    steps: [
+      { title: "The mechanism", note: "USDe is backed by a DELTA-NEUTRAL position: long stETH/BTC collateral + short the equivalent perp — price risk cancels, and the position EARNS the funding rate (shorts collect when funding is positive) plus staking yield. It is a tokenized basis trade (basis_trade), not a lending product." },
+      { title: "Verified contracts (Ethereum)", note: "USDe 0x4c9EDD5852cd905f086C759E8383e09bff1E68B3, sUSDe 0x9D39A5DE30e57443BfF2A8307A4256c8797A3497 — both symbol()-verified, and sUSDe.asset() == USDe cross-verified on-chain. sUSDe is a standard ERC-4626 vault (deposit USDe → yield-accruing shares; erc4626_vaults applies 1:1)." },
+      { title: "What an agent does with it", note: "Hold sUSDe for passive basis yield — but check the CURRENT funding regime first (Hyperliquid predictedFundings / Binance funding via the CEX endpoint): the yield is variable and can go NEGATIVE. sUSDe PT on Pendle = the fixed-rate version of the same trade (pendle_yield_tokenization)." },
+      { title: "Monitor like a stablecoin, think like a perp desk", command: "GET https://stablecoins.llama.fi/stablecoins?includePrices=true (USDe listed) + live funding from CEX/Hyperliquid endpoints", note: "The peg holds while the hedge works; the yield holds while funding is positive. Extended negative funding drains the reserve fund and compresses sUSDe APY toward zero." },
+    ],
+    warnings: [
+      "Looped sUSDe collateral (deposit → borrow stable → buy more sUSDe) stacks liquidation risk on funding risk: when funding flips negative, APY collapses AND collateral derisks simultaneously — the ezETH-cascade lesson (restaking_eigenlayer) applies.",
+      "USDe is NOT fiat-backed: exchange counterparty risk and reserve-fund depth are the real backing — read current attestations before treating it as 'a stablecoin' (tokenized_treasuries for contrast).",
+    ],
+    references: ["https://docs.ethena.fi"],
+  },
+
+  pendle_yield_tokenization: {
+    topic: "pendle_yield_tokenization",
+    title: "Pendle: split yield into PT + YT (fixed yield vs leveraged yield bets)",
+    summary: "How yield tokenization works, what an agent can actually do with PT/YT, and the expiry mechanics that decide the trade.",
+    scope: ["evm"],
+    prerequisites: ["erc4626_vaults (share/asset mental model)"],
+    steps: [
+      { title: "The split", note: "A yield-bearing asset (stETH, sUSDe, LP shares) gets wrapped into SY, then split: PT (principal token — redeems 1:1 for the underlying AT EXPIRY) + YT (yield token — receives ALL the yield until expiry, then goes to zero). PT + YT = SY, always." },
+      { title: "The two basic trades", note: "FIXED YIELD: buy PT below par — a PT trading at 0.95 that redeems at 1.00 in 6 months locks ~10% APY regardless of where the variable rate goes. LEVERAGED YIELD: buy YT — you pay a small price for the FULL yield stream of one unit; if realized yield beats what you paid, you profit (and vice versa — YT can easily go to ~0)." },
+      { title: "Find markets + addresses (keyless, live-verified)", command: "GET https://api-v2.pendle.finance/core/v1/{chainId}/markets/active → [{name, address, expiry, pt, yt, sy}]", note: "Implied APY (what the AMM currently prices) vs your view of the underlying APY IS the trade. Pendle's hosted SDK routes return ready calldata for swaps/LP — pair with the simulate tool before signing." },
+      { title: "Expiry discipline", note: "PT converges to par at expiry (your fixed yield realizes). YT decays to zero — holding YT past its yield-collection value is pure loss. LPing a Pendle AMM earns fees + rewards but carries both PT-price and impermanent-loss risk until expiry." },
+    ],
+    warnings: [
+      "YT is a decaying asset by construction — never 'hold and forget' a YT position; the value goes to zero at expiry with mathematical certainty (only collected yield remains).",
+      "PT fixed yield is fixed only if held to expiry — selling early is a rates trade, and thin markets gap (defi_yield_research for the underlying-APY leg).",
+    ],
+    references: ["https://api-v2.pendle.finance/core/docs", "https://docs.pendle.finance"],
+  },
+
   restaking_eigenlayer: {
     topic: "restaking_eigenlayer",
     title: "Restaking: EigenLayer, LRTs (weETH/ezETH) and the stacked-risk model",
