@@ -877,7 +877,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Tokens (ERC-20 / SPL)": ["erc20_patterns", "permit2_usage", "spl_token_basics", "erc_standards_cheatsheet"],
   "Swaps, bridging & routing": ["aggregator_swaps", "intent_based_trading", "balancer_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "layerzero_oapp_messaging", "uniswap_v4_basics", "chaintrade_p2p_swap"],
   "Deploying contracts": ["deploy_contract_evm", "deploy_contract_solana", "deploy_erc20", "deterministic_deploys_create2", "verify_contract"],
-  "Contract development (code)": ["foundry_invariant_testing", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging"],
+  "Contract development (code)": ["foundry_invariant_testing", "web3_ci_cd", "solidity_security_patterns", "solana_program_security", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging", "scripting_with_onchain_tools"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
   "NFTs": ["nft_metadata_standards", "ipfs_for_nfts", "seaport_orders"],
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "pumpfun_token2022_gotchas", "solana_pay"],
@@ -890,7 +890,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics"],
   "Token launches": ["token_launch_mechanics", "sniping_launches"],
-  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
+  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };

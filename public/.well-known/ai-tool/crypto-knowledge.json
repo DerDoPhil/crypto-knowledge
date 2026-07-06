@@ -1,8 +1,8 @@
 {
   "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
   "name": "Crypto-Knowledge",
-  "description": "The on-chain brain for AI agents: action 'ask' returns correct, live-verified Web3 knowledge in ONE call instead of burning search/reasoning credits. 77+ runbooks across Bitcoin, Ethereum & Solana — coding (wallets, deploys, signing, tx debugging, x402, gas), DeFi (lending, vaults, stableswap, yield) and trading strategies (arbitrage, MEV, bots, liquidations, perps, prediction markets) — plus a directory of keyless free APIs, canonical addresses and an error playbook.",
-  "version": "1.2.0",
+  "description": "The on-chain brain for AI agents: action 'ask' returns correct, live-verified Web3 knowledge in ONE call instead of burning search/reasoning credits. 100+ runbooks across Bitcoin, Ethereum & Solana — contract dev (Foundry invariants, v4 hooks, account abstraction, security patterns), DeFi (lending, vaults, yield, Pendle, Ethena), trading (arbitrage, MEV, perps) — plus multi-tool playbooks, chain playbooks (Robinhood/BNB/Cronos), a keyless-API directory, canonical addresses and an error playbook.",
+  "version": "1.3.0",
   "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/knowledge",
   "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
   "image": "https://crypto-knowledge-mcp.vercel.app/icon.png",
@@ -36,7 +36,8 @@
           "addresses",
           "endpoints",
           "errors",
-          "rpc_gotchas"
+          "rpc_gotchas",
+          "abis"
         ],
         "description": "Reference table for action=reference."
       }
@@ -66,18 +67,18 @@
   "tags": [
     "ai",
     "agent-tools",
-    "knowledge",
     "web3",
-    "crypto",
     "defi",
     "trading",
-    "arbitrage",
     "mev",
+    "security",
+    "solidity",
+    "smart-contracts",
     "bitcoin",
     "ethereum",
     "solana",
     "onchain",
-    "save-credits",
+    "playbooks",
     "x402",
     "normies"
   ],

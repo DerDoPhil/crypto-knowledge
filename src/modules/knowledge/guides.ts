@@ -159,6 +159,27 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://book.getfoundry.sh/forge/invariant-testing"],
   },
 
+  web3_ci_cd: {
+    topic: "web3_ci_cd",
+    title: "Web3 CI/CD: GitHub Actions for Foundry (test, fuzz, Slither, deploy, verify)",
+    summary: "A production-grade pipeline for a smart-contract repo — what to run on every PR, how to keep keys safe, and the matrix pattern for multi-chain deploys.",
+    scope: ["evm"],
+    prerequisites: ["A Foundry project", "foundry_invariant_testing"],
+    steps: [
+      { title: "The PR gate (run on every push)", command: "forge fmt --check && forge build --sizes && forge test -vvv && forge test --mt invariant_", note: "Use foundry-rs/foundry-toolchain@v1 in the workflow to install forge. --sizes catches the 24KB contract limit BEFORE deploy; separate the invariant job so its longer runtime doesn't block fast unit feedback." },
+      { title: "Static analysis in CI", command: "crytic/slither-action@v0 (Slither) — fail the build on high-severity findings", note: "Slither catches reentrancy, uninitialized storage, arbitrary-send, shadowing etc. for free. Add Aderyn as a second linter. Gate merges on a clean run; triage/annotate acceptable findings rather than disabling the check." },
+      { title: "Coverage + gas snapshots", command: "forge coverage --report lcov  ·  forge snapshot --check .gas-snapshot", note: "gas-snapshot diff in the PR shows regressions; coverage upload (codecov) surfaces untested branches. A gas snapshot that jumps unexpectedly is a red flag for an accidental storage write (gas_optimization)." },
+      { title: "Secrets: NEVER a raw private key in CI", note: "Store ETHERSCAN_API_KEY as a repo secret. For deploys prefer Foundry's keystore/`--account` or a hardware/KMS signer over a plaintext PRIVATE_KEY secret — a leaked CI key is a drained wallet (wallet_security_checklist). Restrict deploy jobs to protected branches + manual approval (environments)." },
+      { title: "Multi-chain deploy + verify (matrix)", command: "strategy.matrix.chain: [1, 8453, 42161, 10]  →  forge script Deploy --rpc-url ${{ matrix.rpc }} --broadcast --verify --etherscan-api-key ${{ secrets.ETHERSCAN_API_KEY }}", note: "One Etherscan V2 key verifies all chains (verify_contract). Use CREATE2 so the address is identical across the matrix (deterministic_deploys_create2). Gate broadcast behind a manual workflow_dispatch, never auto-deploy on merge." },
+      { title: "Solana equivalent", command: "anchor build && anchor test (with solana-test-validator in the runner); anchor deploy gated to a manual job", note: "Cache the Solana/Anchor toolchain; run the local validator as a service. Program upgrades need the upgrade authority key — same KMS/keystore discipline." },
+    ],
+    warnings: [
+      "fail_on_revert defaults differ between unit and invariant runs — a green CI with fail_on_revert=false can still hide broken invariants if the handler swallows reverts; assert coverage of the target functions.",
+      "Auto-deploy-on-merge to mainnet is how repos get rugged by a compromised CI — deploys are manual, approved, and signed by a key CI never sees in plaintext.",
+    ],
+    references: ["https://book.getfoundry.sh/config/continuous-integration", "https://github.com/crytic/slither-action"],
+  },
+
   register_onchain_tool: {
     topic: "register_onchain_tool",
     title: "Register an agent tool on-chain (ERC-8257 / OpenSea)",
@@ -302,6 +323,27 @@ export const GUIDES: Record<string, Guide> = {
       { title: "For already-mined failures", command: "eth_getTransactionReceipt → status 0x0; then re-run the SAME call via simulate at blockNumber: receipt.blockNumber - 1", note: "Simulating at the pre-inclusion block reproduces the original state and thus the original revert." },
     ],
     references: ["https://www.4byte.directory"],
+  },
+
+  scripting_with_onchain_tools: {
+    topic: "scripting_with_onchain_tools",
+    title: "Scripting pattern: combine this server's tools with viem for safe automation",
+    summary: "How an agent chains knowledge → abi → simulate → sign locally in a viem/Foundry script — the keystore-free loop that avoids hardcoded addresses and blind sends.",
+    scope: ["evm", "solana"],
+    prerequisites: [],
+    steps: [
+      { title: "Resolve addresses from knowledge, don't hardcode", command: 'knowledge { action: "reference", kind: "addresses" } → canonical Multicall3/Permit2/USDC/WETH per chain; knowledge { action: "ask", query: "<protocol> router address" }', note: "Hardcoded mainnet addresses are the #1 cross-chain bug (they differ or don't exist on other chains — see robinhood_chain_playbook, bnb_chain_playbook). Pull the verified value at runtime; cache it locally after." },
+      { title: "Build calldata with the right ABI", command: 'knowledge { action: "reference", kind: "abis" } for standard selectors; call tool "abi" { action: "get_abi", chain, address } for a specific contract (Etherscan/Sourcify + proxy resolution + 4byte fallback)', note: "viem encodeFunctionData with the fetched ABI — no guessing selectors. For a proxy the abi tool returns the IMPLEMENTATION ABI." },
+      { title: "Simulate EVERY tx before signing", command: 'call tool "simulate" { chain, tx: { from, to, data, value } } → success + decoded revert', note: "This is the keystore-free contract: the server returns UNSIGNED data and simulation results; YOUR script holds the key and signs (viem walletClient.sendTransaction). The server never sees your key. A failed simulate = don't sign." },
+      { title: "Gate the send on profitability + security", command: 'call tool "security" { chain, address } before touching a new token; call tool "profitability" { … } before a trade; call tool "route"/"solana_swap" for the unsigned swap tx', note: "Compose the tools into a pre-flight (the playbook_pre_trade_check sequence) so the script aborts on a honeypot or an unprofitable route BEFORE spending gas." },
+      { title: "Sign & submit locally, then confirm", command: "viem: signed = await walletClient.sendTransaction(tx); await publicClient.waitForTransactionReceipt({ hash }). Solana: build via solana_swap, sign with your Keypair, sendAndConfirmTransaction", note: "Re-fetch nonce ('pending') / blockhash right before signing; make the loop idempotent (tx_confirmation_patterns). Retry with fee bump on timeout, not a blind re-send." },
+      { title: "The persistent-agent shape", note: "Wrap it as: discover (knowledge.ask) → validate (security/simulate) → decide (profitability) → execute (sign local) → verify (receipt) → log. Save this server's endpoint + your resolved addresses to the agent's memory (MEMORY_HINT) so future runs skip re-discovery." },
+    ],
+    warnings: [
+      "The server is stateless and keystore-free BY DESIGN — if any tool ever asks for a private key or seed, it's not this server; never send keys to any tool (wallet_security_checklist).",
+      "Runtime address resolution is safer than hardcoding but still verify once on a new chain (getter/symbol check) before wiring real capital — this server live-verifies, but chains change.",
+    ],
+    references: ["https://viem.sh/docs/actions/wallet/sendTransaction"],
   },
 
   fetch_event_logs: {
@@ -488,6 +530,27 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Post-mortem (diagnose a rug that happened)", command: "Trace via an explorer / whale_watch: the liquidity-removal tx, the mint-then-dump, or the upgrade tx that changed the logic", note: "Follow the funds to the exit (often a fresh wallet → bridge → CEX). The abi/simulate tools decode the malicious call; the pattern (who called what, when) is the evidence." },
     ],
     warnings: ["No single signal is proof — rugs combine several (unlocked LP + mint power + insider concentration). And a 'clean' token today can rug tomorrow if control isn't renounced/timelocked. Re-check before large exposure."],
+  },
+
+  solidity_security_patterns: {
+    topic: "solidity_security_patterns",
+    title: "Solidity security patterns: the vulnerability classes with before/after code",
+    summary: "The bugs that drain contracts — reentrancy, access control, oracle trust, arithmetic, low-level calls — each with the wrong pattern and the fix.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Reentrancy → checks-effects-interactions", note: "WRONG: external call (or ETH send) BEFORE updating state — the callee re-enters and drains. RIGHT: update all state first, THEN interact; add a nonReentrant guard (OpenZeppelin ReentrancyGuard) on functions that make external calls. Watch cross-function and read-only reentrancy too (a view read during a callback returning stale state)." },
+      { title: "Access control → explicit, not implicit", note: "WRONG: assuming a function is 'internal enough', or tx.origin for auth. RIGHT: onlyOwner/onlyRole (Ownable2Step, AccessControl); use msg.sender, NEVER tx.origin (phishable). Every state-changing privileged function needs an explicit modifier — and initializer functions must be guarded (initializer / _disableInitializers in the constructor for upgradeables, proxy_upgrade_patterns)." },
+      { title: "Oracle trust → no single spot price", note: "WRONG: pricing off one AMM's reserves (flash-loan-movable in one tx). RIGHT: Chainlink feed with staleness + bounds checks, or a TWAP; cross-check sources. This is the most common drain vector — full playbook in price_oracle_safety." },
+      { title: "Arithmetic & rounding → precision and direction", note: "Solidity ≥0.8 reverts on overflow (good), but DIVISION truncates: order operations to multiply-before-divide, and always round in the protocol's favor (ERC-4626 inflation attack = rounding shares the wrong way — round deposits DOWN, withdrawals such that the vault never loses). unchecked blocks re-open overflow risk — justify each one." },
+      { title: "Low-level calls → check the return", note: "WRONG: ignoring the bool from address.call / not checking token transfer return. RIGHT: require(success) on raw calls; use SafeERC20 (safeTransfer/safeTransferFrom) because some tokens (USDT) don't return a bool and non-safe calls silently 'succeed'. Never assume an external call reverted just because it 'failed'." },
+      { title: "Verify with tools, not vibes", command: "Slither (crytic/slither-action in CI, web3_ci_cd) for the static classes; forge invariant tests (foundry_invariant_testing) for the stateful ones; call tool \"simulate\" to dry-run the exact exploit tx", note: "Slither flags reentrancy/tx.origin/uninitialized-storage automatically. Invariants catch the accounting bugs. An audit catches the rest — tools reduce, don't eliminate, the audit surface." },
+    ],
+    warnings: [
+      "The expensive bugs are usually COMPOSITIONS: reentrancy + a stale oracle, or a rounding error reachable only through a specific call sequence — which is exactly why invariant testing (fuzzed sequences) beats hand-written unit tests for security.",
+      "Copy-pasting 'audited' snippets without understanding the trust assumptions (who can call, what it reads) reintroduces the same bug in a new context — patterns are a starting point, not a substitute for reasoning about YOUR flow.",
+    ],
+    references: ["https://github.com/crytic/slither", "https://docs.openzeppelin.com/contracts/5.x/security"],
   },
 
   price_oracle_safety: {
@@ -722,6 +785,27 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Signature validation differs", note: "Smart accounts verify via EIP-1271 isValidSignature — relevant when such an account logs into YOUR service (see siwe_auth/eip712_signing guides)." },
     ],
     references: ["https://eips.ethereum.org/EIPS/eip-4337", "https://docs.pimlico.io"],
+  },
+
+  solana_program_security: {
+    topic: "solana_program_security",
+    title: "Solana/Anchor program security: account validation, signers, PDAs, CPI",
+    summary: "The Solana-specific bug classes that don't exist on EVM — missing owner/signer checks, PDA seed confusion, unchecked CPI — with the Anchor constraints that prevent them.",
+    scope: ["solana"],
+    prerequisites: ["anchor_program_interaction"],
+    steps: [
+      { title: "The core difference: YOU validate every account", note: "Solana passes accounts as untrusted input — the runtime does NOT check that an account is the one you expect. Missing validation is the #1 Solana exploit class (attacker passes a look-alike account). Anchor's #[account(...)] constraints ARE your security layer; a plain AccountInfo with no checks is a hole." },
+      { title: "Owner & type checks", note: "Use typed accounts (Account<'info, MyState>) so Anchor verifies the account is owned by your program and deserializes the right type. For token accounts use Account<'info, TokenAccount> + constraints (token::mint, token::authority). A raw UncheckedAccount/AccountInfo must carry a /// CHECK justification and manual validation." },
+      { title: "Signer & authority checks", command: "#[account(mut)] pub authority: Signer<'info>  +  #[account(mut, has_one = authority)] pub state: Account<'info, State>", note: "Signer<'info> enforces the account signed the tx. has_one = authority checks state.authority == authority.key(). Together: only the recorded authority can mutate the state. Forgetting has_one lets anyone with A signature act on anyone's state." },
+      { title: "PDA derivation & bump discipline", command: "#[account(seeds = [b\"vault\", user.key().as_ref()], bump)] — and store/reuse the canonical bump", note: "Anchor re-derives and checks the PDA from seeds+bump. Use the CANONICAL bump (the one Anchor finds) and persist it; accepting an arbitrary bump lets an attacker derive a different valid address for the same seeds (bump seed canonicalization bug)." },
+      { title: "CPI safety", note: "When cross-program-invoking, verify the program you're calling is the REAL one (Anchor's Program<'info, Token> checks the program id) — don't trust a program account passed by the caller. For privileged CPIs from a PDA use with_signer(seeds); never expose a CPI that lets arbitrary target programs run with your PDA's authority." },
+      { title: "Other Solana-specific traps", note: "Account reinitialization (init_if_needed can be abused → prefer init + explicit checks), integer overflow (Rust debug panics but release wraps — use checked_add/checked_mul), duplicate mutable accounts (constraint against passing the same account twice), and remaining_accounts you don't validate. Fuzz with the Anchor test validator; audit is mandatory for value-holding programs." },
+    ],
+    warnings: [
+      "An #[account] without constraints compiles fine and works in the happy path — the exploit only shows up when an attacker passes a substituted account. Test the ADVERSARIAL path, not just your own client.",
+      "init_if_needed and UncheckedAccount are the two most-abused escape hatches — every use needs an explicit justification and manual validation, or it's a finding.",
+    ],
+    references: ["https://www.anchor-lang.com/docs/account-constraints", "https://github.com/coral-xyz/sealevel-attacks"],
   },
 
   account_abstraction_dev: {
