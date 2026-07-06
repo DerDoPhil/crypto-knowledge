@@ -1300,6 +1300,26 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.jito.wtf", "https://solana.com/docs/core/fees"],
   },
 
+  tokenized_treasuries: {
+    topic: "tokenized_treasuries",
+    title: "Tokenized treasuries & RWAs: BUIDL, OUSG, USDY — and why transfer() reverts",
+    summary: "The on-chain T-bill funds behind the RWA wave, how their yield mechanics differ, and the permissioned-ERC-20 trap that breaks naive agent integrations.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "The big three (all live-verified on Ethereum)", note: "BUIDL 0x7712c34205737192402172409a8F7ccef8aA2AEc (name() = 'BlackRock USD Institutional Digital Liquidity Fund', via Securitize) · OUSG 0x1B19C19393e2d034D8Ff31ff34c81252FcBbee92 (Ondo, institutional) · USDY 0x96F6eF951840721AdBF46Ac996b59E0235CB985C (Ondo, non-US retail). All hold short-term US treasuries/repo off-chain — the 'risk-free rate' as a token." },
+      { title: "THE integration trap: these are permissioned ERC-20s", note: "BUIDL and OUSG enforce a KYC whitelist at the token level — transfer()/transferFrom() to a non-whitelisted address REVERTS even though the ABI looks like plain ERC-20. An agent can hold the interface and still be unable to move the asset. Simulate first (simulate tool) and expect 'not allowed'-style custom errors (debug_failed_tx)." },
+      { title: "Yield mechanics differ — account for them differently", note: "BUIDL targets $1.00 and pays yield as DAILY DIVIDENDS in new tokens (balance grows, price flat — rebasing-like; the stETH lesson from eth_staking applies). USDY is ACCUMULATING: fixed balance, redemption value/price rises over time (wstETH-like). Mixing the two models under- or over-counts portfolio value (portfolio_management)." },
+      { title: "Where an agent actually gets exposure", note: "Direct mint/redeem = KYC'd institutional flow (not autonomous). Liquid paths: USDY trades on DEXes on several chains (check token_discovery + DEX depth), and DeFi wrappers (e.g. vault tokens holding OUSG/BUIDL) exist — each wrapper adds its own contract + issuer risk layer (the restaking_eigenlayer stacked-risk lens applies). sDAI/sUSDS remain the permissionless yield-bearing-stable alternative (erc4626_vaults)." },
+      { title: "Data & monitoring", command: "GET https://stablecoins.llama.fi/stablecoins?includePrices=true (USDY listed) · GET https://api.llama.fi/protocols → filter category 'RWA'", note: "Watch NAV-vs-DEX-price like a depeg (stablecoin_mechanics): a discount on the DEX price of an accumulating token = liquidity stress or redemption friction, not 'cheap yield'." },
+    ],
+    warnings: [
+      "Fed-rate changes move these yields directly — 'the safe 5%' is a floating rate, not a protocol constant; strategies comparing RWA yield vs DeFi yield must re-check both sides (defi_yield_research).",
+      "Ticker impostors are rampant in RWA: verify the exact address against the issuer's docs before touching anything named BUIDL/OUSG/USDY on a DEX (security tool + the addresses above).",
+    ],
+    references: ["https://ondo.finance", "https://securitize.io"],
+  },
+
   testnets_and_faucets: {
     topic: "testnets_and_faucets",
     title: "Testnets & faucets: the map (ETH/SOL/BTC/L2s) and how an agent funds itself autonomously",

@@ -30,6 +30,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Immutable, isolated-market lending primitive (live-verified, 15.6KB). Markets are (loanToken, collateralToken, oracle, irm, lltv) tuples — supply/borrow via marketParams, no global risk. Data API: blue-api.morpho.org/graphql (keyless). Balancer v2 Vault (flash loans for liquidations): 0xBA12222222228d8Ba445958a75a0704d566BF2C8 (live-verified).",
   },
   {
+    name: "Tokenized treasuries (RWA) — Ethereum",
+    addresses: { buidl: "0x7712c34205737192402172409a8F7ccef8aA2AEc", ousg: "0x1B19C19393e2d034D8Ff31ff34c81252FcBbee92", usdy: "0x96F6eF951840721AdBF46Ac996b59E0235CB985C" },
+    note: "All live-verified via symbol()/name() (BUIDL = 'BlackRock USD Institutional Digital Liquidity Fund'). BUIDL/OUSG are KYC-whitelisted — transfer() reverts for non-whitelisted addresses despite the ERC-20 ABI. See tokenized_treasuries guide.",
+  },
+  {
     name: "OP-Stack predeploys (Base, OP Mainnet, Zora, Mode …)",
     addresses: { gas_price_oracle: "0x420000000000000000000000000000000000000F", l1_block: "0x4200000000000000000000000000000000000015", l2_standard_bridge: "0x4200000000000000000000000000000000000010", weth: "0x4200000000000000000000000000000000000006" },
     note: "Identical on every OP-Stack chain. GasPriceOracle.getL1Fee(rawTx) prices the L1 data fee that eth_estimateGas misses (live-verified on Base); L1Block.number() reads the L1 block the L2 sees. See opstack_l2_fees guide.",
@@ -832,7 +837,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
-  "Stablecoins": ["stablecoin_mechanics"],
+  "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries"],
   "Token launches": ["token_launch_mechanics", "sniping_launches"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
