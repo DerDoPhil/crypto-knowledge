@@ -603,6 +603,14 @@ export const ENDPOINTS: EndpointEntry[] = [
     limits: "The Accept header is REQUIRED (otherwise HTML). Some routes (e.g. /status) stay disabled — the rune/inscription core works. Community instance: be gentle, cache responses.",
   },
   {
+    name: "CEX public market data (Binance / Coinbase / Kraken, keyless)",
+    baseUrl: "https://api.binance.com/api/v3",
+    auth: "none",
+    what: "Spot prices, order-book depth and OHLCV candles from the three largest CEX venues — all keyless (live-verified, prices consistent within bps across venues). The independent sanity check against on-chain price manipulation.",
+    example: "Binance: GET /ticker/price?symbol=BTCUSDT | /depth?symbol=ETHUSDT&limit=5 | /klines?symbol=…&interval=1h. Coinbase: api.exchange.coinbase.com/products/BTC-USD/ticker. Kraken: api.kraken.com/0/public/Ticker?pair=XBTUSD. Perp funding: fapi.binance.com/fapi/v1/fundingRate.",
+    limits: "IP rate limits (Binance weight system — batch via ?symbols=[…]). Some venues geo-block certain regions; Kraken/Coinbase as fallback. Use for REFERENCE pricing (price_oracle_safety), not as your only execution quote.",
+  },
+  {
     name: "Public testnet RPCs + autonomous faucets",
     baseUrl: "https://ethereum-sepolia-rpc.publicnode.com",
     auth: "none",
