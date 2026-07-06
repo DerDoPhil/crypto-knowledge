@@ -1364,6 +1364,28 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.robinhood.com/chain/", "https://robinhoodchain.blockscout.com"],
   },
 
+  robinhood_chain_playbook: {
+    topic: "robinhood_chain_playbook",
+    title: "Robinhood Chain playbook: launch tokens, the DeFi map, and where the edge is",
+    summary: "The money-making angles specific to this chain — verified DeFi addresses (NOT the canonical ones!), the empty memecoin field, stock-token arbitrage, and the FCFS latency game.",
+    scope: ["evm"],
+    prerequisites: ["robinhood_chain (connection & basics)"],
+    steps: [
+      { title: "The DeFi map — canonical addresses DON'T apply here", note: "Uniswap v3 IS live but at chain-specific addresses (all live-verified): Factory 0x1f7d7550b1b028f7571e69a784071f0205fd2efa (derived via NonfungiblePositionManager.factory() — the trustworthy way), NPM 0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3, WETH 0x0bd7d308f8e1639fab988df18a8011f41eacad73 (symbol()=WETH; NOT 0xC02aaA…!). Permit2 IS at its canonical address (live-verified). Rule: on new chains, resolve protocol addresses from a live contract's getters, never from mainnet muscle memory." },
+      { title: "Launch a token (memecoin) — the field is EMPTY", note: "Live token census day 5: almost exclusively official stock tokens + stables + VIRTUAL — no native memecoin scene yet, and no pump.fun-style launchpad observed. The NFT side already has community culture (Robinhood Dinos 2165 holders, Punks, Kitties, GMCards) — meme demand exists, meme SUPPLY doesn't. Launch path is plain EVM: deploy ERC-20 (deploy_erc20) → Factory.createPool(token, WETH, 3000) → NPM.mint(...) seeded with initial liquidity → announce. First movers on brand-new chains historically capture outsized attention (token_launch_mechanics, sniping_launches from the OTHER side)." },
+      { title: "Edge #1: stock-token basis trading", note: "Stock tokens trade 24/7 on-chain; the underlying trades market hours. Around US market open/close, on-chain price gaps vs the official quote are structural — compare pool price against real-time equity quotes and CEX crypto refs (CEX endpoint). SPCX (SpaceX, 357 holders) is PRE-IPO: no public reference price at all → wide, opinion-driven spreads. Caveats: your redemption path is Robinhood's mechanics, not an on-chain peg (treat like stablecoin_mechanics depeg risk), and tokenized-equity rules apply (robinhood_chain regulatory step)." },
+      { title: "Edge #2: thin-liquidity LP + new-pool sniping with less competition", note: "Day-5 pools are shallow: fee APR per TVL is high, and the professional bot swarm from Base/Solana hasn't fully migrated. Watching Factory PoolCreated events (fetch_event_logs) catches every new token/pool at birth. Same discipline as everywhere: security-scan the token first (security tool), size for rug risk, and jit_liquidity economics apply once volume grows." },
+      { title: "Edge #3: the FCFS latency game", note: "First-come-first-served sequencing means NO priority-gas auction: you can't outbid, only out-race (co-location/latency to the sequencer wins). Classic sandwiching is structurally harder — good for your swaps (less MEV tax), bad if MEV capture was your plan. Arbitrage between Robinhood-chain pools and mainnet/CEX prices is a latency race, not a gas race (arbitrage_basics)." },
+      { title: "Edge #4: early-ecosystem farming", note: "Robinhood funds builders (e.g. $1M Arbitrum Open House prizes for teams building on the chain) and new-chain ecosystems historically reward early users/deployers retroactively. Interacting early and building something real is the +EV version; industrial sybil farming is the -EV version (airdrop_farming has the sybil-risk math). Robinhood itself has no token — expect partner/ecosystem incentives rather than a HOOD-chain airdrop." },
+      { title: "Data sources for all of this", command: "Blockscout keyless: /api/v2/tokens?type=ERC-20|ERC-721 (token census), /api/v2/stats, plus PoolCreated logs via the RPC (topic0 filter)", note: "No dedicated indexer coverage yet (DexScreener/DefiLlama listings will lag the chain) — the explorer API + raw logs ARE the data layer for now. That information asymmetry is itself part of the early edge." },
+    ],
+    warnings: [
+      "Everything here is a day-5 snapshot (2026-07-06): liquidity, deployments and even RPC endpoints will shift fast — re-verify addresses via contract getters before wiring capital.",
+      "Launching a token that IMITATES a stock ticker or Robinhood branding invites both scam-filter delisting and legal attention — the memecoin lane is open, the fake-equity lane is radioactive.",
+    ],
+    references: ["https://docs.robinhood.com/chain/", "https://robinhoodchain.blockscout.com"],
+  },
+
   opstack_l2_fees: {
     topic: "opstack_l2_fees",
     title: "OP-Stack chains (Base/OP/…): the two-part fee, predeploys, deposits & withdrawals",

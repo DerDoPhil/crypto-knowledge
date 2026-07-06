@@ -30,6 +30,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Immutable, isolated-market lending primitive (live-verified, 15.6KB). Markets are (loanToken, collateralToken, oracle, irm, lltv) tuples — supply/borrow via marketParams, no global risk. Data API: blue-api.morpho.org/graphql (keyless). Balancer v2 Vault (flash loans for liquidations): 0xBA12222222228d8Ba445958a75a0704d566BF2C8 (live-verified).",
   },
   {
+    name: "Robinhood Chain DeFi core (chain 4663)",
+    addresses: { uniswap_v3_factory: "0x1f7d7550b1b028f7571e69A784071F0205fd2eFA", uniswap_v3_npm: "0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3", weth: "0x0bD7D308F8e1639FAb988DF18A8011f41eaCAd73", permit2: "0x000000000022D473030F116dDEE9F6B43aC78BA3" },
+    note: "All live-verified (factory derived from NPM.factory(); WETH via symbol()). ⚠️ Uniswap v3 and WETH are NOT at their canonical mainnet addresses here — only Permit2 is. See robinhood_chain_playbook guide.",
+  },
+  {
     name: "Tokenized treasuries (RWA) — Ethereum",
     addresses: { buidl: "0x7712c34205737192402172409a8F7ccef8aA2AEc", ousg: "0x1B19C19393e2d034D8Ff31ff34c81252FcBbee92", usdy: "0x96F6eF951840721AdBF46Ac996b59E0235CB985C" },
     note: "All live-verified via symbol()/name() (BUIDL = 'BlackRock USD Institutional Digital Liquidity Fund'). BUIDL/OUSG are KYC-whitelisted — transfer() reverts for non-whitelisted addresses despite the ERC-20 ABI. See tokenized_treasuries guide.",
@@ -836,7 +841,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
-  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "robinhood_chain_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries"],
   "Token launches": ["token_launch_mechanics", "sniping_launches"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
