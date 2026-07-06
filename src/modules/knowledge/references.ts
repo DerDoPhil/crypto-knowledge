@@ -30,6 +30,16 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Immutable, isolated-market lending primitive (live-verified, 15.6KB). Markets are (loanToken, collateralToken, oracle, irm, lltv) tuples — supply/borrow via marketParams, no global risk. Data API: blue-api.morpho.org/graphql (keyless). Balancer v2 Vault (flash loans for liquidations): 0xBA12222222228d8Ba445958a75a0704d566BF2C8 (live-verified).",
   },
   {
+    name: "BNB Chain DeFi core (chain 56)",
+    addresses: { pancake_v2_router: "0x10ED43C718714eb63d5aA57B78B54704E256024E", pancake_v2_factory: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73", wbnb: "0xbb4CdB9CBd36B01bD1cBaeBf2De08d9173bc095c" },
+    note: "Factory + WBNB cryptographically derived from the Router (factory()/WETH()) — beware: a near-identical FAKE WBNB address (same first 21 hex chars) circulates in LLM training data. 2.62M v2 pairs live. v3/Infinity addresses: docs.pancakeswap.finance. See bnb_chain_playbook.",
+  },
+  {
+    name: "Cronos DeFi core (chain 25)",
+    addresses: { vvs_factory: "0x3B44B2a187a7b3824131F8db5a74194D0a42Fc15", wcro: "0x5C7F8A570d578ED84E63fdFA7b1eE72dEae1AE23" },
+    note: "Live-verified (23,463 pairs; WCRO symbol()-checked). Block time live-measured 0.40s — ignore stale '5s' training data. See cronos_playbook.",
+  },
+  {
     name: "Robinhood Chain DeFi core (chain 4663)",
     addresses: { uniswap_v3_factory: "0x1f7d7550b1b028f7571e69A784071F0205fd2eFA", uniswap_v3_npm: "0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3", weth: "0x0bD7D308F8e1639FAb988DF18A8011f41eaCAd73", permit2: "0x000000000022D473030F116dDEE9F6B43aC78BA3" },
     note: "All live-verified (factory derived from NPM.factory(); WETH via symbol()). ⚠️ Uniswap v3 and WETH are NOT at their canonical mainnet addresses here — only Permit2 is. See robinhood_chain_playbook guide.",
@@ -841,7 +851,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
-  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "robinhood_chain_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries"],
   "Token launches": ["token_launch_mechanics", "sniping_launches"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],

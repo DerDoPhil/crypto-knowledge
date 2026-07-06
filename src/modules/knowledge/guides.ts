@@ -1386,6 +1386,47 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.robinhood.com/chain/", "https://robinhoodchain.blockscout.com"],
   },
 
+  cronos_playbook: {
+    topic: "cronos_playbook",
+    title: "Cronos playbook: thin-liquidity edges in the Crypto.com ecosystem",
+    summary: "The quiet chain: fast blocks, small DeFi, tight Crypto.com integration — where low competition is the edge and low liquidity is the risk.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Chain profile (live-measured)", note: "chainId 25, block time measured at 0.40s (LLM training data still says ~5s — long obsolete), Cosmos/Tendermint-based EVM chain, TVL ~$259M (DefiLlama live) — 19× smaller than BNB. This server supports Cronos natively (RPC registry with failover). A zkEVM L2 also exists (zkevm.cronos.org)." },
+      { title: "The verified DeFi core", note: "VVS Finance is the #1 DEX: Factory 0x3B44B2a187a7b3824131F8db5a74194D0a42Fc15 (live-verified: 23,463 pairs; a wrong factory address circulates in LLM memory — verify via allPairsLength()), WCRO 0x5C7F8A570d578ED84E63fdFA7b1eE72dEae1AE23 (symbol()-verified). Ecosystem staples per DefiLlama: Tectonic (lending), Fulcrom (perps), Veno (liquid staking)." },
+      { title: "The central trade-off: TVL without volume", note: "VVS holds ~$100M TVL but daily DEX volume runs well under $1M — pools are deep relative to flow. Consequences: LP fee APR is modest, but STALE PRICES are common → the cross-venue gap between VVS pools and the CRO/majors price on Crypto.com or Binance (CEX endpoint) persists longer than on busy chains. That is the arbitrage edge — sized small, because your exit IS the thin liquidity." },
+      { title: "Memecoins: puush.fun, a small pond", note: "puush.fun (live-checked) is the fair-launch venue on Cronos EVM + zkEVM — pump.fun mechanics, no presale/team allocation. Far smaller than four.meme: less bot competition on snipes, but also far less exit liquidity and attention. First-mover dynamics resemble the robinhood_chain_playbook situation more than BNB." },
+      { title: "NFTs & the Crypto.com angle", note: "The Crypto.com NFT marketplace remains operational (status page live-checked) with curated drops. The structural Cronos edge is CEX integration: instant CRO on/off-ramps, card/Pay rails, and Crypto.com pushing agent payments (Cronos x402 hackathons — your x402_payments knowledge applies directly on this chain)." },
+      { title: "Yield routes", note: "CRO liquid staking via Veno, lending on Tectonic, VVS farms — small, stable, low-competition yields. Check every pool through defi_yield_research discipline (apyBase vs apyReward: many Cronos APYs are emission-heavy)." },
+    ],
+    warnings: [
+      "Thin liquidity cuts both ways: a position that took days to build can be impossible to exit at quote — size to the order book you can SEE, not the TVL headline.",
+      "Ecosystem concentration risk: most Cronos value routes through Crypto.com entities — an exchange-side incident propagates on-chain faster than on neutral chains.",
+    ],
+    references: ["https://vvs.finance", "https://defillama.com/chain/cronos"],
+  },
+
+  bnb_chain_playbook: {
+    topic: "bnb_chain_playbook",
+    title: "BNB Chain playbook: four.meme launches, sub-second blocks, the Binance edge",
+    summary: "The memecoin factory of EVM-land: how four.meme launches work, the verified DeFi core, and where agents actually make money on chainId 56.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Chain profile (live-measured)", note: "chainId 56, PoSA consensus, block time measured at 0.45s (Maxwell hard fork 06/2025 → 0.75s, Fermi 01/2026 → ~0.45s) — sub-second blocks make this a LATENCY chain like Solana, with near-instant finality and very low fees. TVL ~$4.96B (DefiLlama live). Deep on/off-ramp gravity: Binance itself." },
+      { title: "The verified DeFi core", note: "PancakeSwap v2 Router 0x10ED43C718714eb63d5aA57B78B54704E256024E, Factory 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73 (proven via Router.factory(); 2.62 MILLION pairs live — the memecoin scale of this chain), WBNB 0xbb4CdB9CBd36B01bD1cBaeBf2De08d9173bc095c (proven via Router.WETH() — note: a NEAR-IDENTICAL wrong address with the same first 21 hex chars circulates in LLM memory; derive, don't recall). v3 + PancakeSwap Infinity (the v4 rebrand: singleton + hooks + CLAMM/LBAMM) addresses: resolve from docs.pancakeswap.finance — a same-bytecode fork ('PlunderV3Factory') pollutes Sourcify name lookups on BSC." },
+      { title: "four.meme — THE launchpad (pump.fun of BNB)", note: "No-code bonding-curve launches: price rises with buys; raise targets ~18 BNB (or USDT/USD1 variants); at 100% the liquidity auto-migrates to a PancakeSwap pair with LP tokens burned. Optional ANTISNIPER mode taxes the first blocks after launch with very high fees — a snipe that ignores it buys straight into a 90%+ tax. Same mechanics family as pump.fun (token_launch_mechanics); graduation event = the tradeable moment (sniping_launches)." },
+      { title: "Where the money is", note: "(1) Launch sniping on four.meme graduations — but 0.45s blocks mean the bot competition is latency-tier; check the antisniper window first. (2) CEX-DEX arbitrage: Binance listings/delistings move PancakeSwap pools within blocks — the CEX public-data endpoint gives you the reference leg keyless. (3) LP on Infinity pools early (hook-aware: jit_liquidity warnings apply). (4) Launching your own token: cheapest audience-rich launch venue in EVM-land, but you compete with thousands per day." },
+      { title: "NFT venues", note: "Element Market (aggregator, element.market/bsc, live-checked) is the pro-trader venue; Binance NFT for curated drops. NFT liquidity on BNB is thinner than Ethereum — price in exit slippage before flipping." },
+    ],
+    warnings: [
+      "2.6M pairs means the rug density is the highest anywhere in EVM — a pre-buy security scan (security tool) + LP-burn check is the minimum bar, and most four.meme launches go to zero by design (rugpull_forensics).",
+      "Sub-second blocks compress your reaction window but also the sandwich window — private submission matters less than on mainnet, raw latency matters more (mev_strategies).",
+    ],
+    references: ["https://four.meme/en", "https://docs.pancakeswap.finance"],
+  },
+
   opstack_l2_fees: {
     topic: "opstack_l2_fees",
     title: "OP-Stack chains (Base/OP/…): the two-part fee, predeploys, deposits & withdrawals",
