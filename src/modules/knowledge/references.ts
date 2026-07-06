@@ -102,7 +102,7 @@ export const ADDRESSES: AddressEntry[] = [
   {
     name: "ERC-4337 EntryPoint v0.7",
     addresses: { evm: "0x0000000071727De22E5E9d8BAf0edAc6f37da032" },
-    note: "Account-abstraction entry point. v0.6 (legacy, still widely used): 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.",
+    note: "Account-abstraction entry point (live-verified). v0.6 (legacy, still widely used): 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789 (live-verified). Same deterministic addresses across EVM chains. See account_abstraction_dev guide for the full paymaster/session-key stack.",
   },
   {
     name: "Wrapped native token (WETH/WPOL/…)",
@@ -141,6 +141,11 @@ export const ADDRESSES: AddressEntry[] = [
     name: "Chainlink CCIP Router (cross-chain messaging) — Ethereum",
     addresses: { ethereum: "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D" },
     note: "Send arbitrary messages + tokens across chains with Chainlink's security. ccipSend(destinationChainSelector, message) — the destinationChainSelector is CCIP's OWN id (NOT chainId), look it up in Chainlink's directory. Per-chain Router addresses differ. Programmable-token-transfer alternative to CCTP (native USDC) and LayerZero.",
+  },
+  {
+    name: "LayerZero V2 Endpoint (omnichain messaging)",
+    addresses: { evm: "0x1a44076050125825900e736c501f859c50fE728c" },
+    note: "Same canonical address on most EVM chains (live-verified on Ethereum + Base, 24KB). OApps call endpoint.send(...) with a per-chain EID (LayerZero's own endpoint id, NOT chainId — look up in the LZ docs). See layerzero_oapp_messaging guide.",
   },
   {
     name: "Circle CCTP TokenMessenger (native USDC bridging)",
@@ -870,13 +875,14 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Getting started & wallets": ["create_wallet", "testnets_and_faucets", "wallet_security_checklist", "vanity_address"],
   "Sending & debugging transactions": ["debug_failed_tx", "tx_confirmation_patterns", "eth_jsonrpc_cheatsheet", "fetch_event_logs"],
   "Tokens (ERC-20 / SPL)": ["erc20_patterns", "permit2_usage", "spl_token_basics", "erc_standards_cheatsheet"],
-  "Swaps, bridging & routing": ["aggregator_swaps", "intent_based_trading", "balancer_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "uniswap_v4_basics", "chaintrade_p2p_swap"],
+  "Swaps, bridging & routing": ["aggregator_swaps", "intent_based_trading", "balancer_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "layerzero_oapp_messaging", "uniswap_v4_basics", "chaintrade_p2p_swap"],
   "Deploying contracts": ["deploy_contract_evm", "deploy_contract_solana", "deploy_erc20", "deterministic_deploys_create2", "verify_contract"],
+  "Contract development (code)": ["foundry_invariant_testing", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
   "NFTs": ["nft_metadata_standards", "ipfs_for_nfts", "seaport_orders"],
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "pumpfun_token2022_gotchas", "solana_pay"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning"],
-  "Smart accounts & upgrades": ["account_abstraction_4337", "eip7702_smart_eoas", "safe_multisig"],
+  "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "safe_multisig"],
   "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],

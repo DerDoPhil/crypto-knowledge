@@ -138,6 +138,27 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://book.getfoundry.sh/forge/deploying#verifying", "https://docs.etherscan.io/etherscan-v2"],
   },
 
+  foundry_invariant_testing: {
+    topic: "foundry_invariant_testing",
+    title: "Foundry invariant & fuzz testing: prove your contract can't break",
+    summary: "The handler/ghost pattern for stateful invariant testing — how an agent writes tests that fuzz thousands of call sequences to catch what unit tests miss.",
+    scope: ["evm"],
+    prerequisites: ["A Foundry project (forge init)"],
+    steps: [
+      { title: "Fuzz test first (stateless)", command: "function testFuzz_deposit(uint256 amt) public { amt = bound(amt, 1, 1e24); vault.deposit(amt); assertEq(vault.balanceOf(address(this)), amt); }", note: "forge runs it with many random inputs. ALWAYS bound(x, min, max) inputs to realistic ranges — unbounded fuzzing wastes runs on impossible values (a uint256 amount of 2^255 tells you nothing)." },
+      { title: "Invariant test = fuzz over CALL SEQUENCES", note: "Declare properties that must hold after ANY sequence of calls: function invariant_solvency() public { assertGe(token.balanceOf(address(vault)), vault.totalAssets()); }. forge calls random public functions in random order, then checks every invariant_ after each step." },
+      { title: "Use a Handler to constrain the fuzzer", note: "Point the fuzzer at a Handler contract (targetContract(address(handler))) instead of the raw contract. The handler wraps each action with bound()ed inputs and realistic actors — otherwise 99% of calls revert on nonsense and you get no coverage. Track 'ghost variables' (running sums) in the handler to assert conservation properties." },
+      { title: "Config in foundry.toml", command: "[invariant]\\nruns = 256\\ndepth = 128\\nfail_on_revert = false", note: "runs = independent sequences, depth = calls per sequence. fail_on_revert=false lets the sequence continue past expected reverts (use handler-level assumptions to filter); set true when you want ANY revert to fail the run." },
+      { title: "Classic DeFi invariants to assert", note: "Solvency (contract balance ≥ obligations), supply accounting (Σ balances == totalSupply), no-free-mint (only authorized paths change supply), monotonic share price (ERC-4626: virtual price only up barring fees), access control (non-owner can't reach owner paths). These are exactly the properties whose violation = an exploit (rugpull_forensics, price_oracle_safety)." },
+      { title: "Run it", command: "forge test --mt invariant_ -vvv   (or: forge test --match-path test/Invariant.t.sol)", note: "A failing invariant prints the exact call sequence (the 'counterexample') that broke it — replay that as a unit test. Add coverage-guided runs in CI (web3_ci_cd guide)." },
+    ],
+    warnings: [
+      "An invariant test that never reverts AND never covers the interesting states is a false sense of safety — check the handler actually reaches edge states (log call counts; forge --show-metrics).",
+      "Invariant testing complements but never replaces an audit + a formal-verification pass on the highest-value contracts.",
+    ],
+    references: ["https://book.getfoundry.sh/forge/invariant-testing"],
+  },
+
   register_onchain_tool: {
     topic: "register_onchain_tool",
     title: "Register an agent tool on-chain (ERC-8257 / OpenSea)",
@@ -517,6 +538,48 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.uniswap.org/contracts/v4/overview"],
   },
 
+  layerzero_oapp_messaging: {
+    topic: "layerzero_oapp_messaging",
+    title: "LayerZero V2 OApp: send & receive a cross-chain message (dev)",
+    summary: "The OApp pattern for omnichain contracts — sending, receiving, quoting fees, and the trust/config traps that brick deployments.",
+    scope: ["evm"],
+    prerequisites: ["deploy_contract_evm", "crosschain_message_tracking"],
+    steps: [
+      { title: "The endpoint + EID model", note: "Every chain has ONE LayerZero V2 Endpoint (canonical 0x1a44076050125825900e736c501f859c50fE728c on most EVM chains, live-verified). You address a destination by its EID (endpoint id — LayerZero's own number, NOT chainId; look it up in the LZ deployments docs). Same address everywhere makes multichain deploys easy." },
+      { title: "Inherit OApp", command: "contract MyOApp is OApp { constructor(address endpoint, address owner) OApp(endpoint, owner) Ownable(owner) {} }", note: "OApp (from @layerzerolabs/oapp-evm) wires the endpoint + ownership. You implement the send path and the _lzReceive handler." },
+      { title: "Send", command: "_lzSend(dstEid, abi.encode(payload), options, MessagingFee(nativeFee, 0), payable(refundAddress)); — get the fee first via quote()", note: "options carry the destination gas (built with OptionsBuilder.addExecutorLzReceiveOption(gas, value)). ALWAYS quote() the native fee and pass it as msg.value — underpaying reverts, overpaying refunds to your refundAddress." },
+      { title: "Receive", command: "function _lzReceive(Origin calldata origin, bytes32 guid, bytes calldata message, ...) internal override { require(msg.sender == endpoint); ... decode(message) ... }", note: "Only the endpoint may call it (enforced by OApp). Decode and act. The message is delivered once verified by your configured DVNs (decentralized verifier networks)." },
+      { title: "Wire the peers — the #1 deploy failure", command: "setPeer(dstEid, bytes32(uint256(uint160(remoteOAppAddress)))) on BOTH chains", note: "Each OApp must register its counterpart's address per destination EID. Forget one side and messages send but never deliver (the classic 'source-confirmed, never arrived' — crosschain_message_tracking). Also set the DVN/executor config or delivery stalls." },
+      { title: "Track & verify delivery", command: "LayerZero Scan: https://scan.layerzero-api.com/v1 by tx/GUID (keyless, live-verified)", note: "Source success ≠ destination delivery. Poll the scan or your _lzReceive side-effects; build idempotent handlers (tx_confirmation_patterns)." },
+    ],
+    warnings: [
+      "Unconfigured or mismatched DVN/executor settings = messages that pay fees and silently never deliver — verify the full pathway config on testnet before mainnet (testnets_and_faucets).",
+      "setPeer trust is absolute: a wrong or malicious peer address means you _lzReceive attacker-controlled messages — treat peer wiring like access control.",
+    ],
+    references: ["https://docs.layerzero.network/v2/developers/evm/oapp/overview"],
+  },
+
+  uniswap_v4_hook_development: {
+    topic: "uniswap_v4_hook_development",
+    title: "Building a Uniswap v4 hook: permission flags, the address mine, testing",
+    summary: "How to actually write, address-mine, test and deploy a v4 hook — the parts that trip up every first implementation.",
+    scope: ["evm"],
+    prerequisites: ["uniswap_v4_basics", "foundry_invariant_testing"],
+    steps: [
+      { title: "Permissions are encoded in the hook ADDRESS", note: "v4 reads which callbacks a hook implements from the low bits of its address (e.g. BEFORE_SWAP_FLAG = 1<<7). You don't register permissions — you must DEPLOY the hook to an address whose bits match getHookPermissions(). This is the #1 thing newcomers miss." },
+      { title: "Mine the address with CREATE2", command: "use HookMiner.find(deployer, flags, creationCode, constructorArgs) → (address, salt), then deploy with that salt via CREATE2", note: "HookMiner (from v4-periphery test utils) brute-forces a salt so the resulting CREATE2 address carries the right permission bits. Deterministic deploy → the mined address is where it lands (deterministic_deploys_create2)." },
+      { title: "Implement only the callbacks you flagged", command: "contract MyHook is BaseHook { function getHookPermissions() returns (Hooks.Permissions memory) { ... beforeSwap: true ... } function _beforeSwap(...) internal override returns (bytes4, BeforeSwapDelta, uint24) { ... } }", note: "Return the correct selector; mismatched flags vs implemented functions revert at pool init. Use BaseHook so unflagged callbacks revert safely." },
+      { title: "Handle deltas correctly (flash accounting)", note: "Hooks that move value return a BeforeSwapDelta/BalanceDelta the PoolManager settles at unlock. Get the sign wrong and you either revert (CurrencyNotSettled) or leak funds. Account for every currency you touch — this is where audits find the money bugs." },
+      { title: "Test against a real PoolManager harness", command: "Foundry: deploy PoolManager in setUp(), use the v4-template's Deployers util to init a pool with your hook, then fuzz swaps/liquidity through it", note: "Run invariant tests (foundry_invariant_testing): 'hook never leaves currency unsettled', 'fees never exceed cap', 'no reentrancy into modifyLiquidity'. The v4-template repo is the canonical starting scaffold." },
+      { title: "Security checklist before mainnet", note: "Access-control the privileged callbacks, guard against JIT-liquidity bypass if that's your fee model (jit_liquidity), no unbounded loops in swap-path callbacks (DoS), validate PoolKey so your hook isn't reused by a malicious pool, and reentrancy-guard external calls. A hook holds the pool's trust — treat it like a bridge (security tool + an audit)." },
+    ],
+    warnings: [
+      "A deployed hook is part of the PoolKey forever — you can't 'upgrade' the pool's hook; ship it right or deploy a new pool. Bake upgradeability into the hook contract itself if you need it (proxy_upgrade_patterns).",
+      "Address-mining flags wrong = pool init reverts at best, silent wrong behavior at worst. Assert the deployed address bits in your deploy script before seeding liquidity.",
+    ],
+    references: ["https://docs.uniswap.org/contracts/v4/guides/hooks/your-first-hook"],
+  },
+
   crosschain_message_tracking: {
     topic: "crosschain_message_tracking",
     title: "Track cross-chain messages & bridge transfers (LayerZero, Wormhole)",
@@ -659,6 +722,26 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Signature validation differs", note: "Smart accounts verify via EIP-1271 isValidSignature — relevant when such an account logs into YOUR service (see siwe_auth/eip712_signing guides)." },
     ],
     references: ["https://eips.ethereum.org/EIPS/eip-4337", "https://docs.pimlico.io"],
+  },
+
+  account_abstraction_dev: {
+    topic: "account_abstraction_dev",
+    title: "Building AA infra: paymasters, session keys, 7702 batching (code)",
+    summary: "The developer side of account abstraction — implementing gas sponsorship, scoped session keys and EIP-7702 batching that an agent wallet actually runs on.",
+    scope: ["evm"],
+    prerequisites: ["account_abstraction_4337 (the UserOp model)", "eip7702_smart_eoas"],
+    steps: [
+      { title: "ERC-20 paymaster: sponsor gas, charge in tokens", note: "A paymaster implements validatePaymasterUserOp (approve the op + pull a token deposit estimate) and postOp (settle the actual token cost). It must pre-stake ETH in the EntryPoint (depositTo) and hold enough balance. The account passes paymasterAndData in the userOp; the provider (Pimlico/Alchemy) exposes ready ERC-20 paymasters if you don't want to run your own." },
+      { title: "Session keys = scoped, revocable agent authority", note: "A session key is a secondary signer the smart account authorizes for LIMITED actions (specific target contracts, function selectors, spend caps, expiry). Implement as a validation module (Safe modules, Kernel, or a 4337 validator plugin) that checks the call against the session's policy before allowing it. This is the AA-native version of Hyperliquid's API wallets (hyperliquid_trading) — the agent holds a key that can trade but not drain (wallet_security_checklist blast-radius)." },
+      { title: "EIP-7702: batch + sponsor from a plain EOA", command: "viem: const auth = await walletClient.signAuthorization({ contractAddress: delegateImpl }); then send an EIP-7702 tx whose authorizationList=[auth] — the EOA temporarily runs the delegate's code", note: "Lets an existing EOA execute a batch (approve+swap in one) or be sponsored WITHOUT migrating to a new smart-account address (eip7702_smart_eoas for the delegation-persistence + chainId-0 takeover warnings)." },
+      { title: "Test the stack", command: "Pimlico public bundler https://public.pimlico.io/v2/{chainId}/rpc (live-verified, keyless for testing) + permissionless.js; run on a testnet (testnets_and_faucets) before mainnet", note: "eth_estimateUserOperationGas then eth_sendUserOperation; simulate the inner call (simulate tool) so a bad batch fails before it's bundled." },
+      { title: "Security gotchas that lose funds", note: "Paymaster: unbounded sponsorship = someone drains your ETH stake — scope policies and rate-limit. Session keys: over-broad selectors/targets = the 'limited' key isn't limited; always cap spend + expiry. 7702: a malicious delegate address is a full account takeover — only sign authorizations for audited implementations." },
+    ],
+    warnings: [
+      "A paymaster with a weak validatePaymasterUserOp is a faucet for attackers — validate WHAT you sponsor (target, calldata, sender allowlist), not just that the op is well-formed.",
+      "Session-key policies are only as safe as their tightest scope: 'any call to the DEX router' still lets an approval-drain through — enumerate selectors and cap amounts.",
+    ],
+    references: ["https://docs.pimlico.io", "https://viem.sh/docs/eip7702"],
   },
 
   anchor_program_interaction: {
