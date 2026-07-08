@@ -34,7 +34,7 @@ Every other tools/call requires ONE of:
    X-Wallet: 0x<your address>
    X-Wallet-Signature: personal_sign of "crypto-knowledge-auth <wallet-lowercase> <YYYY-MM-DD>" (UTC date, today)
    Collection: https://opensea.io/collection/normies (Ethereum)
-2. x402 payment ($0.10 USDC on Base per request): an unpaid call answers HTTP 402
+2. x402 payment ($0.02 USDC on Base per request): an unpaid call answers HTTP 402
    with the exact payment requirements (scheme "exact", payTo, asset). Retry with
    the X-PAYMENT header; the payment is verified and settled via the facilitator.
 

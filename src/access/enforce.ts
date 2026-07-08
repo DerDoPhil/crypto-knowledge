@@ -3,7 +3,7 @@
  *
  * Product rule (Philipp, 2026-07-02): every `tools/call` except `catalog` requires
  * either proof of holding the gating NFT (free tier) or a settled x402 payment of
- * $0.10 USDC on Base. Discovery stays open: initialize, tools/list, ping and the
+ * $0.02 USDC on Base. Discovery stays open: initialize, tools/list, ping and the
  * `catalog` tool are never gated, so agents (and registry health probes) can always
  * find out what the tool offers and how to pay.
  *

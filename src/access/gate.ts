@@ -8,7 +8,7 @@ import { SlidingWindowLimiter, type RateLimitRule } from "./ratelimit.js";
  * Access tiers (product decision 2026-06-30):
  *   free   → no requirement (20/min · 500/day), open or own_key provider modes
  *   holder → owns the gating NFT (120/min · 20k/day), all provider modes
- *   paid   → $0.10 per request via x402 (pay-per-call + 300/min safety cap)
+ *   paid   → $0.02 per request via x402 (pay-per-call + 300/min safety cap)
  */
 export type Tier = "free" | "holder" | "paid";
 
