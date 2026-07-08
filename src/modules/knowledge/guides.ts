@@ -373,7 +373,7 @@ export const GUIDES: Record<string, Guide> = {
       { title: "As the SERVER: answer 402 with requirements", note: "Return the accepts[] body for unpaid gated requests (see this server's /mcp: every tools/call except catalog is gated)." },
       { title: "Verify AND settle via the keyless facilitator", command: "POST https://facilitator.xpay.sh/verify  { x402Version: 1, paymentPayload, paymentRequirements }\nPOST https://facilitator.xpay.sh/settle  (same body)", note: "verify alone moves NO money — you must settle. xpay needs no account, no KYB, payTo is just your address." },
     ],
-    warnings: ["Asset addresses in requirements are chain-specific: USDC on Base = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 (6 decimals — $0.10 = '100000')."],
+    warnings: ["Asset addresses in requirements are chain-specific: USDC on Base = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 (6 decimals — $0.02 = '20000')."],
     references: ["https://www.x402.org", "https://facilitator.xpay.sh", "https://blog.cloudflare.com/monetization-gateway/ (edge-enforced x402 for sites behind Cloudflare, waitlist since 2026-07)"],
   },
 
@@ -1100,6 +1100,129 @@ export const GUIDES: Record<string, Guide> = {
       "AVS slashing is the tail risk everyone ignores while farming points: read WHICH AVSs an operator/LRT secures before delegating — 'restaked' does not mean 'diversified'.",
     ],
     references: ["https://docs.eigenlayer.xyz"],
+  },
+
+  sky_usds_savings: {
+    topic: "sky_usds_savings",
+    title: "Sky (ex-MakerDAO): USDS/sUSDS + DAI/sDAI savings, and the upgrade path",
+    summary: "The verified Sky contracts, how the two savings rates (SSR vs DSR) actually accrue on-chain, and the 1:1 DAI→USDS / 1:24000 MKR→SKY converters — so an agent parks idle stablecoins at the best on-chain rate.",
+    scope: ["evm"],
+    prerequisites: ["erc4626_vaults (share/asset model)", "stablecoin_mechanics"],
+    steps: [
+      { title: "The token map (all live-verified via symbol()/name())", note: "DAI 0x6B175474E89094C44Da98b954EedeAC495271d0F ('Dai Stablecoin') and its successor USDS 0xdC035D45d973E3EC169d2276DDab16f1e407384F ('USDS Stablecoin') — both $1 soft-pegged, 18 decimals, fully interchangeable 1:1. Governance: MKR 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2 (legacy — symbol() is bytes32, not string) → SKY 0x56072C95FAA701256059aa122697B133aDEd9279 ('SKY Governance Token')." },
+      { title: "The two savings vaults", note: "sDAI 0x83F20F44975D03b1b09e64809B757c47f942BEeA ('Savings Dai', standard ERC-4626, asset()==DAI verified) pays the DSR. sUSDS 0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD ('Savings USDS', ERC-4626 interface, asset()==USDS verified) pays the SSR (Sky Savings Rate). Both are non-custodial, no lockup, no counterparty loan — the yield is minted by Sky governance from protocol revenue." },
+      { title: "Read the live rate correctly (it is a per-second ray)", command: "sUSDS.ssr() and Pot(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7).dsr() → uint256 in RAY (1e27). APY = (rate/1e27)^31536000 - 1", note: "Live-read 2026-07: ssr()=1.000000001121484774e27 ≈ 3.6% APY; dsr()=1.000000000393915525e27 ≈ 1.25% APY. sUSDS currently pays MORE than sDAI — Sky steers liquidity toward USDS. Rates are governance-set and change; ALWAYS read them fresh, never hardcode a %." },
+      { title: "Enter/exit (standard ERC-4626)", command: "approve(sUSDS, amount) → sUSDS.deposit(assetsUSDS, receiver) → sUSDS shares; exit via redeem(shares,...) or withdraw(assets,...)", note: "convertToShares(1e18) live-returned 0.907e18 → 1 sUSDS ≈ 1.102 USDS (chi accumulator). Shares appreciate against USDS over time — the share count stays constant, the redeemable USDS grows. erc4626_vaults applies 1:1." },
+      { title: "Migrate DAI↔USDS and MKR↔SKY (official converters, verified)", command: "DaiUsds 0x3225737a9Bbb6473CB4a45b7244ACa2BeFdB276A: daiToUsds(usr,wad) / usdsToDai(usr,wad) — 1:1, no fee (dai()/usds() cross-verified). MkrSky 0xBDcFCA946b6CDd965f99a839e4435Bcdc1bc470B: mkrToSky(usr,wad) at rate()=24000 (1 MKR = 24000 SKY, verified)", note: "approve the converter for the input token first. The conversion is bidirectional and value-preserving; it is NOT a swap (no slippage, no DEX)." },
+    ],
+    warnings: [
+      "USDS/DAI are crypto-collateralized soft-pegged stablecoins, not fiat-redeemable — peg depends on Sky's PSM + collateral, not a bank (stablecoin_mechanics; contrast tokenized_treasuries for cash-backed).",
+      "sUSDS also exists on Base/Solana at DIFFERENT addresses — the addresses above are Ethereum mainnet only. Verify the target-chain address (symbol()+asset()) before depositing; do not reuse the mainnet address cross-chain.",
+      "Rates are a governance lever, not a market rate: an agent parking capital here must re-check ssr()/dsr() on a schedule — a governance vote can cut the rate between your deposit and your next check.",
+    ],
+    references: ["https://docs.sky.money"],
+  },
+
+  euler_v2_vaults: {
+    topic: "euler_v2_vaults",
+    title: "Euler v2: modular lending via the EVC + ERC-4626 vaults",
+    summary: "How Euler v2's Ethereum Vault Connector coordinates isolated ERC-4626 lending vaults, the exact enable-collateral/enable-controller borrow flow, and why the deferred-liquidity-check batch is the pattern agents must use.",
+    scope: ["evm"],
+    prerequisites: ["erc4626_vaults", "defi_lending (health-factor mindset)"],
+    steps: [
+      { title: "The architecture", note: "Euler v2 = the EVC (Ethereum Vault Connector, 0x0C9a3dd6b8F28529d72d7f9cE918D493519EE383, verified: getRawExecutionContext()/areChecksInProgress() respond) + many independent lending vaults built with the EVK. Each vault is a full ERC-4626 (deposit the underlying → interest-bearing shares). Vaults are deployed by GenericFactory 0x29a56a1b8214D9Cf7c5561811750D5cBDb45CC8e (getProxyListLength() live-returned 860 vaults)." },
+      { title: "Lend (passive)", command: "approve(vault, amount) → vault.deposit(assets, receiver) → shares (ERC-4626)", note: "Pure supply side is exactly erc4626_vaults — you don't touch the EVC at all. APY = borrow demand on THAT vault; each vault is isolated, so read its specific utilization, not a global rate." },
+      { title: "Borrow (the EVC dance)", command: "EVC.enableCollateral(account, collateralVault) → EVC.enableController(account, borrowVault) → borrowVault.borrow(amount, receiver)", note: "You must (1) tell the EVC which vault holds your collateral and (2) enable the borrow vault as your 'controller' BEFORE borrowing. The controller vault governs your liquidation. One account can enable several collaterals but is controlled by the borrow vault." },
+      { title: "Batch with deferred liquidity checks (the key primitive)", command: "EVC.batch([Items]) — actions inside are checked for solvency ONCE at the end, not per-step", note: "This is what makes leverage loops / flash-style rebalances possible in one tx: deposit → enable → borrow → swap → redeposit, and the health check runs only after the whole batch. Build the batch, then simulate it (simulate tool / eth_call) before signing — a failing final check reverts everything." },
+      { title: "Find live vaults + rates", command: "GET https://yields.llama.fi/pools → filter project == 'euler-v2'; or Euler's own app/subgraph for per-vault LTV + oracle", note: "Each vault sets its OWN collateral factors, oracle and interest model — 'Euler' is not one risk surface. Read the specific vault's config (unitOfAccount, LTV, oracle) before depositing collateral there (price_oracle_safety)." },
+    ],
+    warnings: [
+      "The controller (borrow vault) has power over your enabled collateral vaults — enabling a malicious or misconfigured vault as controller is the main footgun. Only enable audited, governance-listed vaults.",
+      "Isolated vaults mean fragmented liquidity: a borrow can fail or spike rates because THAT vault is small, even if 'Euler' TVL is large. Size against the individual vault's liquidity.",
+      "Deferred checks make it easy to build a batch that reverts at the end — always simulate the full EVC.batch before broadcasting, or you burn gas on a guaranteed revert.",
+    ],
+    references: ["https://docs.euler.finance"],
+  },
+
+  fluid_protocol: {
+    topic: "fluid_protocol",
+    title: "Fluid (Instadapp): the shared Liquidity Layer, Smart Collateral & Smart Debt",
+    summary: "How Fluid routes all protocols through one Liquidity Layer, what 'smart collateral/debt' (yield-earning collateral, fee-earning debt) actually means, and how an agent reads vaults and borrows capital-efficiently.",
+    scope: ["evm"],
+    prerequisites: ["defi_lending", "erc4626_vaults"],
+    steps: [
+      { title: "The Liquidity Layer", note: "Fluid puts every protocol (Lending, Vaults, DEX) on ONE shared liquidity contract 0x52Aa899454998Be5b000Ad077a46Bbe360F4e497 (verified: readFromStorage(bytes32) responds). Supply/borrow across products draws from the same pool → higher utilization, lower spreads than siloed pools. Config lives in packed storage slots read via readFromStorage." },
+      { title: "Lending (fTokens)", command: "fTokens are ERC-4626 (e.g. fUSDC/fUSDT/fWETH). approve → deposit(assets, receiver) → shares", note: "Passive supply = plain erc4626_vaults. Yield comes from the shared Liquidity Layer's borrow demand across ALL Fluid products, so utilization (and APY) is usually higher than a single-market lender." },
+      { title: "Smart Collateral / Smart Debt (the differentiator)", note: "SMART COLLATERAL: your collateral can itself be a DEX LP position (e.g. USDC/USDT) that EARNS trading fees while backing a loan. SMART DEBT: your debt can be an LP position too, so the debt side also earns fees — net borrow cost can approach zero or go negative. This is Fluid's edge over Aave/Morpho for stable-pair leverage." },
+      { title: "Vaults (borrowing)", note: "Fluid Vaults are isolated collateral→debt pairs with high LTVs on correlated assets (e.g. wstETH→ETH, sUSDe→USDC). Each vault has its own liquidation threshold + oracle. Positions are represented as NFTs (each vault position = one ERC-721 tokenId owned by the borrower)." },
+      { title: "Find vaults + live data", command: "GET https://yields.llama.fi/pools → filter project == 'fluid'; enumerate vaults/positions via Fluid's on-chain Resolvers (see docs) rather than guessing addresses", note: "Vault + resolver addresses change as new markets launch — resolve them at runtime from the docs/resolvers, not from memory. Only the Liquidity Layer address above is the stable anchor." },
+    ],
+    warnings: [
+      "Smart debt/collateral positions carry DEX impermanent-loss AND lending liquidation risk simultaneously — a de-correlation of the pair moves both legs against you at once. Model both, not just the LTV.",
+      "Fluid vault positions are NFTs — the tokenId IS the position; transferring/approving that NFT hands over the whole leveraged position. Guard it like a private key.",
+      "High LTVs on 'correlated' pairs (LST/ETH, stable/stable) assume the correlation holds — the depeg scenario (see restaking_eigenlayer ezETH) is exactly when these vaults liquidate en masse.",
+    ],
+    references: ["https://docs.fluid.io"],
+  },
+
+  gearbox_leverage: {
+    topic: "gearbox_leverage",
+    title: "Gearbox: composable leverage via Credit Accounts",
+    summary: "How Gearbox lets an agent borrow into an isolated Credit Account and deploy leveraged capital across whitelisted protocols, where passive LPs earn, and the AddressProvider discovery pattern.",
+    scope: ["evm"],
+    prerequisites: ["defi_lending", "flash_loans (composability mindset)"],
+    steps: [
+      { title: "Two sides", note: "PASSIVE LPs deposit into Pools (ERC-4626 dTokens, e.g. dUSDC) and earn lending yield. BORROWERS open a Credit Account — an isolated smart-contract account funded with their collateral + borrowed pool capital (up to ~10x) — and deploy that capital ONLY through whitelisted adapters (Uniswap, Curve, Convex, Balancer, Lido…). The debt can never leave the Credit Account, which is what makes under-collateralized leverage safe for the pool." },
+      { title: "Discover all core contracts (verified pattern)", command: "AddressProviderV3 0x9ea7b04Da02a5373317D745c1571c84aaD03321D (version()==300 verified). getAddressOrRevert(bytes32 key, uint256 version) → CreditManager/Facade/Pool/etc.", note: "Don't hardcode Gearbox contract addresses — they are versioned. Resolve them from the AddressProvider at runtime; keys are ASCII names padded to bytes32 (e.g. 'ROUTER', 'CREDIT_MANAGER_FACTORY')." },
+      { title: "Open + manage a Credit Account", command: "CreditFacade.openCreditAccount(...) then multicall([adapter calls]) — all leverage actions batched, health checked once at the end", note: "The multicall pattern mirrors Euler's deferred check: open → borrow → swap into position → the collateral check runs after the whole batch. Simulate the multicall before signing (simulate tool)." },
+      { title: "Where the data lives", command: "GET https://yields.llama.fi/pools → filter project == 'gearbox' for pool APYs; per-account health via the CreditManager", note: "Passive pool APY is your baseline; leveraged strategy APY = (position yield × leverage) − borrow rate, and it goes NEGATIVE when the borrow rate exceeds the levered yield. Recompute on rate changes." },
+    ],
+    warnings: [
+      "Credit Accounts liquidate on health factor exactly like defi_lending — leverage just moves the liquidation price closer. A ~10x account tolerates only a small adverse move before liquidation.",
+      "You can only touch whitelisted adapters/tokens from a Credit Account — a strategy that needs a non-whitelisted protocol simply cannot be built here. Check the adapter list before planning.",
+      "Leveraged yield farming APYs assume the reward token holds value — denominate the strategy in the borrowed asset and subtract the borrow rate before believing any headline APY (yield_farming_mechanics).",
+    ],
+    references: ["https://docs.gearbox.finance"],
+  },
+
+  erc6551_token_bound_accounts: {
+    topic: "erc6551_token_bound_accounts",
+    title: "ERC-6551 Token Bound Accounts: give any NFT a smart-contract wallet",
+    summary: "How the canonical ERC-6551 registry derives a deterministic smart account for any ERC-721, how the NFT owner controls it, and why this is a clean primitive for agent identities and NFT-owned asset bundles.",
+    scope: ["evm"],
+    prerequisites: ["account_abstraction_4337 (smart-account mindset)"],
+    steps: [
+      { title: "The idea", note: "ERC-6551 gives EVERY existing ERC-721 token its own smart-contract account (a 'Token Bound Account' / TBA) — no change to the NFT contract. Whoever owns the NFT controls its account; transferring the NFT transfers control of everything the account holds (tokens, other NFTs, positions)." },
+      { title: "The canonical registry (same address every chain)", command: "Registry 0x000000006551c19487814612e58FE06813775758 (v0.3.1, deployed via CREATE2 → identical on all EVM chains). account(implementation, salt, chainId, tokenContract, tokenId) view → the DETERMINISTIC account address (pure, verified: returns an address, never reverts).", note: "The account address is computable off-chain before it exists — you can fund a TBA, then deploy it lazily." },
+      { title: "Deploy + use", command: "Registry.createAccount(implementation, salt, chainId, tokenContract, tokenId) → deploys the account. A common audited implementation is Tokenbound 0x2D25602551487C3f3354dD80D76D54383A243358 (bytecode verified).", note: "The account then exposes token() → (chainId, tokenContract, tokenId) and executes calls via execute(to, value, data, op) when called by the current NFT owner. It can hold and act on any asset like a normal account." },
+      { title: "Agent use-cases", note: "(a) Agent identity: mint an NFT = the agent's 'passport', its TBA is the agent's on-chain wallet — reputation/assets travel with the NFT. (b) Bundled sale: put several assets INTO a TBA, then sell the single parent NFT to transfer the whole bundle atomically. (c) NFT-gated tooling: an ERC-8257 tool (register_onchain_tool) can grant access to an NFT's TBA." },
+    ],
+    warnings: [
+      "Control follows CURRENT ownership: the moment the parent NFT is sold/transferred, the new owner controls the TBA and everything in it. Never leave value in a TBA whose NFT you are about to list.",
+      "Nested/circular ownership (NFT A owns NFT B which owns NFT A) can brick control — the ERC-6551 spec forbids an account owning its own parent NFT; some implementations guard it, some don't. Verify before nesting.",
+      "Only the canonical registry address above is standard — 'ERC-6551' clones at other addresses produce non-portable account addresses. Use the canonical registry so TBAs are the same across chains and tools.",
+    ],
+    references: ["https://eips.ethereum.org/EIPS/eip-6551", "https://docs.tokenbound.org"],
+  },
+
+  nft_lending_perps: {
+    topic: "nft_lending_perps",
+    title: "NFT lending: peer-to-pool, peer-to-peer, and Blur's perpetual (Blend) model",
+    summary: "The three NFT-collateralized borrowing models, how Blur Blend's oracle-free perpetual loans and refinancing auctions work, and the floor-price/liquidity risks an agent must price before lending against a JPEG.",
+    scope: ["evm"],
+    prerequisites: ["defi_lending", "price_oracle_safety"],
+    steps: [
+      { title: "Three models", note: "(1) PEER-TO-PEER fixed-term (NFTfi, Arcade): a lender funds a specific offer against a specific NFT for a fixed duration + APR; default → lender keeps the NFT. (2) PEER-TO-POOL (BendDAO, MetaStreet): borrow instantly against a floor-price oracle from a shared pool; oracle-driven liquidation. (3) PERPETUAL (Blur Blend)." },
+      { title: "Blur Blend (perpetual, oracle-free)", note: "Blend 0x29469395eAf6f95920E59F858042f0e28D98a20B (EIP-1967 proxy, active implementation verified) matches a borrower's NFT with a lender's ETH offer at a fixed rate and NO expiry and NO price oracle. The loan simply continues until one side acts." },
+      { title: "How exit/liquidation works without an oracle", note: "The lender can call a REFINANCING AUCTION at any time: other lenders bid to take over the loan at a new rate. If someone bids, the loan refinances (borrower keeps the NFT, new rate). If NO lender will take it even at a high rate (i.e. the market thinks the debt exceeds the NFT value), the original lender can seize the NFT after the auction. So 'liquidation' = a failed refinancing auction, not an oracle threshold." },
+      { title: "What an agent computes before lending", command: "Read the collection FLOOR + depth (opensea_api / token_discovery); size the loan as a conservative LTV of a STRESSED floor, not the current floor", note: "Your safety is the auction bid you (or someone) will place, backed by real floor liquidity. Model: can I sell the NFT for > outstanding debt after a 30-50% floor drop and thin bids? If not, the loan is under-water risk." },
+    ],
+    warnings: [
+      "NFT floors are thin and reflexive — a liquidation cascade dumps seized NFTs into a falling bid, so realized recovery is far below the 'floor price' you priced against. Always stress the floor and the bid depth, not the last sale.",
+      "Perpetual loans have no maturity: as a lender your capital is locked until you win/lose a refinancing auction; as a borrower your rate can be pushed up via auction at any time. Neither side has a fixed horizon.",
+      "Peer-to-pool oracle models (BendDAO-style) inherit oracle-manipulation + stale-floor risk (price_oracle_safety) — a manipulated floor can trigger unjust liquidations or enable under-collateralized borrows.",
+    ],
+    references: ["https://docs.blur.io", "https://www.paradigm.xyz/2023/05/blend"],
   },
 
   solana_compressed_nfts: {

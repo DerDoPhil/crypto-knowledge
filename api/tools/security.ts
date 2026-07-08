@@ -32,7 +32,7 @@ export default async function handler(
       ok: true,
       tool: "crypto-knowledge-security",
       usage: 'POST {"chain":"<evm chain or solana>","address":"<token address>"}',
-      access: "Free for Normies NFT holders (X-Wallet + X-Wallet-Signature headers) or $0.10 USDC per request via x402 (X-PAYMENT header).",
+      access: "Free for Normies NFT holders (X-Wallet + X-Wallet-Signature headers) or $0.02 USDC per request via x402 (X-PAYMENT header).",
     });
     return;
   }

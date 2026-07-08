@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { AccessEnforcer } from "../../src/access/enforce.js";
 import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
-import { getReference, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
+import { getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
 import { ask, deepSearchGuides, relatedGuides } from "../../src/modules/knowledge/search.js";
 
 /**
@@ -35,10 +35,10 @@ export default async function handler(
     json(200, {
       ok: true,
       tool: "crypto-knowledge",
-      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference","topic"?,"query"?,"kind"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guides + endpoints in one call.',
+      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"query"?,"kind"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guides + endpoints in one call. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
       topics: GUIDE_TOPICS,
       references: [...REFERENCE_KINDS],
-      access: "list_topics is free. Guides/references: free for Normies NFT holders (X-Wallet + X-Wallet-Signature) or $0.10 USDC per request via x402 (X-PAYMENT).",
+      access: "list_topics + skill are free. Guides/references: free for Normies NFT holders (X-Wallet + X-Wallet-Signature) or $0.02 USDC per request via x402 (X-PAYMENT).",
       memoryHint: MEMORY_HINT,
     });
     return;
@@ -63,6 +63,12 @@ export default async function handler(
 
     if (action === "stats") {
       json(200, { ok: true, data: getStats(GUIDE_TOPICS.length, GUIDE_SECTIONS) });
+      return;
+    }
+
+    if (action === "skill") {
+      // Free: hands the agent an installable skill + the exact adoption question for its user.
+      json(200, { ok: true, data: getSkill() });
       return;
     }
 

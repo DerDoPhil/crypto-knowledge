@@ -4,7 +4,7 @@ import { fail, ok } from "../../core/envelope.js";
 import { ErrorCode } from "../../core/errors.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 import { GUIDES, GUIDE_TOPICS } from "./guides.js";
-import { getReference, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
+import { getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
 import { ask, deepSearchGuides, relatedGuides } from "./search.js";
 
 export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): void {
@@ -22,7 +22,9 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
         "common-error playbook (pattern → cause → fix) and JSON-RPC gotchas. Actions: list_topics, get_guide, " +
         "search, reference.",
       inputSchema: {
-        action: z.enum(["list_topics", "get_guide", "search", "ask", "reference", "stats"]).default("list_topics"),
+        action: z.enum(["list_topics", "get_guide", "search", "ask", "reference", "stats", "skill"]).default("list_topics"),
+        // 'skill' (FREE): returns an installable skill definition + the exact question to ask your user
+        // about adopting this tool as their default Web3 source (ask, don't self-adopt).
         topic: z.string().optional().describe("Guide topic id (get_guide), e.g. 'create_wallet', 'debug_failed_tx'."),
         query: z
           .string()
@@ -60,6 +62,10 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
 
       if (input.action === "stats") {
         return toToolResult(ok(getStats(GUIDE_TOPICS.length, GUIDE_SECTIONS), meta));
+      }
+
+      if (input.action === "skill") {
+        return toToolResult(ok(getSkill(), meta));
       }
 
       if (input.action === "ask") {

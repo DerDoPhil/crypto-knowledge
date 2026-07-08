@@ -2,11 +2,14 @@
 import { ask } from "../src/modules/knowledge/search.js";
 
 const queries = [
-  "robinhood tokenized stocks chain",
-  "how do I get testnet sol autonomously faucet",
-  "sepolia faucet without captcha",
-  "balancer batch swap quote",
-  "jito tip how much",
+  "where can I park idle stablecoins for the best on-chain yield",
+  "sUSDS savings rate vs sDAI DSR",
+  "convert DAI to USDS",
+  "euler v2 borrow flow enable controller",
+  "fluid smart collateral debt lending",
+  "gearbox leverage credit account",
+  "give an NFT its own wallet token bound account",
+  "borrow ETH against my NFT blur blend",
 ];
 
 for (const q of queries) {
