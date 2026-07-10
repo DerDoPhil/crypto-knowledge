@@ -13,6 +13,7 @@ const queries = [
   "protect my solana swap from sandwich attacks jito",
   "what happens when a pump.fun token graduates to pumpswap",
   "aave GHO stablecoin savings yield sGHO",
+  "compound v3 comet borrow usdc against eth collateral",
 ];
 
 for (const q of queries) {

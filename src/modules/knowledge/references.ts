@@ -75,6 +75,16 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Main lending pool (proxy, live-verified). supply/borrow/repay/withdraw + getUserAccountData(address)→(collateral, debt, availableBorrows, liquidationThreshold, ltv, healthFactor). PoolAddressesProvider resolves per-chain deployments; see defi_lending guide. Base/Arbitrum/etc. have their own Pool addresses via the provider.",
   },
   {
+    name: "Compound v3 (Comet) USDC market — Ethereum",
+    addresses: { cusdcv3: "0xc3d688B66703497DAA19211EEdff47f25384cdc3" },
+    note: "Main USDC Comet (proxy; symbol()=='cUSDCv3' and baseToken()==canonical USDC both live-verified). One borrowable base asset per Comet, collateral earns nothing, absorb()-liquidations — see compound_v3_comet guide. Other base assets/chains have separate Comet addresses.",
+  },
+  {
+    name: "Curve StableSwap-NG factory — Ethereum",
+    addresses: { stableswap_ng_factory: "0x6A8cbed756804B16E05E741eDaBd5cB544AE21bf" },
+    note: "Permissionless factory for current-gen stable pools (pool_count() live-returned 992). pool_list(i) enumerates pools; each pool exposes get_dy/get_virtual_price (stableswap_pools guide). Factory pool ≠ endorsement — verify coins before LPing.",
+  },
+  {
     name: "Aave GHO stablecoin + sGHO savings — Ethereum",
     addresses: { gho: "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f", sgho: "0xE1753F2e00940cC31213dd92013cF019DFE4ca1d" },
     note: "Both live-verified: GHO name()=='Gho Token', sGHO symbol()=='sGho' and sGHO.asset()==GHO (standard ERC-4626 savings vault, no lockup). GHO is borrow-minted via governance-capped facilitators, interest goes to the Aave DAO. See gho_stablecoin guide. ⚠️ L2 deployments (Arbitrum/Base/Avalanche) have different addresses — verify per chain.",
@@ -307,8 +317,8 @@ export const ENDPOINTS: EndpointEntry[] = [
     name: "deBridge DLN",
     baseUrl: "https://dln.debridge.finance/v1.0",
     auth: "none",
-    what: "Cross-chain order quotes/creation (DLN).",
-    example: "GET /dln/order/create-tx?srcChainId=…&srcChainTokenIn=…&…",
+    what: "Cross-chain order quotes/creation (DLN); order TRACKING via the stats API (both keyless, live-verified).",
+    example: 'GET /dln/order/create-tx?srcChainId=…&srcChainTokenIn=…&…; track fills: POST https://dln-api.debridge.finance/api/Orders/filteredList {"orderStates":["Fulfilled"],"maker":"0x…","skip":0,"take":10} → orderId + state + timestamps (bridge-limbo check, see crosschain_message_tracking).',
   },
   {
     name: "Jupiter (Solana swaps)",
@@ -397,11 +407,11 @@ export const ENDPOINTS: EndpointEntry[] = [
   },
   {
     name: "Morpho API (lending markets/positions)",
-    baseUrl: "https://blue-api.morpho.org/graphql",
+    baseUrl: "https://api.morpho.org/graphql",
     auth: "none",
-    what: "GraphQL for Morpho Blue + MetaMorpho vaults: markets, rates, positions, liquidatable borrowers — keyless (live-verified).",
-    example: "POST { query: '{ markets(first:5){ items{ loanAsset{symbol} state{ supplyApy borrowApy } } } }' }",
-    limits: "Complexity-capped; request only the fields you need.",
+    what: "GraphQL for Morpho Blue + MetaMorpho vaults: markets, rates, positions, liquidatable borrowers — keyless (live-verified; blue-api.morpho.org/graphql is the older alias).",
+    example: "POST { query: '{ markets(first:5, orderBy: SupplyAssetsUsd, orderDirection: Desc, where:{ chainId_in:[1], listed:true }){ items{ marketId lltv loanAsset{symbol} collateralAsset{symbol} state{ supplyApy borrowApy utilization } } } }' }; positions: userByAddress(chainId, address){ marketPositions{ state{ borrowAssetsUsd collateralUsd } } }",
+    limits: "Complexity-capped; request only the fields you need. ⚠️ ALWAYS filter listed:true — without it the top of SupplyAssetsUsd ordering is junk/manipulated markets (live-observed: fake 41,830% APY entries). APY fields are decimals (0.034 = 3.4%), not percent. Canonical market key is marketId (uniqueKey no longer in schema).",
   },
   {
     name: "Curve API (pools, APYs)",
@@ -998,7 +1008,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "safe_multisig", "erc6551_token_bound_accounts"],
-  "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin", "euler_v2_vaults", "fluid_protocol", "gearbox_leverage", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
+  "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "compound_v3_comet", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin", "euler_v2_vaults", "fluid_protocol", "gearbox_leverage", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Agent playbooks (multi-tool)": ["playbook_pre_trade_check", "playbook_cross_chain_arbitrage", "playbook_memecoin_launch_analysis"],

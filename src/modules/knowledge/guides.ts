@@ -933,6 +933,7 @@ export const GUIDES: Record<string, Guide> = {
       { title: "LP-token value: get_virtual_price", command: "get_virtual_price() → 1e18-scaled value of ONE LP token in the pool's invariant units", note: "Live-verified (3pool ~1.04). It only ever goes UP (from fees) barring a depeg — a sudden DROP is a depeg/exploit signal. This is the manipulation-resistant number for pricing LP collateral, NOT the spot balance ratio (see price_oracle_safety)." },
       { title: "Add/remove liquidity", command: "add_liquidity([amounts], minMint) / remove_liquidity_one_coin(lpAmount, i, minOut)", note: "Imbalanced add/remove pays a fee; balanced is cheapest. calc_token_amount previews LP minted (approximate — set a min)." },
       { title: "Discover pools", command: "GET https://api.curve.finance/api/getPools/ethereum/main (keyless, live-verified)", note: "Returns pool addresses, coins and TVL across chains; or this server's route tool for the best swap across DEXes." },
+      { title: "StableSwap-NG (current generation)", command: "Factory 0x6A8cbed756804B16E05E741eDaBd5cB544AE21bf (Ethereum): pool_count() live-returned 992; pool_list(i) enumerates; deploy_plain_pool(...) is PERMISSIONLESS", note: "NG pools support up to 8 coins, rebasing/oracle-rate tokens (e.g. wstETH via stored rates) and expose the same get_dy/get_virtual_price surface. Permissionless deploy means a 'Curve pool' is NOT an endorsement — verify the coins and the pool's provenance before LPing (same trust model as any factory pool)." },
     ],
     warnings: ["A stableswap pool that has gone heavily imbalanced (one coin dominates) signals a depeg in progress — swapping INTO the scarce coin gets terrible rates, and LPs are left holding the depegged asset."],
     references: ["https://docs.curve.finance"],
@@ -2076,6 +2077,26 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Pin CDN scripts", note: "Unpinned CDN dependencies (e.g. a Babel standalone) break silently on new majors — always pin exact versions in <script src>." },
       { title: "Health-check external services after deploy", command: "curl -sf https://<app>/api/<health> && curl -s <manifest-url> | sha256sum", note: "Serverless cold starts + env drift are the top post-deploy failure sources; verify live behavior, not build success." },
     ],
+  },
+
+  compound_v3_comet: {
+    topic: "compound_v3_comet",
+    title: "Compound v3 (Comet): single-borrowable-asset lending, and when to pick it over Aave",
+    summary: "How Comet's model differs from Aave/Compound v2 — one borrowable base asset per market, collateral earns nothing, absorb() liquidations — with the verified mainnet USDC market address.",
+    scope: ["evm"],
+    prerequisites: ["defi_lending"],
+    steps: [
+      { title: "The Comet model", note: "Each Compound v3 deployment ('Comet') is an isolated market with exactly ONE borrowable base asset. cUSDCv3 0xc3d688B66703497DAA19211EEdff47f25384cdc3 (Ethereum, symbol() verified, baseToken() verified == canonical USDC 0xA0b8…eb48) lends only USDC; other Comets exist per base asset/chain — resolve them via docs/on-chain, don't guess." },
+      { title: "What earns and what doesn't", note: "Only the BASE asset earns supply interest. Collateral (WETH, WBTC, …) secures the loan but earns NOTHING inside Comet — opposite of Aave where every supplied asset earns. Parking collateral long-term is therefore cheaper on Aave; borrowing stables against blue-chips is often cleaner on Comet." },
+      { title: "Core calls", command: "supply(asset, amount) / withdraw(asset, amount) — one pair for both base and collateral; borrowing = withdraw(baseToken) beyond your base balance", note: "No cToken exchange-rate mechanics like v2: balances are rebasing base-token amounts (balanceOf returns principal+interest). Interest rates come from a utilization curve per market (getSupplyRate/getBorrowRate at the current utilization)." },
+      { title: "Liquidation = absorb()", note: "Under-collateralized accounts are absorbed by the protocol: absorb(absorber, [accounts]) transfers the debt+collateral to the protocol, which then sells collateral at a discount via buyCollateral(). Liquidation bots monitor isLiquidatable(account) — simpler surface than Aave's liquidationCall (liquidation_bots)." },
+      { title: "Choosing Comet vs Aave", note: "Comet: lower gas, simpler risk (one borrowable asset, no cross-asset borrow contagion), collateral caps per asset. Aave: multi-asset borrowing, collateral earns yield, e-mode efficiency, GHO minting. For an agent strategy that borrows ONE stable against ETH/BTC collateral, quote both and compare net rate after rewards (defi_yield_research)." },
+    ],
+    warnings: [
+      "Only the Ethereum cUSDCv3 address above was verified on-chain here. Per-chain/per-base Comet addresses differ — resolve each from docs.compound.finance or the Configurator before use.",
+      "Collateral in Comet earns nothing — modelling it with Aave-style supply APY silently overstates returns.",
+    ],
+    references: ["https://docs.compound.finance"],
   },
 
   gho_stablecoin: {
