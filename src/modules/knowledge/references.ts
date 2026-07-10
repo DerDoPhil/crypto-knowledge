@@ -75,6 +75,16 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Main lending pool (proxy, live-verified). supply/borrow/repay/withdraw + getUserAccountData(address)→(collateral, debt, availableBorrows, liquidationThreshold, ltv, healthFactor). PoolAddressesProvider resolves per-chain deployments; see defi_lending guide. Base/Arbitrum/etc. have their own Pool addresses via the provider.",
   },
   {
+    name: "Base DeFi core (Aerodrome + Uniswap v3)",
+    addresses: { aerodrome_router: "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43", aerodrome_pool_factory: "0x420dd381b31aef6683DB6B902084cB0FFECe40Da", aero: "0x940181a94A35A4569E4529A3CDfB74e38FD98631", usdc_native: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", uniswap_v3_factory: "0x33128a8fC17869897dcE68Ed026d694621f6FDfD" },
+    note: "All live-verified (factory via Router.defaultFactory(), tokens via symbol(), v3 via feeAmountTickSpacing fingerprint). ⚠️ Uniswap v3 on Base is NOT at the canonical mainnet address. WETH = OP-Stack predeploy 0x4200…0006. See base_chain_playbook guide.",
+  },
+  {
+    name: "Arbitrum core (tokens + gas precompile)",
+    addresses: { weth: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1", usdc_native: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831", arb: "0x912CE59144191C1204E64559FE8253a0e49E6548", arb_gas_info: "0x000000000000000000000000000000000000006C", uniswap_v3_factory: "0x1F98431c8aD98523631AE4a59f267346ea31F984" },
+    note: "All live-verified (symbols on-chain; ArbGasInfo.getPricesInWei() returns 6 fee fields; v3 factory IS canonical here, verified via feeAmountTickSpacing). ⚠️ ARB is governance only — gas is ETH. Ordering = Timeboost express-lane auction, see arbitrum_playbook guide.",
+  },
+  {
     name: "Compound v3 (Comet) USDC market — Ethereum",
     addresses: { cusdcv3: "0xc3d688B66703497DAA19211EEdff47f25384cdc3" },
     note: "Main USDC Comet (proxy; symbol()=='cUSDCv3' and baseToken()==canonical USDC both live-verified). One borrowable base asset per Comet, collateral earns nothing, absorb()-liquidations — see compound_v3_comet guide. Other base assets/chains have separate Comet addresses.",
@@ -1012,7 +1022,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Agent playbooks (multi-tool)": ["playbook_pre_trade_check", "playbook_cross_chain_arbitrage", "playbook_memecoin_launch_analysis"],
-  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "base_chain_playbook", "arbitrum_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin"],
   "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],

@@ -14,6 +14,8 @@ const queries = [
   "what happens when a pump.fun token graduates to pumpswap",
   "aave GHO stablecoin savings yield sGHO",
   "compound v3 comet borrow usdc against eth collateral",
+  "trade on base aerodrome usdc",
+  "arbitrum timeboost express lane ordering for bots",
 ];
 
 for (const q of queries) {

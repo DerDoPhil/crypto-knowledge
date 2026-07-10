@@ -2079,6 +2079,46 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  base_chain_playbook: {
+    topic: "base_chain_playbook",
+    title: "Base playbook: Aerodrome, native USDC, the agent-payments chain",
+    summary: "Coinbase's OP-Stack L2 as an agent venue: the verified DeFi core (Aerodrome, Uniswap v3 at a NON-canonical address), native USDC, x402 payments gravity, and the fee model — all live-verified on chainId 8453.",
+    scope: ["evm"],
+    prerequisites: ["opstack_l2_fees"],
+    steps: [
+      { title: "Chain profile (live-measured)", note: "chainId 8453, OP-Stack rollup run by Coinbase; block time measured at 2.0s over 1000 blocks. Fees = L2 execution + L1 data fee — quote the L1 part via the GasPriceOracle predeploy 0x42…0F (opstack_l2_fees). Sub-cent swaps at normal load. Coinbase on/off-ramp gravity plus the Farcaster/creator ecosystem drive retail flow." },
+      { title: "The verified DeFi core", note: "Aerodrome is the native liquidity hub: Router 0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43, PoolFactory 0x420dd381b31aef6683DB6B902084cB0FFECe40Da (proven via Router.defaultFactory()), WETH = OP-Stack predeploy 0x4200…0006 (proven via Router.weth()), AERO 0x940181a94A35A4569E4529A3CDfB74e38FD98631 (symbol()-verified). Uniswap v3 Factory is 0x33128a8fC17869897dcE68Ed026d694621f6FDfD (feeAmountTickSpacing(500)==10 live-verified) — NOT the canonical mainnet address; never reuse 0x1F98… here." },
+      { title: "Native USDC — the settlement asset", note: "USDC 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 (symbol()-verified) is Circle-NATIVE (not bridged USDbC) and CCTP-connected (cctp_native_usdc). This is also the x402 default payment asset — most per-request paid agent APIs (this server included) settle in Base USDC (x402_payments)." },
+      { title: "Where the money is", note: "(1) Agent-economy rails: x402 services, ERC-8257 tools and Farcaster mini-apps settle here — selling/consuming paid APIs is Base-native alpha. (2) Aerodrome ve(3,3) flywheel: bribes/votes redirect emissions — LP + vote strategies (yield_farming_mechanics). (3) Memecoin flow via Zora/creator coins with Coinbase retail proximity. (4) Cheap CEX-DEX arb legs vs Coinbase spot (CEX public-data endpoint)." },
+      { title: "Ordering & MEV", note: "Single sequencer, no public mempool — classic mempool sandwiching doesn't apply; your exposure is slippage vs pool depth and the sequencer's FCFS race (latency). Flashblocks-style ~200ms preconfirmations have been announced/rolling out — verify current status before building latency assumptions on them." },
+    ],
+    warnings: [
+      "Base pools show the same long-tail rug density as every cheap EVM chain — pre-buy security scan + LP checks (rugpull_forensics) remain the minimum bar.",
+      "Uniswap v3 on Base at a non-canonical address is a recurring LLM-memory trap (same as Robinhood Chain) — derive addresses from on-chain fingerprints, don't recall them.",
+    ],
+    references: ["https://docs.base.org", "https://aerodrome.finance/docs"],
+  },
+
+  arbitrum_playbook: {
+    topic: "arbitrum_playbook",
+    title: "Arbitrum playbook: Timeboost ordering, 250ms blocks, the perps chain",
+    summary: "Arbitrum One for agents: the express-lane auction that replaced pure FCFS, live-measured 0.25s blocks, canonical Uniswap v3, GMX perps, and the ArbGasInfo fee precompile — verified on chainId 42161.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Chain profile (live-measured)", note: "chainId 42161 (0xa4b1), Nitro stack; block time measured at 0.251s over 1000 blocks — Solana-tier cadence. Gas is ETH (ARB 0x912CE59144191C1204E64559FE8253a0e49E6548, symbol()-verified, is ONLY the governance token). Fees = L2 execution + L1 data; read live components from the ArbGasInfo precompile 0x…006C getPricesInWei() (live-verified, returns 6 price fields)." },
+      { title: "Timeboost — the ordering model (trading-critical)", note: "Pure FCFS is gone: a sealed-bid auction every 60s round (closes 15s before the round) sells the EXPRESS LANE; everyone else gets an artificial +200ms delay before sequencing. The controller gets a speed edge but CANNOT see or reorder your txs (they stay private until sequenced) — so no mempool sandwiching, but latency-sensitive strategies (liquidations, oracle-arb) effectively compete for the express lane. Fallback is plain FCFS when no controller. ~6% of blocks carry Timeboost txs (2026)." },
+      { title: "The verified DeFi core", note: "Uniswap v3 Factory at the CANONICAL address 0x1F98431c8aD98523631AE4a59f267346ea31F984 (feeAmountTickSpacing(500)==10 live-verified — unlike Base/Robinhood). WETH 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1 and Circle-native USDC 0xaf88d065e77c8cC2239327C5EDb3A432268e5831 (both symbol()-verified). GMX perps live here (onchain_perps_gmx); Camelot is the native-launch DEX — resolve its addresses from docs before use." },
+      { title: "Where the money is", note: "(1) Perps: GMX/funding-rate strategies (perps_funding_data, basis_trade) — Arbitrum is the deepest on-chain perps venue outside Hyperliquid. (2) Liquidation bots: Aave v3 + GMX with 250ms blocks — but budget the Timeboost express-lane cost into the edge (liquidation_bots). (3) DeFi depth: mature Aave/Uniswap/Pendle markets for yield loops (defi_lending, pendle_yield_tokenization)." },
+      { title: "Ops notes", note: "eth_estimateGas already includes the L1 component on Nitro; for explicit breakdown use ArbGasInfo/NodeInterface. Retryable tickets (L1→L2 messages) can fail silently if underfunded — track them when bridging canonically (l2_bridging_basics)." },
+    ],
+    warnings: [
+      "Timeboost changes MEV economics, it doesn't remove MEV: backruns and liquidations still race — via the auction instead of raw latency. Price the 60s-round auction cost into thin edges.",
+      "ARB is not gas — bots that top up ARB instead of ETH strand themselves. Gas is ETH on all Arbitrum chains.",
+    ],
+    references: ["https://docs.arbitrum.io/how-arbitrum-works/timeboost/gentle-introduction", "https://docs.gmx.io"],
+  },
+
   compound_v3_comet: {
     topic: "compound_v3_comet",
     title: "Compound v3 (Comet): single-borrowable-asset lending, and when to pick it over Aave",
