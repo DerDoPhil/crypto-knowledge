@@ -6,7 +6,15 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **120 Guides, 21 Sektionen, 67+ Endpunkte** (Blöcke 1–78 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+Stand: **123 Guides, 21 Sektionen, 67+ Endpunkte** (Blöcke 1–80 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+
+### Blöcke 79–80 (2026-07-10)
+79 polygon_playbook (WMATIC-Adresse liefert jetzt symbol()=='WPOL' — POL-Migration on-chain bewiesen;
+QuickSwap-v3-Algebra-Core via Router abgeleitet; Blockzeit 1,5s gemessen) + avalanche_playbook
+(LFJ LBRouter getFactory()+getWNATIVE()==WAVAX kreuz-verifiziert; Liquidity-Book-Bins; post-Etna
+0,021 gwei gemessen; 1,07s) · 80 apechain_playbook (Orbit via ArbGasInfo-Antwort bewiesen, 0,489s
+gemessen, WAPE verifiziert, ChainTrade-Escrow-Bytecode geprüft — Gedächtnis-Adresse hatte KEINEN
+Code, Config-Lookup fing es).
 
 ### Blöcke 74–78 (2026-07-10)
 74 solana_sandwich_defense (jitodontfront-Pattern von solana.com verifiziert, Jito-Endpoints live,
