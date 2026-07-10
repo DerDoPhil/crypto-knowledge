@@ -16,6 +16,8 @@ const queries = [
   "compound v3 comet borrow usdc against eth collateral",
   "trade on base aerodrome usdc",
   "arbitrum timeboost express lane ordering for bots",
+  "should my bot retry after a transaction timeout",
+  "how much edge do I need to cover gas and slippage",
 ];
 
 for (const q of queries) {

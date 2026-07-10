@@ -2079,6 +2079,38 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  error_taxonomy_retries: {
+    topic: "error_taxonomy_retries",
+    title: "Error taxonomy + retry strategy for on-chain agents",
+    summary: "The three error classes every autonomous agent must separate — transient, deterministic, unknown-outcome — and the retry rules that prevent both stuck loops and double-spends.",
+    scope: ["all"],
+    prerequisites: ["tx_confirmation_patterns", "debug_failed_tx"],
+    steps: [
+      { title: "Class 1 — TRANSIENT (retry helps)", note: "429/rate limit, RPC timeout/5xx, 'nonce too low' from a race, Solana 'blockhash not found', mempool congestion. Retry with EXPONENTIAL BACKOFF + JITTER (e.g. 1s→2s→4s, ±30%) and rotate to the next RPC in your failover list on network-class errors. Beware providers that return 401 instead of 429 when rate-limited — treat auth errors on previously-working keys as possible rate limits (COMMON_ERRORS reference)." },
+      { title: "Class 2 — DETERMINISTIC (retry never helps)", note: "execution reverted, insufficient funds, invalid params/signature, allowance too low. Retrying resends the same failure and burns gas/quota. Instead: decode the revert (abi tool / debug_failed_tx), fix the cause, and SIMULATE before resending (simulate tool). A revert seen in simulation costs nothing; the same revert on-chain costs the full gas." },
+      { title: "Class 3 — UNKNOWN OUTCOME (the dangerous one)", note: "A timeout AFTER broadcast means the tx may have landed. NEVER rebuild + resend with a fresh nonce/blockhash blindly — that risks double execution. EVM: rebroadcast the SAME signed tx, or fee-bump with the SAME nonce (replaces, never duplicates). Solana: keep resending the SAME tx until its lastValidBlockHeight expires, THEN it is provably dead and safe to rebuild (tx_confirmation_patterns)." },
+      { title: "Semantic errors — catch before sending", note: "Wrong chain, wrong decimals, wrong token address variant, stale quote: these produce 'successful' transactions that do the wrong thing. Defense is a pre-trade check (playbook_pre_trade_check), not a retry policy." },
+      { title: "Loop guards", note: "Cap retries per action (3-5), add a per-error-class circuit breaker (N consecutive failures → pause strategy + alert), and log every failure with its class. An agent that can't distinguish class 2 from class 1 will happily burn its whole gas budget re-sending a revert." },
+    ],
+    warnings: ["The most expensive bug in agent loops is treating unknown-outcome as failure: a 'retry' that rebuilds the tx double-buys/double-sends. Idempotency comes from reusing the nonce (EVM) or the blockhash-bounded tx (Solana), never from application-level 'did I already do this?' guesses."],
+  },
+
+  agent_cost_accounting: {
+    topic: "agent_cost_accounting",
+    title: "Cost accounting for autonomous agents: gas, fees, slippage, API spend",
+    summary: "How to compute whether an on-chain action is worth doing BEFORE doing it — the full cost stack, minimum-edge formula, budgets and kill-switches for unattended operation.",
+    scope: ["all"],
+    prerequisites: [],
+    steps: [
+      { title: "Know the full cost stack", note: "(1) Execution: EVM gas (on L2s: execution + L1 data fee — opstack_l2_fees/ArbGasInfo), Solana base fee + priority fee + Jito tip + ATA RENT (~0.002 SOL per new token account, recoverable by closing). (2) Protocol fees: DEX 0.01-1%, bridge/relayer fees. (3) SLIPPAGE + price impact — usually the largest cost on thin pairs. (4) Data/API spend: x402 per-call fees, paid RPC tiers. (5) FAILURE cost: a reverted EVM tx still pays gas; a failed Solana tx still pays fees." },
+      { title: "The minimum-edge rule", command: 'call tool "profitability" { txs, expectedRevenueUsd } before every value-moving action', note: "Act only if expected edge > gas + fees + expected slippage + P(failure) × failure cost + data spend, with margin (e.g. 2x). The profitability tool prices the gas leg for you; you supply the revenue estimate and slippage from the quote." },
+      { title: "Budgets per scope", note: "Set (a) per-action gas cap (refuse txs above it — protects against gas spikes and estimation bugs), (b) daily spend budget per strategy, (c) global kill-switch on drawdown (trading_bot_architecture). Track wallet balance deltas, not just PnL of fills — fee bleed hides there." },
+      { title: "Measure actual vs expected", note: "After each action, log effectiveGasPrice × gasUsed from the receipt (EVM) / meta.fee (Solana) against your estimate. Systematic underestimation = your model is stale (new L1 fee regime, priority-fee drift). Reconcile weekly; close unused Solana ATAs to reclaim rent." },
+      { title: "Data calls are costs too — but cheap ones", note: "A paid knowledge/security/simulate call costs cents; a wrong address, missed honeypot or reverted tx costs the full position or gas. Price information as insurance: spend on lookups scales with value-at-risk, not with curiosity (playbook_pre_trade_check)." },
+    ],
+    warnings: ["Slippage tolerance is a COST CEILING you grant the market (and sandwich bots — mev_strategies): sizing it casually at 5-10% on liquid pairs silently donates your edge. Derive it from pool depth instead."],
+  },
+
   base_chain_playbook: {
     topic: "base_chain_playbook",
     title: "Base playbook: Aerodrome, native USDC, the agent-payments chain",
