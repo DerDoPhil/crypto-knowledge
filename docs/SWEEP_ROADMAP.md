@@ -6,7 +6,18 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **93 Guides, 19 Sektionen, 61+ Endpunkte** (Blöcke 1–62 erledigt; Manifest v1.2.0 + featured.jpg, Baseline `0x6305190e…240e`).
+Stand: **120 Guides, 21 Sektionen, 67+ Endpunkte** (Blöcke 1–78 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+
+### Blöcke 74–78 (2026-07-10)
+74 solana_sandwich_defense (jitodontfront-Pattern von solana.com verifiziert, Jito-Endpoints live,
+Launcher-Anti-Snipe, BAM) · 75 pumpswap_graduation (Programm pAMMBay6… executable-verifiziert, LP-Burn,
+Fee-Split) + gho_stablecoin (GHO name() + sGHO.asset()==GHO on-chain) · 76 compound_v3_comet
+(cUSDCv3 symbol()+baseToken() verifiziert) + Morpho-GraphQL-Deep (marketId-Schema, listed:true-Gotcha —
+ungefiiltert liefert die API Fake-41830%-APY-Junk-Märkte!) + Curve-NG-Factory (pool_count()=992 live) +
+deBridge-Order-Tracking (filteredList live) · 77 base_chain_playbook + arbitrum_playbook (Blockzeiten
+live gemessen 2,0s/0,251s; Aerodrome-Factory via Router.defaultFactory(); Timeboost-Ordering;
+ArbGasInfo live; Uniswap v3 Base NICHT-kanonisch vs Arbitrum kanonisch — beide fingerprint-verifiziert) ·
+78 error_taxonomy_retries + agent_cost_accounting (Meta-Guides aus Grok-P1).
 
 ### Blöcke 47–62 (2026-07-04/06)
 47/48 Endpoint-Livecheck-Script · 49 related-Cross-Links · 50/51 ask-Scoring + stats-Action ·
@@ -87,14 +98,24 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [ ] Optional (Philipp-Freigabe): Cloudflare Monetization Gateway anschließen
 
 ## 🔜 Kandidaten für Blöcke 63+ (2026-07-06 gesammelt)
-- [ ] NFT-Lending/-Perps (Blend-Mechanik, floor-price-Risiko)
-- [ ] CEX-Marktdaten keyless (Binance/Coinbase/Kraken public REST — Key-Status live prüfen)
-- [ ] Tokenized RWAs/Treasuries (Ondo/BUIDL — Adressen live verifizieren)
-- [ ] Solana-Sandwich/Sniper-Defense-Detail (Jito-Bundles defensiv)
-- [ ] pump.fun Graduation→PumpSwap Mechanik-Update (falls stabil dokumentierbar)
+- [x] NFT-Lending/-Perps (Blend-Mechanik, floor-price-Risiko) — Block73 ✅
+- [x] CEX-Marktdaten keyless (Binance/Coinbase/Kraken public REST) — Block65 ✅
+- [x] Tokenized RWAs/Treasuries (Ondo/BUIDL) — Block66 ✅
+- [x] Solana-Sandwich/Sniper-Defense-Detail (jitodontfront + Jito-Bundles defensiv) — Block74 ✅
+- [x] pump.fun Graduation→PumpSwap Mechanik — Block75 ✅
 - [ ] ERC-4337 v0.8 + EIP-7702-Kombination (falls Bundler-Support live prüfbar)
-- [ ] Aave v3.x GHO / sGHO (live verifizieren)
+- [x] Aave v3.x GHO / sGHO (on-chain verifiziert) — Block75 ✅
 - [ ] Farcaster Frames v2 (aus alter Liste)
+
+## 🔜 Kandidaten für Blöcke 79+ (2026-07-10 gesammelt)
+- [ ] Grok-Backlog §18-Reste: proxy-mastery-with-storage-layout (Code), gas-optimization-assembly deep
+- [ ] Grok P1-Reste: Morpho market-creation-Params, Pendle-SDK-Calldata, Spark, Maker-DSR-Detail
+- [ ] Grok-Research §17.6/§17.7/§19/§36/§37/§43 sichten (Rest ungesweept)
+- [ ] Chain-Playbooks: Polygon, Avalanche, ApeChain, Optimism (Muster Base/Arbitrum)
+- [ ] paymaster_strategies / session keys (AA-Vertiefung)
+- [ ] Jito-Bundle-Submission Code-Guide (sendBundle end-to-end mit Tip-Berechnung)
+- [ ] real_exploit_postmortems (mit On-Chain-Referenzen)
+- [ ] Hyperliquid HyperEVM-Playbook (chainId 999 — DeFi-Landschaft verifizieren)
 
 > Reihenfolge flexibel; DeFi-Aggregatoren (DexScreener/GeckoTerminal/1inch) und
 > Strategie-Tiefe zuerst, da höchster Agent-Nutzen.
