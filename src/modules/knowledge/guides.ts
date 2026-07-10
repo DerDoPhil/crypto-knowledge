@@ -1331,7 +1331,7 @@ export const GUIDES: Record<string, Guide> = {
     prerequisites: [],
     steps: [
       { title: "The main forms", note: "SANDWICH: a searcher buys before your swap (pushing price up) and sells after — you get a worse fill, they pocket the difference. BACKRUN: they trade right after a big price-moving tx (arb/liquidation). LIQUIDATION: they repay an underwater loan to claim the collateral bonus (defi_lending)." },
-      { title: "DEFENSE (do this by default)", note: "1) Private submission: Flashbots Protect / MEV-Blocker RPC (EVM), Jito bundles (Solana) — your tx skips the public mempool so it can't be sandwiched. 2) Tight slippage: a small maxSlippage caps how much a sandwich can extract (too tight = failed tx; balance it). 3) Use aggregators/CoW Swap that batch and MEV-protect natively." },
+      { title: "DEFENSE (do this by default)", note: "1) Private submission: Flashbots Protect / MEV-Blocker RPC (EVM), Jito bundles (Solana) — your tx skips the public mempool so it can't be sandwiched. 2) Tight slippage: a small maxSlippage caps how much a sandwich can extract (too tight = failed tx; balance it). 3) Use aggregators/CoW Swap that batch and MEV-protect natively. On Solana also add a jitodontfront account (solana_sandwich_defense)." },
       { title: "CAPTURE (the legitimate side)", note: "Backrunning arbitrage and liquidations are permissionless and non-predatory. Landing them needs bundle submission (Flashbots bundles / Jito) with a competitive tip, and atomic revert-if-unprofitable execution (arbitrage_basics)." },
       { title: "Measure your exposure", command: "call tool \"mev_protection\" { chain } for per-chain sandwich risk + the right private RPC", note: "High-value swaps on public mempools are the ones that get hit; route them privately." },
     ],
@@ -2056,7 +2056,7 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Create ATAs up front", note: "Each new token account costs ~0.002 SOL rent. For small trades, pre-create ATAs so rent + priority fees don't eat the position." },
       { title: "Budget real launch costs", note: "A pump.fun token creation costs ~0.009 SOL in rent (NOT free) — 0.1 SOL funds only ~11 launches." },
       { title: "Check quote currency", note: "Some pump.fun coins are USDC-quoted, not SOL-quoted — a SOL-denominated buy path rejects or mis-prices them." },
-      { title: "Read curve state before trading", command: "call tool \"pumpfun\" { mint }", note: "Returns bonding-curve state, price and graduation progress; graduated tokens trade via regular DEX routing (solana_swap tool)." },
+      { title: "Read curve state before trading", command: "call tool \"pumpfun\" { mint }", note: "Returns bonding-curve state, price and graduation progress; graduated tokens trade on PumpSwap via regular DEX routing (solana_swap tool, pumpswap_graduation guide)." },
       { title: "Congestion handling", note: "Add a compute-unit price (priority fee) and re-fetch the blockhash right before signing; blockhashes expire in ~60-90s." },
     ],
     warnings: ["Never run two bots on the same wallet — parallel sells collide on the same ATAs/nonces."],
@@ -2076,6 +2076,67 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Pin CDN scripts", note: "Unpinned CDN dependencies (e.g. a Babel standalone) break silently on new majors — always pin exact versions in <script src>." },
       { title: "Health-check external services after deploy", command: "curl -sf https://<app>/api/<health> && curl -s <manifest-url> | sha256sum", note: "Serverless cold starts + env drift are the top post-deploy failure sources; verify live behavior, not build success." },
     ],
+  },
+
+  gho_stablecoin: {
+    topic: "gho_stablecoin",
+    title: "Aave GHO + sGHO: borrow-minted stablecoin and its savings vault",
+    summary: "How GHO differs from USDC/DAI-style stables (facilitator minting, interest to the DAO), and how sGHO gives agents no-lockup stablecoin yield via a plain ERC-4626 vault — verified mainnet addresses included.",
+    scope: ["ethereum"],
+    prerequisites: ["defi_lending", "erc4626_vaults"],
+    steps: [
+      { title: "What GHO is", note: "GHO 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f (name() verified 'Gho Token') is Aave's native overcollateralized stablecoin: borrowers MINT it against collateral in the Aave market instead of borrowing pre-supplied liquidity. Borrow interest flows to the Aave DAO treasury, not to suppliers — there is no GHO supply APY inside the pool itself." },
+      { title: "Facilitator model", note: "Only governance-whitelisted FACILITATORS can mint/burn GHO, each with a hard mint cap: the Aave pool (borrow-mint), a FlashMinter, and the GHO Stability Module (GSM, swaps USDC↔GHO to defend the peg). Check current facilitators + caps on-chain/via docs before assuming mint capacity." },
+      { title: "sGHO — the yield leg", command: "deposit/withdraw via standard ERC-4626 calls on 0xE1753F2e00940cC31213dd92013cF019DFE4ca1d", note: "sGHO (symbol() verified 'sGho', asset() verified == GHO) is a plain ERC-4626 savings vault: GHO in, yield accrues into the share price via an on-chain index, no lockup, instant withdrawal. Same integration pattern as sDAI/sUSDS/sUSDe (erc4626_vaults)." },
+      { title: "How an agent uses it", command: 'compare current sGHO APR vs sUSDS/sDAI/sUSDe before parking stables (defi_yield_research; DefiLlama yields endpoint)', note: "sGHO is one of several 'savings wrapper' vaults — the right choice changes with rates. GHO liquidity is deepest on Ethereum; it also exists on Arbitrum/Base/Avalanche (bridged via governance-controlled paths), but verify per-chain addresses live before use." },
+      { title: "Peg mechanics to watch", note: "GHO's peg is defended by the GSM and by the borrow rate (governance raises it to encourage repayment when GHO trades below $1). A persistent discount = borrowing demand exceeding peg defenses — factor that into any GHO-denominated position." },
+    ],
+    warnings: [
+      "Only the Ethereum mainnet addresses above were verified on-chain here; L2 GHO/sGHO deployments must be re-verified per chain, never assumed.",
+      "sGHO APR is set via Aave governance/index parameters, not a market — it can be changed by vote; don't extrapolate a fixed rate.",
+    ],
+    references: ["https://aave.com/docs/ecosystem/gho", "https://aave.com/docs/aave-v3/guides/sgho"],
+  },
+
+  solana_sandwich_defense: {
+    topic: "solana_sandwich_defense",
+    title: "Solana sandwich/sniper defense: Jito DontFront, defensive bundles, slippage",
+    summary: "Concrete anti-sandwich techniques for Solana swaps and launches: the jitodontfront account trick, submitting your own Jito bundle, tip sizing, and tight slippage — with the exact endpoints.",
+    scope: ["solana"],
+    prerequisites: ["solana_priority_fees"],
+    steps: [
+      { title: "Threat model", note: "~92% of stake runs the Jito-Solana client, so the Jito block engine is where ordering is sold. Attackers either bundle front+victim+back atomically ('tight' sandwich) or split front/back-run by 50-300ms ('wide'). Your public sendTransaction is visible to them via RPC/mempool services." },
+      { title: "Defense 1 — jitodontfront account", note: "Add any valid pubkey that starts with 'jitodontfront' (e.g. jitodontfront111111111111111111111111111111) as a READ-ONLY, non-signer account to any instruction. The account need not exist on-chain and is never read. The Jito block engine then enforces: any bundle containing your tx must place it at index 0 — nothing can run in front of it inside a bundle." },
+      { title: "Submit via Jito so the rule applies", command: 'POST https://mainnet.block-engine.jito.wtf/api/v1/transactions (single tx) or /api/v1/bundles {"method":"sendBundle","params":[[<base64 txs>]]}', note: "DontFront is enforced only by the Jito block engine — a tx sent to a plain RPC/validator bypasses it. Bundles must be base64 (base58 deprecated). Tip one of the 8 getTipAccounts addresses; size the tip from the tip-floor API (Jito Block Engine endpoint entry)." },
+      { title: "Defense 2 — tight slippage", note: "The single most effective generic defense: a tight minOut caps what a sandwich can extract (their profit comes out of your slippage allowance). Too tight fails the tx during volatility — tune per token liquidity." },
+      { title: "Defense 3 — launcher anti-snipe", note: "When launching a token, put the create instruction AND your own first buy in ONE atomic Jito bundle — snipers can't land between creation and your buy. This is the standard pump.fun dev-buy pattern." },
+      { title: "Outlook: BAM", note: "Jito's Block Assembly Marketplace (mainnet since late 2025) adds TEE-based builders and plugins for protocol-level guards (e.g. sequencing-time slippage protection) — expect more native defenses to appear there." },
+    ],
+    warnings: [
+      "jitodontfront is best-effort, not a guarantee: it constrains bundle ordering at the Jito block engine only, and is unavailable on devnet/localhost.",
+      "Marking the dontfront account writable works but slows scheduling — use AccountRole.READONLY.",
+    ],
+    references: ["https://solana.com/developers/guides/advanced/mev-protection", "https://docs.jito.wtf"],
+  },
+
+  pumpswap_graduation: {
+    topic: "pumpswap_graduation",
+    title: "pump.fun graduation → PumpSwap: mechanics, fees, what changes for a bot",
+    summary: "What actually happens when a pump.fun token completes its bonding curve: instant free migration to the PumpSwap AMM, burned LP, the fee split, and how a trading agent should adapt across the transition.",
+    scope: ["solana"],
+    prerequisites: ["pumpfun_token2022_gotchas"],
+    steps: [
+      { title: "Graduation trigger", note: "The bonding curve completes when it has absorbed roughly 85 SOL (~$69k market cap at historical SOL prices — the threshold is SOL-denominated, the USD figure floats). Read live progress via this server's `pumpfun` tool instead of hardcoding constants." },
+      { title: "Migration is instant and free", note: "On completion the token migrates automatically to PumpSwap (program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA, verified executable on mainnet) with no fee and no untradeable gap. Historical note: the old flow migrated to Raydium with a 6 SOL fee and a delay — docs/bots built on that are outdated." },
+      { title: "LP tokens are burned", note: "Curve SOL + remaining tokens seed the PumpSwap pool and the LP tokens are burned, so the MIGRATION liquidity can never be pulled. This kills one rug vector only — creator/insider token supply can still be dumped into the pool." },
+      { title: "AMM model + fees", note: "PumpSwap is a constant-product AMM (Uniswap-v2/Raydium-v4 style). Trade fee 0.25%: 0.20% to LPs + 0.05% protocol; with creator revenue sharing the creator takes 0.05% of trading fees. Fee params can change — verify against pump.fun docs before hardcoding." },
+      { title: "What a bot changes at graduation", command: 'pre-graduation: call tool "pumpfun" { mint } — post-graduation: call tool "solana_swap" (Jupiter routes PumpSwap pools)', note: "The graduation moment itself is a volatility + sniping window: liquidity resets into a fresh pool and early AMM buyers front-run curve stragglers. Defensive submission patterns: solana_sandwich_defense." },
+    ],
+    warnings: [
+      "Burned LP ≠ safe token: supply concentration (creator, early snipers) remains the dominant dump risk after graduation — check holders via the security tool before entering.",
+      "Threshold, fee split and revenue sharing are protocol parameters that pump.fun has changed before — treat numbers here as 2026-07 snapshots and re-verify.",
+    ],
+    references: ["https://pump.fun/docs", "https://docs.bitquery.io/docs/blockchain/Solana/Pumpfun/pump-fun-to-pump-swap/"],
   },
 
   bridge_funds: {

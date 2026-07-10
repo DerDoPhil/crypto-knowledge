@@ -10,6 +10,9 @@ const queries = [
   "gearbox leverage credit account",
   "give an NFT its own wallet token bound account",
   "borrow ETH against my NFT blur blend",
+  "protect my solana swap from sandwich attacks jito",
+  "what happens when a pump.fun token graduates to pumpswap",
+  "aave GHO stablecoin savings yield sGHO",
 ];
 
 for (const q of queries) {

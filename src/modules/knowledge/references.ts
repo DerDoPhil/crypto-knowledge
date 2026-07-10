@@ -75,6 +75,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Main lending pool (proxy, live-verified). supply/borrow/repay/withdraw + getUserAccountData(address)→(collateral, debt, availableBorrows, liquidationThreshold, ltv, healthFactor). PoolAddressesProvider resolves per-chain deployments; see defi_lending guide. Base/Arbitrum/etc. have their own Pool addresses via the provider.",
   },
   {
+    name: "Aave GHO stablecoin + sGHO savings — Ethereum",
+    addresses: { gho: "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f", sgho: "0xE1753F2e00940cC31213dd92013cF019DFE4ca1d" },
+    note: "Both live-verified: GHO name()=='Gho Token', sGHO symbol()=='sGho' and sGHO.asset()==GHO (standard ERC-4626 savings vault, no lockup). GHO is borrow-minted via governance-capped facilitators, interest goes to the Aave DAO. See gho_stablecoin guide. ⚠️ L2 deployments (Arbitrum/Base/Avalanche) have different addresses — verify per chain.",
+  },
+  {
     name: "Sky / Maker savings + tokens — Ethereum",
     addresses: { dai: "0x6B175474E89094C44Da98b954EedeAC495271d0F", usds: "0xdC035D45d973E3EC169d2276DDab16f1e407384F", sdai: "0x83F20F44975D03b1b09e64809B757c47f942BEeA", susds: "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD", mkr: "0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2", sky: "0x56072C95FAA701256059aa122697B133aDEd9279", dsr_pot: "0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7", dai_usds_converter: "0x3225737a9Bbb6473CB4a45b7244ACa2BeFdB276A", mkr_sky_converter: "0xBDcFCA946b6CDd965f99a839e4435Bcdc1bc470B" },
     note: "All live-verified: sDAI.asset()==DAI and sUSDS.asset()==USDS; converters cross-verified (DaiUsds.dai()/usds(), MkrSky.rate()==24000). sDAI pays DSR (Pot.dsr()), sUSDS pays SSR (sUSDS.ssr()) — both RAY per-second rates, APY=(rate/1e27)^31536000-1. DAI↔USDS 1:1, MKR→SKY 1:24000. See sky_usds_savings guide. ⚠️ sUSDS on Base/Solana has DIFFERENT addresses.",
@@ -210,8 +215,11 @@ export const ADDRESSES: AddressEntry[] = [
   },
   {
     name: "pump.fun program",
-    addresses: { solana: "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P" },
-    note: "Bonding-curve program. Use this server's `pumpfun` tool for curve state instead of parsing accounts yourself.",
+    addresses: {
+      solana: "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+      solana_pumpswap_amm: "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+    },
+    note: "Bonding-curve program + PumpSwap AMM (where graduated tokens trade, LP burned at migration — guide pumpswap_graduation). Use this server's `pumpfun` tool for curve state instead of parsing accounts yourself.",
   },
 ];
 
@@ -987,16 +995,16 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Contract development (code)": ["foundry_invariant_testing", "web3_ci_cd", "solidity_security_patterns", "solana_program_security", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging", "scripting_with_onchain_tools"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
   "NFTs": ["nft_metadata_standards", "ipfs_for_nfts", "seaport_orders", "erc6551_token_bound_accounts", "nft_lending_perps"],
-  "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "pumpfun_token2022_gotchas", "solana_pay"],
+  "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "safe_multisig", "erc6551_token_bound_accounts"],
-  "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "sky_usds_savings", "euler_v2_vaults", "fluid_protocol", "gearbox_leverage", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
+  "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin", "euler_v2_vaults", "fluid_protocol", "gearbox_leverage", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Agent playbooks (multi-tool)": ["playbook_pre_trade_check", "playbook_cross_chain_arbitrage", "playbook_memecoin_launch_analysis"],
-  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
-  "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings"],
-  "Token launches": ["token_launch_mechanics", "sniping_launches"],
+  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin"],
+  "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
   "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
