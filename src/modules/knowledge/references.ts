@@ -85,6 +85,16 @@ export const ADDRESSES: AddressEntry[] = [
     note: "All live-verified (symbols on-chain; ArbGasInfo.getPricesInWei() returns 6 fee fields; v3 factory IS canonical here, verified via feeAmountTickSpacing). ⚠️ ARB is governance only — gas is ETH. Ordering = Timeboost express-lane auction, see arbitrum_playbook guide.",
   },
   {
+    name: "Polygon core (POL gas + DEX)",
+    addresses: { wpol: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270", usdc_native: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", quickswap_v3_router: "0xf5b509bB0909a69B1c207E495f687a596C168E12", quickswap_v3_factory: "0x411b0FAcC3489691f28ad58c47006AF5E3Ab3A28", uniswap_v3_factory: "0x1F98431c8aD98523631AE4a59f267346ea31F984" },
+    note: "All live-verified. ⚠️ 0x0d50… (the old WMATIC address) now returns symbol()=='WPOL' — the MATIC→POL migration at the SAME address is a token-metadata trap. QuickSwap v3 is an Algebra fork (factory via Router.factory()); Uniswap v3 IS canonical here. See polygon_playbook guide.",
+  },
+  {
+    name: "Avalanche C-Chain core (LFJ + tokens)",
+    addresses: { wavax: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", usdc_native: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", lfj_lbrouter_v21: "0xb4315e873dBcf96Ffd0acd8EA43f689D8c20fB30", lfj_lbfactory: "0x8e42F2F4101563bF679975178e880FD87d3eFd4e" },
+    note: "All live-verified (LBFactory via LBRouter.getFactory(); getWNATIVE()==WAVAX cross-check). LFJ Liquidity Book = bin-based AMM, zero slippage inside a bin. Sub-second finality, post-Etna fees near zero (0.021 gwei measured). See avalanche_playbook guide.",
+  },
+  {
     name: "Compound v3 (Comet) USDC market — Ethereum",
     addresses: { cusdcv3: "0xc3d688B66703497DAA19211EEdff47f25384cdc3" },
     note: "Main USDC Comet (proxy; symbol()=='cUSDCv3' and baseToken()==canonical USDC both live-verified). One borrowable base asset per Comet, collateral earns nothing, absorb()-liquidations — see compound_v3_comet guide. Other base assets/chains have separate Comet addresses.",
@@ -1022,7 +1032,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Agent playbooks (multi-tool)": ["playbook_pre_trade_check", "playbook_cross_chain_arbitrage", "playbook_memecoin_launch_analysis"],
-  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "agent_cost_accounting", "error_taxonomy_retries", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "base_chain_playbook", "arbitrum_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "agent_cost_accounting", "error_taxonomy_retries", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "base_chain_playbook", "arbitrum_playbook", "polygon_playbook", "avalanche_playbook", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin"],
   "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],

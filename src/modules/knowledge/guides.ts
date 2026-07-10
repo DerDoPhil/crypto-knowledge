@@ -2079,6 +2079,46 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  polygon_playbook: {
+    topic: "polygon_playbook",
+    title: "Polygon PoS playbook: POL gas, Polymarket flow, canonical Uniswap v3",
+    summary: "Polygon PoS for agents: the MATIC→POL migration trap, live-measured 1.5s blocks, verified QuickSwap/Uniswap cores, native-vs-bridged USDC, and why Polymarket makes this chain agent-relevant.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Chain profile (live-measured)", note: "chainId 137, PoS sidechain (Bor blocks / Heimdall checkpoints); block time measured at 1.5s over 1000 blocks; gasPrice at measurement ~282 gwei — POL-denominated, so still sub-cent per simple tx. Finality is checkpoint-based: use the 'finalized' block tag for settlement decisions, not latest (tx_confirmation_patterns) — Polygon historically had deeper reorgs than L2s with sequencers." },
+      { title: "Gas is POL now, not MATIC", note: "The gas token MIGRATED from MATIC to POL. On-chain proof: the wrapped-gas contract 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270 (the old 'WMATIC' address every LLM remembers) now returns symbol() == 'WPOL' (live-verified). Same address, new symbol — update token lists and price lookups or they silently mislabel." },
+      { title: "The verified DeFi core", note: "Uniswap v3 Factory at the CANONICAL address 0x1F98431c8aD98523631AE4a59f267346ea31F984 (feeAmountTickSpacing(500)==10 live-verified). QuickSwap v3 is an ALGEBRA fork (dynamic fees, no fee tiers): SwapRouter 0xf5b509bB0909a69B1c207E495f687a596C168E12 with factory() == 0x411b0FAcC3489691f28ad58c47006AF5E3Ab3A28 and WNativeToken() == WPOL (both live-derived from the router). Aave v3 lives here too (resolve the Pool via the AddressesProvider, defi_lending)." },
+      { title: "USDC: native vs bridged trap", note: "Native Circle USDC is 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 (symbol()-verified); the older bridged USDC.e (0x2791…) still circulates with deep legacy liquidity. Quotes/routes differ between them — always pin WHICH USDC your counterparty contract expects." },
+      { title: "Where the money is", note: "(1) POLYMARKET settles on Polygon — order flow, resolution arbitrage and market-making all touch this chain (prediction_markets). (2) Cheap high-frequency strategies: grid/DCA and rebalancing where mainnet gas would eat the edge (grid_dca_bots). (3) Aave v3 liquidations with 1.5s cadence (liquidation_bots). (4) Long-tail memecoin flow is thinner than Base/BNB — token discovery pays more than blind sniping here (token_discovery)." },
+    ],
+    warnings: [
+      "Checkpoint finality means a tx 'confirmed' at latest can still reorg — for value-critical settlement wait for the finalized tag.",
+      "The WMATIC→WPOL rename at the SAME address is a silent-mislabeling trap for any bot with cached token metadata.",
+    ],
+    references: ["https://docs.polygon.technology", "https://docs.quickswap.exchange"],
+  },
+
+  avalanche_playbook: {
+    topic: "avalanche_playbook",
+    title: "Avalanche C-Chain playbook: sub-second finality, LFJ Liquidity Book, post-Etna fees",
+    summary: "Avalanche for agents: live-measured 1.07s blocks and near-zero post-Etna gas, the verified LFJ (Trader Joe) Liquidity-Book core, native USDC, and where the C-Chain still has edges.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Chain profile (live-measured)", note: "chainId 43114 (0xa86a), C-Chain (EVM) secured by Avalanche consensus — blocks measured at 1.07s over 1000 blocks with FINALITY in ~1-2s (no probabilistic wait: once accepted, final). gasPrice at measurement 0.021 gwei — the Etna upgrade (12/2024) collapsed C-Chain fees; simple txs cost fractions of a cent. Base fee is burned (deflationary AVAX)." },
+      { title: "The verified DeFi core — LFJ Liquidity Book", note: "LFJ (ex-Trader Joe) LBRouter v2.1 0xb4315e873dBcf96Ffd0acd8EA43f689D8c20fB30: getFactory() == 0x8e42F2F4101563bF679975178e880FD87d3eFd4e (LBFactory) and getWNATIVE() == WAVAX 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7 (all live-derived from the router; WAVAX symbol()-verified). Liquidity Book = discretized BINS instead of a curve: zero slippage inside a bin, fees rise with volatility — LP strategies think in bin ranges, not ticks (jit_liquidity concepts transfer)." },
+      { title: "Tokens", note: "Native Circle USDC 0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E (symbol()-verified); WAVAX is the wrapped gas token. GMX also runs on Avalanche alongside Arbitrum (onchain_perps_gmx)." },
+      { title: "Avalanche L1s (ex-subnets)", note: "App-specific chains ('Avalanche L1s' since Etna) run their own validators/tokens — assets there are NOT on the C-Chain until bridged. An agent quoting 'Avalanche' liquidity must pin chainId 43114; L1 chains have their own IDs and RPCs." },
+      { title: "Where the money is", note: "(1) Sub-second FINALITY (not just block time) makes cross-venue arb legs settle faster than optimistic L2s — useful as the fast leg vs CEX (arbitrage_basics, CEX public-data endpoint). (2) LB bin-LP strategies: concentrated liquidity with volatility-scaled fees. (3) GMX/perps funding plays (perps_funding_data). (4) Near-zero fees make high-frequency rebalancing viable (agent_cost_accounting)." },
+    ],
+    warnings: [
+      "Avalanche mempool dynamics differ from Ethereum: txs propagate to a leaderless consensus — MEV exists but classic PGA/mempool tooling assumptions don't transfer 1:1 (mev_strategies).",
+      "Liquidity fragments across C-Chain and Avalanche L1s — a token symbol existing on both is a classic wrong-chain trap (error_taxonomy_retries: semantic errors).",
+    ],
+    references: ["https://build.avax.network", "https://developers.lfj.gg"],
+  },
+
   error_taxonomy_retries: {
     topic: "error_taxonomy_retries",
     title: "Error taxonomy + retry strategy for on-chain agents",

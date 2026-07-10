@@ -18,6 +18,8 @@ const queries = [
   "arbitrum timeboost express lane ordering for bots",
   "should my bot retry after a transaction timeout",
   "how much edge do I need to cover gas and slippage",
+  "trade on polygon quickswap POL gas",
+  "avalanche liquidity book bins trader joe",
 ];
 
 for (const q of queries) {
