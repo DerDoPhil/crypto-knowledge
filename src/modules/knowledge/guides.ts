@@ -2079,6 +2079,26 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  apechain_playbook: {
+    topic: "apechain_playbook",
+    title: "ApeChain playbook: APE gas, Orbit stack, the NFT-culture chain",
+    summary: "ApeChain (chainId 33139) for agents: Arbitrum-Orbit internals proven on-chain, live-measured 0.49s blocks, APE as gas, verified WAPE, and where the opportunities are on a culture-first chain.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Chain profile (live-measured)", note: "chainId 33139 (0x8173), an Arbitrum ORBIT chain run via Caldera RaaS — proven on-chain: the ArbGasInfo precompile 0x…006C answers getPricesInWei() exactly like Arbitrum One. Block time measured at 0.489s over 1000 blocks. Public RPC https://apechain.calderachain.xyz/http, explorer apescan.io (Etherscan V2 federation, chainid 33139)." },
+      { title: "Gas is APE", note: "The native/gas token is APE (18 decimals) — bridged from Ethereum's ApeCoin. Wrapped: WAPE 0x48b62137EdfA95a428D35C09E44256a739F6B557 (symbol()-verified). Cost model = Orbit: L2 execution + data posting; a gas-price spike in APE terms tracks the APE market price — budget in USD, not APE (agent_cost_accounting)." },
+      { title: "What actually lives here", note: "The Yuga/BAYC ecosystem: NFT collections, culture drops and games — Magic Eden and OpenSea both trade ApeChain natively (opensea_api). DeFi depth is thin compared to Base/Arbitrum: Camelot operates the main DEX (resolve current addresses from its docs before trading). Native-yield mechanisms for APE/stables were a launch feature — verify their current state before building on them (assumed, not re-verified here)." },
+      { title: "P2P swaps without an orderbook", note: "For NFT/token OTC-style trades on ApeChain the ChainTrade V2 escrow is deployed at 0x9B2EA7B176D727459233469c88c7352fb060b85B (bytecode live-verified; same address on Polygon/Arbitrum) — build unsigned lock/refund txs via the chaintrade tool (chaintrade_p2p_swap)." },
+      { title: "Where the money is", note: "(1) NFT flow: floor/trait arbitrage between Magic Eden and OpenSea on culture collections — thin books mean spreads, but also exit risk (nft_lending_perps floor-risk logic applies). (2) Event-driven: Yuga announcements move ApeChain assets faster than liquidity refills. (3) New-chain inefficiencies: fewer bots than Base/BNB — simple strategies live longer here (token_discovery)." },
+    ],
+    warnings: [
+      "Thin liquidity is the defining constraint: position sizes that are trivial on Arbitrum move ApeChain pools — size to the book, not to your bankroll.",
+      "Orbit chains run a single sequencer (Caldera-operated): outages halt the chain and there is no public mempool; plan timeouts + unknown-outcome handling accordingly (error_taxonomy_retries).",
+    ],
+    references: ["https://docs.apechain.com", "https://apescan.io"],
+  },
+
   polygon_playbook: {
     topic: "polygon_playbook",
     title: "Polygon PoS playbook: POL gas, Polymarket flow, canonical Uniswap v3",

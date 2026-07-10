@@ -20,6 +20,7 @@ const queries = [
   "how much edge do I need to cover gas and slippage",
   "trade on polygon quickswap POL gas",
   "avalanche liquidity book bins trader joe",
+  "apechain APE gas nft trading",
 ];
 
 for (const q of queries) {
