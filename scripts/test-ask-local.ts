@@ -28,6 +28,11 @@ const queries = [
   "trade on optimism velodrome superchain",
   "hyperevm precompiles order book from smart contract",
   "track KOL influencer wallets copy trading safely",
+  "submit a jito bundle sendBundle tip amount solana",
+  "which mcp servers exist for crypto data and execution",
+  "is it safe to connect my agent to a random mcp server",
+  "pay for an api with bitcoin lightning L402 micropayment",
+  "cow protocol eip712 order signing domain",
 ];
 
 for (const q of queries) {

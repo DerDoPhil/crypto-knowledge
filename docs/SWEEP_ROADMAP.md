@@ -177,3 +177,12 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 
 > Reihenfolge flexibel; DeFi-Aggregatoren (DexScreener/GeckoTerminal/1inch) und
 > Strategie-Tiefe zuerst, da höchster Agent-Nutzen.
+
+## ✅ Block 83 (2026-07-12) — Grok-Harvest §21–§37 (Fresh-Batch 2026-07-11)
+- [x] `jito_bundle_submission` (sendBundle end-to-end; 8 Tip-Accounts live via getTipAccounts, tip_floor-Einheit = SOL, Tip-Program executable-verifiziert) — schließt den Roadmap-Kandidaten "Jito-Bundle-Submission Code-Guide"
+- [x] `intent_based_trading` vertieft: CoW-EIP-712-Domain on-chain bewiesen (hashDomain == domainSeparator()), UniswapX orders API keyless live → neuer ENDPOINT
+- [x] `mcp_ecosystem_for_agents` (deBridge hosted MCP, X MCP, Hive, Zerion, EVM/CCXT/Injective/Alpaca/Prediction-MCPs, Bifrost-Gateway, Q402; MCP-Spec-stateless-Draft aus offiziellem Changelog)
+- [x] `mcp_security_for_agents` (STDIO-RCE-Klasse, unauth Server, Tool-Poisoning, Supply-Chain, Prompt-Injection via Results + Checkliste)
+- [x] `lightning_l402_payments` (L402-Flow, lightning-agent-tools, lightning-enable-mcp; x402-vs-L402-Entscheid)
+- [x] ADDRESSES: Jito tip accounts (9 Einträge) · ENDPOINTS: deBridge Agents MCP, X MCP, Hive MCP, UniswapX orders, Zerion
+- Nicht eingebaut (unverifiziert): RWA-MCPs (IXS/HYRE), FluxA/AEP2, Cryptohopper/ThinkMarkets/BitGo-Details, GateLane/Satring/Newhedge → Backlog mit Verifikationspflicht

@@ -256,6 +256,94 @@ export const ADDRESSES: AddressEntry[] = [
     },
     note: "Bonding-curve program + PumpSwap AMM (where graduated tokens trade, LP burned at migration — guide pumpswap_graduation). Use this server's `pumpfun` tool for curve state instead of parsing accounts yourself.",
   },
+  {
+    name: "Jito tip accounts (Solana bundles)",
+    addresses: {
+      tip_1: "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
+      tip_2: "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe",
+      tip_3: "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY",
+      tip_4: "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49",
+      tip_5: "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh",
+      tip_6: "ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt",
+      tip_7: "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL",
+      tip_8: "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT",
+      tip_payment_program: "T1pyyaTNZsKv2WcRAB8oVnk93mLJw2XzjtVYqCsaHqt",
+    },
+    note: "All 8 fetched live via getTipAccounts 2026-07-12 (tip program executable-verified on-chain). Bundle tip: ≥1000 lamports to ONE account picked randomly, inside your LAST transaction; never reference tip accounts through an address lookup table. Fetch fresh in production — Jito can rotate them. See jito_bundle_submission guide.",
+  },
+
+  // === Famous NFT Collections (canonical contracts & programs) ===
+  {
+    name: "CryptoPunks (fully on-chain post-2021)",
+    addresses: { ethereum: "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb" },
+    note: "2017 Larva Labs (Matt & John). 10k 24x24. 2021 full on-chain upgrade: punkImageSvg(), punkAttributes() view functions are gas-free and deterministic. IP later to Yuga then Infinite Node Foundation. Pioneer of on-chain art.",
+  },
+  {
+    name: "Bored Ape Yacht Club (BAYC)",
+    addresses: { ethereum: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d" },
+    note: "2021 Yuga Labs. Classic 10k ERC-721. Metadata ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/{id}. On-chain Provenance hash. Standard IPFS + provenance (not full on-chain).",
+  },
+  {
+    name: "Milady Maker",
+    addresses: { ethereum: "0x5af0d9827e0c53e4799bb226655a1de152a425a5" },
+    note: "Aug 2021, Remilia Corporation (Charlotte Fang / pseudonymous collective). 10k neochibi generative. Drip Score system for aesthetic coherence (not pure rarity). Strong meme/cultural impact. Contract is standard ERC-721.",
+  },
+  {
+    name: "Remilio Babies (Redacted Remilio)",
+    addresses: { ethereum: "0xd3d9ddd0cf0a5f0bfb8f7fceae075df687eaebab" },
+    note: "2022 Remilia. 10k neochibi 'zoomer little brother' to Milady. Part of the same cultural ecosystem.",
+  },
+  {
+    name: "Azuki",
+    addresses: { ethereum: "0xed5af388653567af2f388e6224dc7c4b3241c544" },
+    note: "Jan 2022, Chiru Labs (Zagabond et al.). 10k anime-style. Large ecosystem (Elementals, AnimeChain L3, Bobu governance experiment). Standard IPFS metadata.",
+  },
+  {
+    name: "Pudgy Penguins (original)",
+    addresses: { ethereum: "0xbd3531da5cf5857e7cfaa92426877b022e612cf8" },
+    note: "2021 (8888). Acquired 2022 by Luca Netz / Igloo Inc. for $2.5M. Massive real-world success via physical merch (Walmart plushies etc. with holder royalties). PENGU token on Solana + Abstract Chain efforts. Classic IPFS.",
+  },
+  {
+    name: "Moonbirds",
+    addresses: { ethereum: "0x23581767a106ae21c074b2276d25e5c3e136a68b" },
+    note: "2022 PROOF Collective (Kevin Rose). 10k. Nesting/locking utility. Later CC0 license drama + ecosystem moves. Some in-chain pixel variants noted.",
+  },
+  {
+    name: "Normies (Serc) — NFT + Canvas",
+    addresses: {
+      ethereum: "0x9Eb6E2025B64f340691e424b7fe7022fFDE12438",
+      normies_canvas: "0x64951d92e345C50381267380e2975f66810E869c",
+    },
+    note: "Feb 2026, Serc. ~10k. Fully on-chain 40x40 1-bit bitmaps (200 bytes). setTransformBitmap + Delegate model for Community Canvas editing. Extremely strong on-chain (editible raw pixel state).",
+  },
+  {
+    name: "Bitfauna (DerDoPhil)",
+    addresses: {
+      solana_program: "EQkRJkgLqNQkS4hJKieeTFpW6mAbFDKQpagj2PFZ2mzw",
+      solana_collection: "47Vb8QuNLrhkMr9qJRrFRXYpi4WcMfht5eMJ6RPtA2iP",
+    },
+    note: "Apr 2026, Philipp (DerDoPhil). 1,111. Anchor + Metaplex Core. 40x40 2-bit (400 bytes exact), 4-color palette. Lazy Pixel PDAs, on-chain TraitsStore, edit_pixels + burn_for_ap for Action Points. 100% full on-chain (no IPFS).",
+  },
+  {
+    name: "Art Blocks Platform (generative on-chain, e.g. Fidenza)",
+    addresses: { ethereum: "0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270" },
+    note: "Art Blocks (Snowfro). Fidenza by Tyler Hobbs (999). Generative script + params on-chain (long-form). Mint runs the script deterministically. High on-chain strength for generative art (contrast to pointer PFPs).",
+  },
+  {
+    name: "Doodles",
+    addresses: { ethereum: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e" },
+    note: "2021, Burnt Toast (Scott Martin) + team. 10k. Later DOOD token + programmable Doodles 2.",
+  },
+  {
+    name: "Nakamigos",
+    addresses: { ethereum: "0xd774557b647330c91bf44cfeab205095f7e6c367" },
+    note: "2023 ~20k. Custom contract. 'Crypto investors' theme. Standard.",
+  },
+  {
+    name: "Good Vibes Club (GVC)",
+    addresses: { ethereum: "0xb8ea78fcacef50d41375e44e6814ebba36bb33c4" },
+    note: "~7k, 2025. High-end art by Toast Studio + SuperRare. Color batches, quality focus.",
+  },
 ];
 
 export interface EndpointEntry {
@@ -793,6 +881,44 @@ export const ENDPOINTS: EndpointEntry[] = [
     example: "Streamable HTTP; auth via X-API-KEY or Authorization: Bearer. Remember Accept: application/json, text/event-stream.",
     limits: "Same free-tier key as the REST API (POST https://api.opensea.io/api/v2/auth/keys).",
   },
+  {
+    name: "deBridge Agents MCP (hosted)",
+    baseUrl: "https://agents.debridge.com",
+    auth: "none",
+    what: "Official hosted MCP server (Streamable HTTP) for cross-chain + same-chain swaps: get_instructions, search_tokens, get_supported_chains, create_tx — returns UNSIGNED payloads (keystore-free). npm @debridge-finance/debridge-mcp is a thin local proxy for stdio clients.",
+    example: "POST /mcp (MCP protocol — endpoint live-verified 2026-07-12); GET /llms.txt for the overview.",
+    limits: "Compare its quotes against this server's route tool (LiFi + deBridge DLN REST) before executing.",
+  },
+  {
+    name: "X (Twitter) MCP",
+    baseUrl: "https://api.x.com/mcp",
+    auth: "free-key",
+    what: "Official hosted MCP for the X API: full-archive search, posts, users, trends/news — real-time social signals for trading agents. Requires a Bearer token from an X developer app (tier limits apply). The companion docs MCP at https://docs.x.com/mcp (X API documentation Q&A) is open, no auth.",
+    example: "MCP client → https://api.x.com/mcp with Authorization: Bearer <app-only token> for reads; full user-context via the xurl OAuth bridge.",
+    limits: "Probed 2026-07-12: 401 without token (live), docs MCP 200. Social data is noisy — verify claims on-chain before acting on them.",
+  },
+  {
+    name: "Hive Intelligence MCP",
+    baseUrl: "https://mcp.hiveintelligence.xyz/mcp",
+    auth: "optional-key",
+    what: "Managed remote MCP federating multiple crypto data providers behind one endpoint: market data, DeFi, wallets, token security, DEX activity, prediction markets.",
+    example: "POST /mcp (Streamable HTTP; answered initialize 2026-07-12 — tool calls may require a Bearer key from hiveintelligence.xyz).",
+  },
+  {
+    name: "UniswapX orders API",
+    baseUrl: "https://api.uniswap.org/v2",
+    auth: "none",
+    what: "Public UniswapX intent orderbook — open/filled Dutch-auction orders with decay parameters. Monitor fills of your own intents or research filler-side flow (intent_based_trading guide).",
+    example: "GET /orders?orderStatus=open&chainId=1&limit=10 (keyless, live-verified 2026-07-12)",
+  },
+  {
+    name: "Zerion API",
+    baseUrl: "https://api.zerion.io",
+    auth: "free-key",
+    what: "Normalized multi-chain (EVM + Solana) portfolio data: balances with USD, DeFi positions across thousands of protocols, decoded tx history, PnL, NFTs, webhooks. Agent surfaces: MCP server, zerion-cli (npx -y zerion-cli init), and documented x402 pay-per-request without key management (docs verified 2026-07-12).",
+    example: "GET /v1/wallets/{address}/portfolio (API key) — or let the MCP/CLI wrap it.",
+    limits: "Cross-check balances against this server's portfolio tool; x402 pricing is on their docs.",
+  },
 ];
 
 export interface ErrorEntry {
@@ -1030,18 +1156,18 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Contract development (code)": ["foundry_invariant_testing", "web3_ci_cd", "solidity_security_patterns", "solana_program_security", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging", "scripting_with_onchain_tools"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
   "NFTs": ["nft_collection_launch", "opensea_collection_management", "opensea_trading_listings", "nft_metadata_standards", "ipfs_for_nfts", "seaport_orders", "robinhood_chain_nfts", "erc6551_token_bound_accounts", "nft_lending_perps"],
-  "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay"],
-  "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning"],
+  "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "jito_bundle_submission", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay"],
+  "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning", "lightning_l402_payments"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "safe_multisig", "erc6551_token_bound_accounts"],
   "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "compound_v3_comet", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin", "euler_v2_vaults", "fluid_protocol", "gearbox_leverage", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Agent playbooks (multi-tool)": ["playbook_pre_trade_check", "playbook_cross_chain_arbitrage", "playbook_memecoin_launch_analysis"],
-  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "agent_cost_accounting", "error_taxonomy_retries", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "base_chain_playbook", "arbitrum_playbook", "polygon_playbook", "avalanche_playbook", "apechain_playbook", "optimism_playbook", "hyperevm_playbook", "kol_copy_trading", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "agent_cost_accounting", "error_taxonomy_retries", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jito_bundle_submission", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "base_chain_playbook", "arbitrum_playbook", "polygon_playbook", "avalanche_playbook", "apechain_playbook", "optimism_playbook", "hyperevm_playbook", "kol_copy_trading", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin"],
   "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
-  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection"],
-  "Payments & agent economy": ["x402_payments", "register_onchain_tool", "opensea_api"],
+  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection", "mcp_security_for_agents"],
+  "Payments & agent economy": ["x402_payments", "lightning_l402_payments", "mcp_ecosystem_for_agents", "mcp_security_for_agents", "register_onchain_tool", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
