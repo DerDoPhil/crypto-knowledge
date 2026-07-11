@@ -24,7 +24,7 @@ POST /mcp  — JSON-RPC 2.0 over Streamable HTTP (Model Context Protocol)
 - whale_watch: recent large ERC-20 transfers over a block window
 - simulate: EVM transaction dry-run + revert reason decoding before signing
 - catalog: capabilities + chain discovery
-- knowledge: the chain brain — 125+ live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guides + matching endpoints in ONE call. Also list_topics (free), get_guide, search, reference.
+- knowledge: the chain brain — 135+ live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guides + matching endpoints in ONE call. Also list_topics (free), get_guide, search, reference.
 
 ## Knowledge coverage (action 'ask' / 'get_guide')
 
