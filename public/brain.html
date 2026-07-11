@@ -90,7 +90,8 @@
   #statline span::after { content: " ·"; color: var(--ink-faint); }
   #statline span:last-child::after { content: ""; }
 
-  #controls { top: 22px; right: 26px; display: flex; gap: 8px; align-items: flex-start; }
+  #controls { top: 22px; right: 26px; display: flex; gap: 8px; align-items: flex-start; transition: right 0.28s ease; }
+  body.panel-open #controls { right: calc(min(360px, 92vw) + 26px); }
   #search {
     font-family: var(--mono); font-size: 12px; color: var(--ink-deep);
     background: var(--card); border: 1px solid var(--ink-faint);
@@ -117,9 +118,10 @@
     width: min(360px, 92vw);
     background: var(--card); border-left: 1px solid var(--ink-faint);
     padding: 26px 24px 30px; overflow-y: auto;
-    transform: translateX(102%); transition: transform 0.28s ease;
+    transform: translateX(102%); transition: transform 0.28s ease, visibility 0s 0.28s;
+    visibility: hidden;
   }
-  #panel.open { transform: translateX(0); }
+  #panel.open { transform: translateX(0); visibility: visible; transition: transform 0.28s ease; }
   #panel .eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-mid); }
   #panel h2 { font-size: 15px; line-height: 1.45; color: var(--ink-deep); margin: 10px 0 12px; overflow-wrap: anywhere; }
   #panel p { font-size: 12px; line-height: 1.65; margin-bottom: 12px; }
@@ -496,8 +498,9 @@
     }
     panelBody.innerHTML = html;
     panel.classList.add("open");
+    document.body.classList.add("panel-open");
   }
-  const closePanel = () => panel.classList.remove("open");
+  const closePanel = () => { panel.classList.remove("open"); document.body.classList.remove("panel-open"); };
   $("#panel-close").addEventListener("click", closePanel);
   addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
   stage.addEventListener("click", closePanel);

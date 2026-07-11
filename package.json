@@ -23,6 +23,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "gen:brain": "tsx scripts/gen-brain-data.ts",
     "livecheck": "tsx scripts/livecheck.ts",
     "smoke": "tsx scripts/smoke.ts",
     "livecheck:endpoints": "tsx scripts/livecheck-endpoints.ts"
