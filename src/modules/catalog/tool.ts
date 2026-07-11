@@ -4,7 +4,7 @@ import { ok } from "../../core/envelope.js";
 import { CHAINS } from "../../registry/chains.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 
-const TOOL_CATALOG = [
+export const TOOL_CATALOG = [
   { name: "route", purpose: "Best cross-chain route (LiFi + deBridge) with a ready-to-sign tx.", kinds: ["evm", "solana"] },
   { name: "pumpfun", purpose: "On-chain pump.fun bonding curve, price, graduation, IPFS metadata.", kinds: ["solana"] },
   { name: "profitability", purpose: "EIP-1559 gas estimate + net-profit verdict (arbitrage guard).", kinds: ["evm"] },

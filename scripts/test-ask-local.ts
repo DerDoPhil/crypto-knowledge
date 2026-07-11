@@ -21,6 +21,10 @@ const queries = [
   "trade on polygon quickswap POL gas",
   "avalanche liquidity book bins trader joe",
   "apechain APE gas nft trading",
+  "launch my own NFT collection deploy ERC721 royalties",
+  "get my collection listed on opensea studio edit page",
+  "list an NFT for sale programmatically opensea sdk",
+  "nft marketplaces on robinhood chain dinos",
 ];
 
 for (const q of queries) {

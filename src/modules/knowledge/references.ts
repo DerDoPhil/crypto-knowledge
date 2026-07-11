@@ -1029,7 +1029,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Deploying contracts": ["deploy_contract_evm", "deploy_contract_solana", "deploy_erc20", "deterministic_deploys_create2", "verify_contract"],
   "Contract development (code)": ["foundry_invariant_testing", "web3_ci_cd", "solidity_security_patterns", "solana_program_security", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging", "scripting_with_onchain_tools"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
-  "NFTs": ["nft_metadata_standards", "ipfs_for_nfts", "seaport_orders", "erc6551_token_bound_accounts", "nft_lending_perps"],
+  "NFTs": ["nft_collection_launch", "opensea_collection_management", "opensea_trading_listings", "nft_metadata_standards", "ipfs_for_nfts", "seaport_orders", "robinhood_chain_nfts", "erc6551_token_bound_accounts", "nft_lending_perps"],
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "safe_multisig", "erc6551_token_bound_accounts"],

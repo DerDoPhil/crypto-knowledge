@@ -436,6 +436,83 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.opensea.io/docs/metadata-standards"],
   },
 
+  nft_collection_launch: {
+    topic: "nft_collection_launch",
+    title: "Launch your own NFT collection on any EVM chain (contract → mint → marketplace)",
+    summary: "The full path from zero to a live, marketplace-indexed collection: picking ERC-721 vs 721A vs 1155, royalties (ERC-2981), collection metadata (ERC-7572 contractURI), reveal patterns and the ownership footguns.",
+    scope: ["evm"],
+    prerequisites: ["Funded deployer wallet on the target chain", "nft_metadata_standards (token JSON format)", "ipfs_for_nfts (hosting)"],
+    steps: [
+      { title: "Pick the standard by mint pattern, not fashion", note: "OpenZeppelin v5 ERC721 for 1/1s and small series (simplest, best-audited). ERC721A when users batch-mint many tokens in one tx (near-flat gas per extra token — the PFP-drop standard). ERC1155 for editions/game items (one id, many copies; batch mint/transfer built in). Whatever you pick: supportsInterface must report every interface you implement (721=0x80ac58cd, 1155=0xd9b67a26, 2981=0x2a55205a — see reference kind='abis'), or marketplaces mis-render the collection." },
+      { title: "The contract surface marketplaces actually read", note: "name()/symbol() = on-chain collection identity (OpenSea's default page title). owner() (ERC-173/Ownable) = who can claim & edit the collection page in OpenSea Studio — this matters later. tokenURI(id)/uri(id) = token metadata (nft_metadata_standards). contractURI() (ERC-7572) = collection-level JSON. ERC-2981 royaltyInfo() = on-chain royalty signal." },
+      { title: "Royalties: ERC-2981, set in basis points", command: "_setDefaultRoyalty(receiver, 500)  // 500 bps = 5%; per-token override: _setTokenRoyalty(id, receiver, bps)", note: "OZ v5 ERC2981 module. IMPORTANT 2026 reality: ERC-2981 is a SIGNAL, not enforcement — on OpenSea, royalties are only enforced for ERC721-C/1155-C style contracts (transfer-validator hooks); for plain contracts sellers can opt out (verified live: a normal collection's fees[] shows the creator fee with required:false, only OpenSea's own 1% is required:true). If royalty revenue is existential, look at ERC721-C before deploying." },
+      { title: "Collection metadata: contractURI() per ERC-7572", command: '{ "name": "…", "description": "…", "image": "…logo…", "banner_image": "…", "featured_image": "…", "external_link": "…", "collaborators": ["0x…"] }', note: "Return a URL or data:application/json;base64,… from contractURI(). Emit ContractURIUpdated() after changes so indexers re-fetch. LEGACY WARNING: seller_fee_basis_points/fee_recipient inside contractURI are dead — current OpenSea docs route royalties via ERC-2981/Royalty Registry and Studio settings, not this JSON." },
+      { title: "Reveal pattern (optional) without rugging your own metadata", note: "Point _baseURI() at a placeholder dir pre-reveal, switch to the final dir on reveal(), then FREEZE (drop the setter or renounce a dedicated METADATA_ROLE). After reveal emit ERC-4906 BatchMetadataUpdate(0, maxId) — otherwise marketplaces keep serving cached placeholders (classic launch-day bug)." },
+      { title: "Deploy, verify, mint 1", note: "Deploy via deploy_contract_evm discipline, verify source (verify_contract — Blockscout/Sourcify work on long-tail chains too). Then mint at least one token: marketplace indexers discover collections from Transfer events + queryable metadata; a deployed-but-unminted contract is invisible. From here continue in opensea_collection_management." },
+    ],
+    warnings: [
+      "renounceOwnership() also renounces your ability to claim/edit the collection page (Studio attribution is via owner()) and to adjust ERC-2981 settings — if you must renounce, set contractURI, royalties and final baseURI FIRST.",
+      "Airdrop mints must go through _mint (emits Transfer) — writing balances via custom storage without events means indexers never see the tokens.",
+    ],
+    references: ["https://docs.opensea.io/docs/contract-level-metadata", "https://eips.ethereum.org/EIPS/eip-7572", "https://eips.ethereum.org/EIPS/eip-2981"],
+  },
+
+  opensea_collection_management: {
+    topic: "opensea_collection_management",
+    title: "Get your collection onto OpenSea and control how it looks (Studio, fees, drops)",
+    summary: "How OpenSea discovers a new contract, how to claim and edit the collection page via Studio, the real 2026 fee structure, and no-code drops (SeaDrop) if you don't want to write a contract.",
+    scope: ["evm"],
+    prerequisites: ["A deployed collection with ≥1 mint (nft_collection_launch) — or none, if using Studio drops"],
+    steps: [
+      { title: "Discovery is automatic — verify via the API", command: "curl -s https://api.opensea.io/api/v2/collections/{slug} -H 'x-api-key: KEY'", note: "OpenSea indexes new ERC-721/1155 contracts from on-chain mint/transfer activity; a collection page + slug appear without any submission (works even on brand-new chains — verified live with a collection on Robinhood Chain, mainnet 10 days old). The response shows contracts[].chain, editors[], fees[] and safelist_status." },
+      { title: "Claim & edit in OpenSea Studio", note: "Connect the wallet that is the contract's owner() (ERC-173) at opensea.io/studio → your deployed collections are attributed automatically. UI edits (display name, logo/banner, category, socials, page modules) are OFF-CHAIN OpenSea data layered over your on-chain contractURI() basics — both exist; Studio wins for the marketplace page." },
+      { title: "Set creator earnings (max 10%)", note: "Studio → collection → earnings: percentage + recipient. Enforcement reality: only ERC721-C/1155-C-compatible contracts get enforced royalties; plain ERC-721 royalties are optional for sellers (fees[] entry shows required:false via the API). OpenSea's own fee shows as the required 1% entry (recipient 0x0000a26b…faa719)." },
+      { title: "Know the fee structure (verified 2026-05)", note: "1% marketplace fee on secondary sales (included in displayed price) · 10% on primary drop mints · 0% on swaps and private listings · gas always separate. Budget the 10% when pricing a Studio drop." },
+      { title: "No-code alternative: Studio Drops (SeaDrop)", note: "Studio → 'Drop a collection': OpenSea deploys a SeaDrop-compatible contract for you (you still own it), with allowlist phases, scheduling and a hosted mint page. Reported flow — sanity-check the deployed contract on the explorer before promoting it. Good for speed; custom logic (game mechanics, onchain art) still needs your own contract." },
+      { title: "Metadata changes not showing?", note: "Token-level: emit ERC-4906 MetadataUpdate/BatchMetadataUpdate or call the per-token refresh endpoint. Collection-level: emit ContractURIUpdated(). Images are cached hard (CDN keyed on content) — changing bytes behind the SAME url can take very long; use a NEW url per image version (hard-won lesson operating tool listings)." },
+    ],
+    warnings: ["safelist_status 'not_requested' is normal for new collections — verification badges are a separate, slower process and mostly volume-gated."],
+    references: ["https://docs.opensea.io/docs/contract-level-metadata", "https://support.opensea.io/en/articles/8867091-what-fees-do-i-pay-on-opensea"],
+  },
+
+  opensea_trading_listings: {
+    topic: "opensea_trading_listings",
+    title: "List, bid and buy NFTs programmatically (@opensea/sdk v11 + raw API v2)",
+    summary: "The current SDK (NOT the frozen opensea-js package), instant keyless API keys, createListing/createOffer/fulfillOrder patterns, and the rate limits that throttle agents.",
+    scope: ["evm"],
+    prerequisites: ["Wallet with the NFT (selling) or WETH/payment token (bidding)"],
+    steps: [
+      { title: "Use @opensea/sdk — opensea-js is frozen", note: "npm: @opensea/sdk (v11.x, active) — the old 'opensea-js' name stopped at 8.1.1 (verified on the npm registry). Supports ethers v6 (main export) AND viem (import from '@opensea/sdk/viem'). Server-side only: the API key sits in the constructor, never ship it to a browser." },
+      { title: "Get an API key in code, no signup", command: "const { api_key } = await OpenSeaSDK.requestInstantApiKey();  // or: curl -X POST https://api.opensea.io/api/v2/auth/keys", note: "Valid 30 days, 3 keys/hour/IP. Measured free-tier limits: 60/min read, 5/min WRITE, 5/min fulfillment — bulk-listing agents must queue writes or they'll 429. Permanent keys: opensea.io/settings/developer." },
+      { title: "Create a listing / an offer", command: "await sdk.createListing({ asset: { tokenId, tokenAddress }, accountAddress, amount: 0.5, expirationTime });  // offer: sdk.createOffer({...})", note: "amount is in the chain's native listing currency (ETH) for listings, WETH for offers. The SDK builds the Seaport order, handles the conduit approval prompt and posts it — no on-chain tx for the listing itself (orders are EIP-712 signatures)." },
+      { title: "Collection & trait offers", command: "await sdk.createCollectionOffer({ collectionSlug, accountAddress, amount, quantity, traitType?, traitValue? })", note: "Trait offers only work where trait_offers_enabled=true on the collection (check GET /collections/{slug})." },
+      { title: "Buy: fetch the order, then fulfill", command: "const order = await sdk.api.getOrder({...}); await sdk.fulfillOrder({ order, accountAddress });", note: "Under the hood this is the fulfillment_data API from the seaport_orders guide — which is also the raw-HTTP path if you don't want the SDK. Always simulate the returned tx (tool \"simulate\") before signing." },
+      { title: "Raw API v2 if you must", command: "POST /api/v2/orders/{chain}/seaport/listings  (full Seaport order params + signature)", note: "chain = OpenSea's slug (ethereum, base, arbitrum, robinhood, … — GET /api/v2/chains lists all 28, live-verified). Building orders by hand means handling fees[] consideration items yourself; the SDK exists for a reason." },
+    ],
+    warnings: [
+      "Listings/offers are off-chain signatures — 'cancelling' in the UI still leaves the signature valid until on-chain cancel or expiry. Use short expirationTimes for agent-managed inventory.",
+      "The 5/min write limit on instant keys is the binding constraint for market-making bots — a full re-list of a 50-item inventory takes 10+ minutes unless you get a production key.",
+    ],
+    references: ["https://github.com/ProjectOpenSea/opensea-js", "https://docs.opensea.io/reference/api-overview"],
+  },
+
+  robinhood_chain_nfts: {
+    topic: "robinhood_chain_nfts",
+    title: "NFTs on Robinhood Chain: the live scene, marketplaces, and launching there",
+    summary: "OpenSea trades Robinhood-Chain NFTs natively (chain slug 'robinhood') — the census of real collections, how to launch yours on a 10-day-old chain, and where the early edge is.",
+    scope: ["evm"],
+    prerequisites: ["robinhood_chain (connection & basics)", "nft_collection_launch"],
+    steps: [
+      { title: "Marketplace reality (live-verified 2026-07-11)", note: "OpenSea fully supports the chain: 'robinhood' is in GET /api/v2/chains (28 chains) and live collections resolve, e.g. GET /collections/robinhood-dinos → contracts[].chain='robinhood'. Community alternative: dinosmarket.xyz (reported). Magic Eden exited EVM markets in early 2026 (reported) — OpenSea is effectively THE venue." },
+      { title: "The collection census (Blockscout, live)", command: "curl -s 'https://robinhoodchain.blockscout.com/api/v2/tokens?type=ERC-721'", note: "Top holders day 10: Robinhood Gift (two official-looking GIFT contracts, 16.5k+12.6k holders), Robinhood Dinos 0xa7e902ef1f957b63900bb901ad2a81c4971fa18b (3,333 pixel dinos; name() + ERC-721 interface verified on-chain via RPC; NO totalSupply — not Enumerable), Robinhood Bears, AFTER HOURS (supply 4663 = chainId meme), The RobinMundos, LiL Chinggu, ZERO. PFP culture arrived before DeFi depth did." },
+      { title: "Launching a collection here = plain EVM", note: "Identical path to nft_collection_launch: deploy ERC-721 (gas is ETH, Orbit-cheap), verify on robinhoodchain.blockscout.com, mint. OpenSea auto-indexes the new chain the same as mainnet (the Dinos page proves the pipeline works) — claim it in Studio afterwards. Metadata/IPFS story unchanged." },
+      { title: "Trading programmatically", note: "API v2 works with chain='robinhood' in paths (listings, offers, events). For @opensea/sdk check whether your version's Chain enum includes the chain before assuming — it's newer than most SDK releases (UNVERIFIED; the raw API path always works)." },
+      { title: "The early-chain edge (and its limits)", note: "Thin-market dynamics from robinhood_chain_playbook apply to NFTs too: few collections, real user inflow from the Robinhood brand (Gift NFTs alone put NFTs in ~29k wallets), no professional flipper swarm yet. But exit liquidity is shallow and floors are opinion — size like memecoins, not like blue chips (wash_trading_detection before trusting any volume chart)." },
+    ],
+    warnings: ["Day-10 snapshot (2026-07-11): collections, marketplaces and even which venues support the chain will move fast — re-verify via /api/v2/chains and the Blockscout census before wiring capital."],
+    references: ["https://robinhoodchain.blockscout.com", "https://opensea.io/collection/robinhood-dinos"],
+  },
+
   permit2_usage: {
     topic: "permit2_usage",
     title: "Permit2: signature-based token transfers for ANY ERC-20",

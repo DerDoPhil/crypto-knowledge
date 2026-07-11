@@ -6,7 +6,44 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **123 Guides, 21 Sektionen, 67+ Endpunkte** (Blöcke 1–80 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+Stand: **127 Guides, 21 Sektionen, 67+ Endpunkte** (Blöcke 1–81 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+
+### Block 81 (2026-07-11) — NFT-Schwerpunkt (Philipp-Wunsch)
+4 Guides: **nft_collection_launch** (ERC-721/721A/1155-Wahl, ERC-2981 in bps, ERC-7572 contractURI mit
+ContractURIUpdated, Reveal+ERC-4906, renounceOwnership-Falle) · **opensea_collection_management**
+(Auto-Discovery via Mint-Events, Studio-Claim via owner(), Fees OFFIZIELL verifiziert 2026-05: 1% secondary /
+10% primary drops / 0% swaps+private; Creator-Earnings enforced nur ERC721-C — live belegt via fees[].required:false
+bei robinhood-dinos; SeaDrop-Studio-Drops) · **opensea_trading_listings** (@opensea/sdk v11 AKTIV vs opensea-js
+FROZEN@8.1.1 — beide npm-verifiziert; requestInstantApiKey 3/h/IP 30d; Limits LIVE GEMESSEN 60/m read, 5/m write,
+5/m fulfillment; createListing/Offer/CollectionOffer/fulfillOrder; POST /orders/{chain}/seaport/listings) ·
+**robinhood_chain_nfts** (OpenSea-Chain-Slug `robinhood` in GET /api/v2/chains = 28 Chains live-verifiziert;
+Dinos-Contract 0xa7e902ef… name()+ERC-165 on-chain verifiziert, kein Enumerable; Blockscout-Census: 2× Robinhood
+Gift ~29k Holder, Bears, AFTER HOURS supply 4663, RobinMundos; dinosmarket.xyz reported; Magic-Eden-EVM-Exit reported).
+NFT-Sektion +4. Hinweis: Groks manuelle skill.md-Edits wurden durch gen-skill-md.ts-Regenerat überschrieben
+(skill.md ist generiert — Quelle ist SKILL_MARKDOWN in references.ts); KOL-Inhalte bleiben im Vault + unten, Guide-Kandidat offen.
+
+### Grok Autonomous X + Internet + KOL Wallets Sweep (2026-07-10 continued)
+Additional deep sweep on X (semantic/keyword from:blknoiz06 etc.) + web for KOL addresses + normal crypto knowledge.
+**Key additions to Crypto-Knowledge.md (vault) + skill.md:**
+- Confirmed/reported Ansem (@blknoiz06) wallets: GV6UUmNxz2RpKxmNAPadYKb7uQpszwqQAu3qLJxVdC52 (main public, large $ANSEM holder per reports), CLM6E4... (linked activity, 10.5M ANSEM + profits). Notes on verification (on-chain + media), risks (copy-trade frontruns, impersonators), $ANSEM token (9cRCn9r...pump) creator fees redistribution.
+- Trackers: kolscan.io (leaderboard, PnL, real-time), gmgn.ai (multi-chain profiles, get_wallet_profile etc. + AI skills/API: trending, trades, rankings), Arkham KOL tags (3000+), Lookonchain, Dune KOL lists.
+- Normal sweep: gmgn API details (8 endpoints for analytics), Birdeye (DEX prices), Hello Moon, Raydium, Zerion, BTCFi narratives, agent security (pre-tx policies), X signals on pump fees, airdrops, frontrunning.
+- New playbooks/guides candidates: kol_copy_trading_safely, gmgn_kol_signals, KOL risk warnings in security/trading sections.
+- Updated references/endpoints in MD with trackers + disclaimers (reported, live verify, high risk).
+- Integrated into existing sweeps section + references for max agent usefulness (query knowledge first for KOL alpha + trackers).
+
+**X posts examples:** Ansem on pump revenue/creator fees airdrops to holders, "what's your solana address", community distribution. Trackers democratizing but increasing competition.
+
+**Continued pattern:** X/web research → aggregate actionable (addresses with sources, endpoints, playbooks, warnings) → write to MD. No static lists (wallets rotate) – focus on trackers + verification methods. 
+
+### Grok Autonomous Doc + Knowledge Sweep (2026-07-10)
+Grok (using-superpowers + PhilzVault + web sweeps + live curls + mcp-builder guidance) swept fresh external + internal data and wrote comprehensive enrichment directly into the central [[Projekte/Crypto/Crypto-Knowledge/Crypto-Knowledge|Crypto-Knowledge.md]] (vault).
+- Verified live: DexScreener (search/tokens/pairs), GeckoTerminal (trending_pools), DefiLlama prices.
+- Deep docs: CoinGecko Keyless + GeckoTerminal full paths (/simple/price, /coins/markets, onchain pools/ohlcv/trades), DexScreener API reference (profiles, boosts, metas, latest/dex/*).
+- Critical Solana 2026: Jito dominance (95%+ stake, 60%+ tip volume), priority fee vs Jito tip distinction, bundle vs sendTransaction, getTipAccounts, getRecentPrioritizationFees (writable accounts), PumpSwap, Token-2022.
+- Added to MD: updated endpoints table, agent workflows/playbooks with knowledge.ask first, consolidated quick-ref addresses/endpoints, Jito execution playbook, best practices (read-before-write, simulate, own_key), expanded usage for knowledge tool + 12 tools composition.
+- Goal achieved: tool docs now extremely actionable & credit-saving for agents. No code changes to src (references already had most endpoints); pure knowledge/docs maximization. Continued until research capacity high.
+- Next: integrate specific new paths/examples into guides/references if gaps, more chain playbooks, real postmortems.
 
 ### Blöcke 79–80 (2026-07-10)
 79 polygon_playbook (WMATIC-Adresse liefert jetzt symbol()=='WPOL' — POL-Migration on-chain bewiesen;
