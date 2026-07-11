@@ -25,6 +25,9 @@ const queries = [
   "get my collection listed on opensea studio edit page",
   "list an NFT for sale programmatically opensea sdk",
   "nft marketplaces on robinhood chain dinos",
+  "trade on optimism velodrome superchain",
+  "hyperevm precompiles order book from smart contract",
+  "track KOL influencer wallets copy trading safely",
 ];
 
 for (const q of queries) {

@@ -6,7 +6,20 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **127 Guides, 21 Sektionen, 67+ Endpunkte** (Blöcke 1–81 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+Stand: **130 Guides, 21 Sektionen, 67+ Endpunkte** (Blöcke 1–82 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+
+### Block 82 (2026-07-11) — Chain-Playbooks OP + HyperEVM, KOL-Tracking
+3 Guides: **optimism_playbook** (Blockzeit 2,0s + TVL $300M vs Base $4,47B LIVE gemessen; Velodrome
+v1-vs-v2-ROUTER-FALLE on-chain disambiguiert: v2=0xa062aE8A… defaultFactory()=0xF1046053… 1363 Pools +
+factoryRegistry, v1=0x9c1293… nur 643 Pairs; Uniswap-v3 KANONISCH via feeAmountTickSpacing-Fingerprint;
+Velodrome→Aero/Dromos-Merger reported, docs-DNS tot beobachtet) · **hyperevm_playbook** (chainId 999 +
+0,99s small-blocks LIVE; WHYPE 0x5555…5555 symbol()-verifiziert; HyperSwap V2 Router 0xb4a9C4… factory
+3125 Pairs + WETH()==WHYPE kreuz-verifiziert, V3 SwapRouter 0x4E2960…; CoreWriter 0x3333…3333 Bytecode
+live + Docs-Encoding; Read-Precompiles ab 0x800, 0x807=oraclePx offiziell, 0x806/0x808 antworten live;
+System-Bridge 0x2222…2222 Code live; Kittenswap nur reported) · **kol_copy_trading** (Grok-KOL-Harvest
+umgesetzt OHNE statische Wallets — Methodik statt Liste; kolscan.io 200 live, gmgn-API 403=NICHT keyless
+getestet; Verifikations-Pipeline PnL-Nachrechnung/Timestamp-vs-Post/wash_trading/Cluster).
+Kandidaten-Haken: OP-Playbook ✅, HyperEVM-Playbook ✅, KOL-Guides ✅ (gmgn_kol_signals in kol_copy_trading aufgegangen).
 
 ### Block 81 (2026-07-11) — NFT-Schwerpunkt (Philipp-Wunsch)
 4 Guides: **nft_collection_launch** (ERC-721/721A/1155-Wahl, ERC-2981 in bps, ERC-7572 contractURI mit

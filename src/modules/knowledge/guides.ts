@@ -1842,6 +1842,62 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://docs.robinhood.com/chain/", "https://robinhoodchain.blockscout.com"],
   },
 
+  optimism_playbook: {
+    topic: "optimism_playbook",
+    title: "OP Mainnet playbook: the quiet OP-Stack chain (Velodrome v2, Superchain, low competition)",
+    summary: "Base's older sibling at 1/15th the TVL: verified Velodrome v2 addresses (and the v1-router trap), canonical Uniswap v3, and why lower bot density is the actual edge.",
+    scope: ["evm"],
+    prerequisites: [],
+    steps: [
+      { title: "Chain profile (live-measured 2026-07-11)", note: "chainId 10, block time measured 2.0s (same cadence as Base — both OP-Stack), TVL $300M vs Base's $4.47B (DefiLlama live, 15× gap). Fees: every tx pays L2 execution + L1 data (opstack_l2_fees has getL1Fee + the 0x42-family predeploys). Ordering is priority-fee based (EIP-1559), NOT FCFS like Arbitrum — you can outbid here." },
+      { title: "The verified DeFi core — beware the v1/v2 router trap", note: "TWO 'Velodrome Router' addresses circulate with official-looking labels. Live-disambiguated: v2 Router 0xa062aE8A9c5e11aaA026fc2670B0D65cCc8B2858 → defaultFactory()=0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a (1,363 pools) + factoryRegistry()=0xF4c67CdEAaB8360370F41514d06e32CcD8aA1d7B; the OTHER one (0x9c1293…) is the v1 router (its factory holds only 643 legacy pairs). Same defaultFactory() ABI as Aerodrome — the fork family shows. Uniswap v3 IS canonical here: Factory 0x1F98431c8aD98523631AE4a59f267346ea31F984 fingerprint-verified via feeAmountTickSpacing(500)=10." },
+      { title: "Protocol churn warning: the Velodrome→'Aero' merger", note: "Dromos Labs announced merging Velodrome + Aerodrome into one multichain 'Aero' protocol (reported, late 2025) — docs.velodrome.finance already resolves to NOTHING (DNS dead, observed live 2026-07-11). Contracts keep working, but token mechanics/emissions/branding are mid-migration: re-verify tokenomics claims before building strategies on VELO emissions." },
+      { title: "Where the edge is", note: "(1) Same infrastructure as Base, a fraction of the bot swarm: stale-price windows on Velodrome pools last longer than on Aerodrome — CEX-DEX arb (CEX endpoint keyless) with less latency competition. (2) Superchain interop: OP-Stack chains share architecture; strategies debugged here port to Base/Zora/Ink/Soneium nearly unchanged (base_chain_playbook). (3) Retro Funding: Optimism's retroactive public-goods funding keeps paying real builders (reported) — the build-something-real angle from robinhood_chain_playbook applies." },
+      { title: "Lending & staking", note: "Aave v3 is deployed on OP (same Pool ABI as mainnet — defi_lending), wstETH bridges natively (eth_staking rebasing caveats apply cross-chain). Yields via defi_yield_research discipline — OP pool APYs are emission-heavy less often than they were, but check apyBase vs apyReward anyway." },
+      { title: "Data sources", command: "DefiLlama /v2/chains ('OP Mainnet'), Blockscout optimism.blockscout.com keyless, plus PoolCreated logs via RPC", note: "mainnet.optimism.io is the official public RPC (this server's RPC registry has failover peers)." },
+    ],
+    warnings: ["$300M TVL spread over many venues = thin books outside the top pools; the low-competition edge and the low-liquidity risk are the same fact (cronos_playbook trade-off)."],
+    references: ["https://github.com/velodrome-finance/contracts", "https://defillama.com/chain/op-mainnet"],
+  },
+
+  hyperevm_playbook: {
+    topic: "hyperevm_playbook",
+    title: "HyperEVM playbook: the only EVM where contracts touch a real CLOB (chainId 999)",
+    summary: "Hyperliquid's EVM — read precompiles expose L1 order-book state, CoreWriter submits real limit orders from Solidity, WHYPE at 0x5555…5555. Verified addresses + the architecture agents must understand.",
+    scope: ["evm"],
+    prerequisites: ["hyperliquid_trading (the L1 API side)"],
+    steps: [
+      { title: "Chain profile (live-measured 2026-07-11)", note: "chainId 999 (verified), RPC https://rpc.hyperliquid.xyz/evm, block time measured 0.99s — these are the fast 'small blocks'; HyperEVM ALSO produces slower big blocks for heavyweight txs (dual-block architecture, reported — deploys may land in the slow lane). Hyperliquid L1 ecosystem TVL $1.41B (DefiLlama live; the EVM slice is a fraction of that)." },
+      { title: "The unique capability: HyperCore ↔ HyperEVM wiring", note: "READ: precompiles from 0x0000000000000000000000000000000000000800 expose live L1 state to contracts — 0x807 is oraclePx per official docs; neighbors verified answering uint32-indexed queries live (0x806/0x808). Exact slot→function mapping: take it from L1Read.sol in the Hyperliquid docs, don't guess. WRITE: CoreWriter 0x3333333333333333333333333333333333333333 (bytecode verified live) — encode version byte + 3-byte action ID + ABI params to place limit orders, vault transfers, staking, spot sends FROM A CONTRACT. No other EVM chain gives contracts a native CLOB." },
+      { title: "Moving HYPE between layers", note: "System bridge address 0x2222222222222222222222222222222222222222 (code verified on-chain): send HYPE there on the EVM side to credit L1, spotSend on L1 to reach the EVM (reported flow — test with dust first). WHYPE (wrapped HYPE for DeFi) = 0x5555555555555555555555555555555555555555, symbol() verified." },
+      { title: "The verified DEX layer", note: "HyperSwap is the visible AMM: v2 Router 0xb4a9C4e6Ea8E2191d2FA5B380452a634Fb21240A → factory 0x724412C00059bf7d6ee7d4a1d0D5cd4de3ea1C48 (3,125 pairs live) and WETH()==WHYPE (cross-verified); v3 SwapRouter 0x4E2960a8cd19B467b82d26D83fAcb0fAE26b094D → factory 0xB1c0fa0B789320044A6F623cFe5eBda9562602E3. Kittenswap is reported as the other top-TVL DEX — resolve its addresses via hyperevmscan.io/purrsec.com before use (nothing verified here)." },
+      { title: "Agent strategies this unlocks", note: "(1) AMM↔CLOB arbitrage inside one chain: pool price vs mark/oracle price from the precompile, atomically. (2) On-chain strategy vaults that place real order-book orders (CoreWriter) — market-making logic as a contract. (3) Cross-venue basis: perps on L1 (hyperliquid_trading API) vs spot on HyperSwap. Remember HyperCore risk controls still apply to CoreWriter-placed orders." },
+      { title: "Fee/gas reality", note: "Gas is HYPE. Small blocks ~1s keep swap latency low; big-block gas market differs (reported) — check both before assuming deploy costs. Standard EVM tooling (viem/Foundry) works unchanged." },
+    ],
+    warnings: [
+      "Precompile misuse fails weird: wrong input length → PrecompileError revert (observed live), and a wrong index returns a VALID-looking number for a different asset — pin the L1Read.sol mapping in tests before trusting prices.",
+      "The EVM side is young and liquidity-thin vs the L1 order book — size AMM positions to the pool, not to Hyperliquid's headline TVL.",
+    ],
+    references: ["https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/hyperevm/interacting-with-hypercore", "https://defillama.com/chain/hyperliquid-l1"],
+  },
+
+  kol_copy_trading: {
+    topic: "kol_copy_trading",
+    title: "KOL wallet tracking: find, verify and (maybe) copy influencer wallets without being exit liquidity",
+    summary: "The tracker landscape (kolscan, Arkham tags, Dune lists), why you verify wallets on-chain instead of trusting lists, and the structural reasons naive copy-trading loses.",
+    scope: ["all"],
+    prerequisites: ["copy_trading_bots (the bot mechanics — this guide is about SOURCE selection)"],
+    steps: [
+      { title: "The tracker landscape (checked 2026-07-11)", note: "kolscan.io (live) — KOL leaderboards, per-wallet PnL, realtime trades, Solana-centric. Arkham — KOL/entity tags at scale (reported 3000+), free tier with account. Dune — community-maintained KOL wallet lists as queries (fork and adapt). gmgn.ai — wallet profiling UI; its internal API is NOT keyless (403 without browser session, tested live) — treat gmgn as a UI, not an agent data source." },
+      { title: "NEVER ship a static KOL wallet list", note: "Wallets rotate constantly (fresh wallets per narrative, OTC wallets, CEX hops). A hardcoded list is stale in weeks. Ship the METHOD instead: tracker discovery → on-chain verification → continuous re-validation. (Same reason this guide names no addresses.)" },
+      { title: "Verify before you follow (the on-chain part)", note: "For a candidate wallet: (1) recompute claimed PnL from raw transfers/swaps (fetch_event_logs / portfolio tool) — tracker PnL often ignores gas, failed snipes and airdropped inventory; (2) check trade timestamps vs the KOL's public posts: posting AFTER buying = you're the exit plan, systematically; (3) wash_trading_detection on their 'wins' — self-funded volume pumps rank on every leaderboard; (4) cluster check: one 'KOL' is often 5 wallets round-tripping." },
+      { title: "The structural math of copying", note: "You buy later and higher (their buy moves thin pools), you sell later and lower — on memecoin liquidity the copy-lag cost routinely exceeds the KOL's edge. Profitable copying needs: liquid targets (majors, not fresh mints), sub-block reaction (copy_trading_bots architecture), and position sizing that survives the KOL being wrong or malicious. profitability tool for the per-trade math." },
+      { title: "The defensible version", note: "Use KOL flow as a SIGNAL input, not an order source: aggregate N verified wallets buying the same asset within a window = attention indicator → run your own pre-trade pipeline (playbook_pre_trade_check: security scan, liquidity, route). You inherit their information network without inheriting their exit." },
+    ],
+    warnings: ["Impersonation is rampant: verified-looking handles link to wallets the real person never controlled — verify identity via multiple independent sources (ENS reverse + long history + cross-platform links) before weighting a wallet's signal."],
+    references: ["https://kolscan.io", "https://dune.com"],
+  },
+
   cronos_playbook: {
     topic: "cronos_playbook",
     title: "Cronos playbook: thin-liquidity edges in the Crypto.com ecosystem",
