@@ -513,6 +513,58 @@ export const GUIDES: Record<string, Guide> = {
     references: ["https://robinhoodchain.blockscout.com", "https://opensea.io/collection/robinhood-dinos"],
   },
 
+  famous_nft_collections: {
+    topic: "famous_nft_collections",
+    title: "Famous NFT Collections — On-Chain Reality, Contracts, Developers & Analysis (Punks, BAYC, Milady, Normies, Bitfauna, Azuki, Pudgy, Moonbirds...)",
+    summary: "Canonical facts for the most important collections: launch year, creators, exact contracts/programs, metadata strategy, on-chain strength (full vs standard IPFS), special mechanics, and cultural notes. Use this before trading, analyzing, or launching similar projects. Always cross-check live with security + portfolio tools.",
+    scope: ["evm", "solana"],
+    prerequisites: ["nft_metadata_standards", "nft_collection_launch", "ipfs_for_nfts"],
+    steps: [
+      { title: "Quick On-Chain Strength Ranking (for agents)", note: "Bitfauna ≈ Normies (full editable bitmaps) >> CryptoPunks (post-2021 SVG/pixels) >> Art Blocks generative (script on-chain) >> Claynosaurz (Metaplex + utility) > Milady/Remilio (cultural power, standard tech) > Azuki/Pudgy/Moonbirds/BAYC/Doodles (classic IPFS pointer + provenance)." },
+      { title: "CryptoPunks (2017, Larva Labs)", note: "Contract 0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb. 10k 24x24. 2021 full on-chain upgrade (gas-free punkImageSvg + attributes). Pioneer. IP later moved to Yuga then Infinite Node Foundation. Deterministic forever." },
+      { title: "BAYC (2021, Yuga Labs)", note: "Contract 0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d. 10k. ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/{id}. On-chain provenance hash. Classic standard ERC-721 + IPFS. Large ecosystem (ApeCoin, Otherside)." },
+      { title: "Milady Maker (Aug 2021, Remilia Corp)", note: "Contract 0x5af0d9827e0c53e4799bb226655a1de152a425a5. 10k neochibi (Tokyo styles). Drip Score (aesthetic coherence, not pure rarity). Strong post-authorship culture, memes (Elon, Vitalik PFP), 'post-cancelled' lore. Copyleft elements. Companion = Remilio." },
+      { title: "Remilio Babies (2022, Remilia)", note: "Contract 0xd3d9ddd0cf0a5f0bfb8f7fceae075df687eaebab. 10k 'zoomer little brother' neochibi. Deeply tied to Milady cultural universe." },
+      { title: "Azuki (Jan 2022, Chiru Labs)", note: "Contract 0xed5af388653567af2f388e6224dc7c4b3241c544. 10k anime. Big brand play: Elementals, AnimeChain L3, Bobu governance token experiment." },
+      { title: "Pudgy Penguins (2021, acquired by Luca Netz/Igloo 2022)", note: "Original 0xbd3531da5cf5857e7cfaa92426877b022e612cf8 (8888). Best real-world IP success via physical toys/merch with holder royalties. PENGU token (Solana), Abstract Chain efforts." },
+      { title: "Moonbirds (2022, PROOF Collective)", note: "Contract 0x23581767a106ae21c074b2276d25e5c3e136a68b. 10k. Nesting utility. CC0 license + later ecosystem moves." },
+      { title: "Normies (Serc, Feb 2026)", note: "NFT 0x9Eb6E2025B64f340691e424b7fe7022fFDE12438 + Canvas 0x64951d92e345C50381267380e2975f66810E869c. ~10k. Fully on-chain 40x40 1-bit (200 bytes). Edit via setTransformBitmap + delegates (Community Canvas). Extremely strong on-chain + living state." },
+      { title: "Bitfauna (DerDoPhil, Apr 2026, bitfauna.art)", note: "Program EQkRJkgLqNQkS4hJKieeTFpW6mAbFDKQpagj2PFZ2mzw, Collection 47Vb8QuNLrhkMr9qJRrFRXYpi4WcMfht5eMJ6RPtA2iP. 1,111. Anchor + mpl-core. 40x40 2-bit exactly 400 bytes, lazy Pixel PDAs, on-chain traits, edit_pixels + burn_for_ap (AP). 100% full on-chain, no IPFS. 'Digital evolution in 2 bits'." },
+      { title: "Art Blocks generative (Fidenza example)", note: "Platform 0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270. Fidenza (Tyler Hobbs, 999). Generative script + params stored on-chain. Mint executes script. Highest on-chain strength for algorithmic art." },
+      { title: "Other notables (Doodles, Nakamigos, GVC, Claynosaurz)", note: "Doodles 0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e (Burnt Toast + team, later DOOD + programmable). Nakamigos 0xd774557b647330c91bf44cfeab205095f7e6c367 (~20k 2023 custom). GVC 0xb8ea78fcacef50d41375e44e6814ebba36bb33c4 (Toast Studio + SuperRare, high-end art ~7k). Claynosaurz Solana Metaplex (10k 3D dinos + game transmuter/eggs, Sui expansion)." },
+      { title: "Agent playbook for any famous collection", note: "1. security.scan(contract) 2. reference kind=addresses for the name 3. knowledge.ask('on chain status [name]') 4. portfolio + DAS/Opensea for ownership 5. For classic PFPs: check provenance + reveal state + royalty settings before large interactions." },
+    ],
+    warnings: [
+      "Most 'blue chips' are standard IPFS pointer + on-chain ownership/provenance. Only Punks (post-upgrade), Normies, Bitfauna and certain Art Blocks are truly full on-chain.",
+      "Contracts can have proxies or upgrades — always verify the implementation and owner() when interacting.",
+    ],
+    references: ["famous_nft_collections (this guide)", "nft_collection_launch", "classic_trait_pfp_launch", "nft_metadata_standards"],
+  },
+
+  classic_trait_pfp_launch: {
+    topic: "classic_trait_pfp_launch",
+    title: "Launch a classic trait-based PFP collection (Milady / BAYC / Azuki style) — normal traits, no burn/canvas mechanics",
+    summary: "How to build a standard high-quality generative PFP with rich traits, provenance, reveal, IPFS metadata, and marketplace readiness. Exactly the pattern used by Milady, BAYC, Azuki, Doodles etc. (not full on-chain art).",
+    scope: ["evm", "solana"],
+    prerequisites: ["nft_metadata_standards", "ipfs_for_nfts", "nft_collection_launch (basics)"],
+    steps: [
+      { title: "Art & Traits (most important)", note: "8-15 categories (Background, Body, Clothing, Head, Eyes...). Use HashLips or custom generator. Define weights. For Milady-style: add 'Drip Score' or aesthetic coherence logic (chain-roll for thematic consistency) instead of pure statistical rarity." },
+      { title: "Generate final metadata (exact schema)", command: '{ "name": "Collection #1234", "description": "...", "image": "ipfs://<imagesCID>/1234.png", "external_url": "...", "attributes": [ {"trait_type": "Background", "value": "Red"}, {"trait_type": "Drip Score", "value": 52, "display_type": "number"} ] }', note: "Images first → then JSONs referencing ipfs:// image URIs. Use directories for clean CIDs." },
+      { title: "Provenance Hash (trust signal)", note: "After final generation: compute keccak256 of the sorted final order or concatenated hashes. Store on-chain with setProvenanceHash(). This proves the reveal order was not manipulated." },
+      { title: "Contract (Foundry + OZ)", note: "ERC721Enumerable + ERC2981. Implement _baseURI(), setBaseURI(), setProvenanceHash(), reveal(realBaseURI), contractURI() for ERC-7572. Emit ERC-4906 on reveal. Hard max supply. Owner() must be the Studio claimer." },
+      { title: "Reveal pattern (safe)", note: "Deploy with hiddenBaseURI. After final assets + provenance on-chain call reveal(). Immediately emit BatchMetadataUpdate(0, max). Freeze the setter (or use role + timelock)." },
+      { title: "Launch mechanics", note: "Merkle allowlist (gas efficient), per-wallet limits, Dutch or fixed price. No hidden mint authority after launch (renounce or multisig/timelock admin functions)." },
+      { title: "Post-launch", note: "Verify on explorer. Claim in OpenSea Studio (via owner()). Set earnings (note: plain ERC-721 royalties are optional for sellers in 2026). Use ERC-4906 for any metadata fixes." },
+      { title: "Solana equivalent (classic)", note: "Metaplex Core or Sugar + Token Metadata. Traits live in the JSON (not on-chain for 'normal' collections). Verified Collection NFT. DAS indexing critical. For on-chain traits like Bitfauna use mpl-core + custom PDAs." },
+    ],
+    warnings: [
+      "Renouncing ownership also removes your ability to edit the OpenSea Studio page and royalties.",
+      "IPFS gateways are flaky — always use ipfs:// in metadata and multiple gateways for tooling.",
+      "This is the 'normal' pattern — for full on-chain editable art see the famous_nft_collections guide (Normies/Bitfauna style).",
+    ],
+    references: ["nft_collection_launch", "famous_nft_collections", "nft_metadata_standards"],
+  },
+
   permit2_usage: {
     topic: "permit2_usage",
     title: "Permit2: signature-based token transfers for ANY ERC-20",
