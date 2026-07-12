@@ -35,6 +35,10 @@ const queries = [
   "cow protocol eip712 order signing domain",
   "which entrypoint version should my bundler target v0.8 v0.9",
   "how do crypto narratives rotate and when does hype collapse",
+  "erc-8004 agent identity reputation registry",
+  "escrow a job between two agents erc-8183 evaluator",
+  "give my agent a wallet with spending limits mpc policies",
+  "wrapped cryptopunks seaport punk attributes on chain",
 ];
 
 for (const q of queries) {

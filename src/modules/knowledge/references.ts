@@ -281,8 +281,12 @@ export const ADDRESSES: AddressEntry[] = [
   // === Famous NFT Collections (canonical contracts & programs) ===
   {
     name: "CryptoPunks (fully on-chain post-2021)",
-    addresses: { ethereum: "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb" },
-    note: "2017 Larva Labs (Matt & John). 10k 24x24. 2021 full on-chain upgrade: punkImageSvg(), punkAttributes() view functions are gas-free and deterministic. IP later to Yuga then Infinite Node Foundation. Pioneer of on-chain art.",
+    addresses: {
+      ethereum: "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb",
+      punks_data: "0x16F5A35647D6F03D5D3da7b35409D65ba03aF3B2",
+      wrapped_punks: "0xb7F7F6C52F2e2fdb1963Eab30438024864c313F6",
+    },
+    note: "2017 Larva Labs (Matt & John). 10k 24x24. Main contract is custom (pre-ERC-721). The on-chain art lives in CryptoPunksData: punkImageSvg(uint16) + punkAttributes(uint16) are gas-free views (live-verified 2026-07-12: punkAttributes(0) → 'Female 2, Earring, Blonde Bob, Green Eye Shadow'). WrappedPunks (name()=='Wrapped Cryptopunks', on-chain verified) wraps punks as standard ERC-721 for Seaport composability. IP later to Yuga then Infinite Node Foundation. Pioneer of on-chain art.",
   },
   {
     name: "Bored Ape Yacht Club (BAYC)",
@@ -306,8 +310,11 @@ export const ADDRESSES: AddressEntry[] = [
   },
   {
     name: "Pudgy Penguins (original)",
-    addresses: { ethereum: "0xbd3531da5cf5857e7cfaa92426877b022e612cf8" },
-    note: "2021 (8888). Acquired 2022 by Luca Netz / Igloo Inc. for $2.5M. Massive real-world success via physical merch (Walmart plushies etc. with holder royalties). PENGU token on Solana + Abstract Chain efforts. Classic IPFS.",
+    addresses: {
+      ethereum: "0xbd3531da5cf5857e7cfaa92426877b022e612cf8",
+      pengu_token_solana: "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
+    },
+    note: "2021 (8888). Acquired 2022 by Luca Netz / Igloo Inc. for $2.5M. Massive real-world success via physical merch (Walmart plushies etc. with holder royalties). PENGU token on Solana (symbol PENGU, 6 decimals — verified via Jupiter token API 2026-07-12) + Abstract Chain efforts. Classic IPFS.",
   },
   {
     name: "Moonbirds",
@@ -1173,7 +1180,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin"],
   "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection", "mcp_security_for_agents"],
-  "Payments & agent economy": ["x402_payments", "lightning_l402_payments", "mcp_ecosystem_for_agents", "mcp_security_for_agents", "register_onchain_tool", "opensea_api"],
+  "Payments & agent economy": ["x402_payments", "lightning_l402_payments", "mcp_ecosystem_for_agents", "mcp_security_for_agents", "register_onchain_tool", "agent_commerce_stack", "agent_wallets_execution", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
