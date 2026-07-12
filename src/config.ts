@@ -21,6 +21,8 @@ export interface OperatorConfig {
     network: string;
     asset: string;
     priceAtomic: string;
+    assetName: string;
+    assetVersion: string;
   };
 }
 
@@ -51,6 +53,10 @@ export function loadOperatorConfig(): OperatorConfig {
       asset: env("X402_ASSET") ?? "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
       // $0.02 in 6-decimals USDC — must match the on-chain manifest's pricing[0].amount
       priceAtomic: env("X402_PRICE_ATOMIC") ?? "20000",
+      // EIP-712 domain of the asset above (Base USDC: name()="USD Coin", version()="2").
+      // The facilitator rejects payments as "missing_eip712_domain" without these.
+      assetName: env("X402_ASSET_NAME") ?? "USD Coin",
+      assetVersion: env("X402_ASSET_VERSION") ?? "2",
     },
   };
 }

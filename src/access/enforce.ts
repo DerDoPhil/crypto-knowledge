@@ -99,6 +99,8 @@ export class AccessEnforcer {
       asset: op.x402.asset,
       payTo: op.access.treasuryAddress ?? "",
       priceAtomic: op.x402.priceAtomic,
+      assetName: op.x402.assetName,
+      assetVersion: op.x402.assetVersion,
     };
   }
 

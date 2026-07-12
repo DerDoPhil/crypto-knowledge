@@ -24,6 +24,8 @@ function opConfig(gatingEnabled = true): OperatorConfig {
       network: "base",
       asset: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
       priceAtomic: "100000",
+      assetName: "USD Coin",
+      assetVersion: "2",
     },
   };
 }

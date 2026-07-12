@@ -30,6 +30,13 @@ export interface X402Config {
   asset: string;
   payTo: string;
   priceAtomic: string;
+  /**
+   * EIP-712 domain of the payment asset. The facilitator needs `name`/`version`
+   * to reconstruct the transferWithAuthorization signing domain; without them it
+   * rejects the payment with "missing_eip712_domain". Defaults to USDC's.
+   */
+  assetName?: string;
+  assetVersion?: string;
 }
 
 /** Build the JSON body returned with an HTTP 402 response. */
@@ -47,6 +54,8 @@ export function build402Body(resource: string, cfg: X402Config): { x402Version: 
         payTo: cfg.payTo,
         maxTimeoutSeconds: 120,
         asset: cfg.asset,
+        // EIP-712 domain of `asset` — required by the facilitator's verify/settle.
+        extra: { name: cfg.assetName ?? "USD Coin", version: cfg.assetVersion ?? "2" },
       },
     ],
   };

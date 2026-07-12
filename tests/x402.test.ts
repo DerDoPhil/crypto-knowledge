@@ -22,6 +22,17 @@ describe("x402", () => {
     expect(r.asset).toBe(cfg.asset);
   });
 
+  it("includes the asset's EIP-712 domain in `extra` (facilitator needs it to verify)", () => {
+    // Without extra.name/version the xpay facilitator rejects with "missing_eip712_domain".
+    const r = build402Body("/mcp", cfg).accepts[0]!;
+    expect(r.extra).toEqual({ name: "USD Coin", version: "2" });
+  });
+
+  it("honours a custom asset domain from config", () => {
+    const r = build402Body("/mcp", { ...cfg, assetName: "Custom", assetVersion: "1" }).accepts[0]!;
+    expect(r.extra).toEqual({ name: "Custom", version: "1" });
+  });
+
   it("decodes a base64 X-PAYMENT header", () => {
     const payload = { signature: "0xabc", amount: "100000" };
     const header = Buffer.from(JSON.stringify(payload)).toString("base64");
