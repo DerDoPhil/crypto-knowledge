@@ -237,6 +237,36 @@ export const GUIDES: Record<string, Guide> = {
     ],
   },
 
+  opensea_tool_sdk: {
+    topic: "opensea_tool_sdk",
+    title: "The @opensea/tool-sdk toolbox: build, hash, gate and call ERC-8257 tools",
+    summary:
+      "What the official ERC-8257 SDK actually does on both sides of the fence: operator commands (validate/hash/register/update-metadata/inspect + configuring all 5 gate predicate types) and consumer commands (auth via EIP-3009, pay via x402). Includes the JCS hash mechanics and the version-drift trap that silently freezes re-indexing.",
+    scope: ["evm"],
+    prerequisites: ["Node 20+", "register_onchain_tool (the indexer's listing rules — the SDK does NOT enforce them)"],
+    steps: [
+      { title: "Always run the pinned latest", command: "npx -y @opensea/tool-sdk@latest --version   # 0.28.4 as of 2026-07", note: "Different SDK versions canonicalize differently and therefore compute DIFFERENT hashes for the same manifest (real case: 0.11.0 → 0x9237…, 0.26+ → 0x4796… for identical bytes). OpenSea verifies with current; an on-chain hash set with an old SDK never earns 'Onchain hash verified'. Use @latest for hashing even if your package.json pins an older lib version." },
+      { title: "Manifest lifecycle", command: "npx -y @opensea/tool-sdk@latest init my-tool      # scaffold a project\nnpx -y @opensea/tool-sdk@latest export manifest.ts # TS manifest → JSON\nnpx -y @opensea/tool-sdk@latest validate m.json    # schema check\nnpx -y @opensea/tool-sdk@latest verify https://<origin>  # check the deployed .well-known endpoint", note: "validate/verify pass manifests the indexer still rejects (tag limits, featuredImage ratio, un-namespaced fields) — treat them as necessary, not sufficient; the docs pages are the real spec." },
+      { title: "The hash is THE sync key", command: "npx -y @opensea/tool-sdk@latest hash m.json   # keccak256 over the RFC 8785 (JCS) canonicalized JSON", note: "The on-chain manifestHash must equal exactly this value. Never keccak the raw served bytes and never use the generic npm 'canonicalize' package — different canonicalization → different hash → OpenSea treats the manifest as stale and ignores every future change until you sync the correct hash via updateToolMetadata." },
+      { title: "Register + maintain on-chain state from the CLI", command: "npx -y @opensea/tool-sdk@latest register --network mainnet …\nnpx -y @opensea/tool-sdk@latest update-metadata --tool-id <id> …\nnpx -y @opensea/tool-sdk@latest inspect --tool-id <id> --network mainnet", note: "register/update-metadata are the CLI alternative to hand-rolled viem scripts against ToolRegistry 0x265BB2DBFC0A8165C9A1941Eb1372F349baD2cf1. inspect reads on-chain config and cross-checks manifest validity, hash match and endpoint reachability in one shot." },
+      { title: "Configure access gates — 5 predicate types", command: "set-collections <toolId> <erc721s...>        # ERC-721 owner gate\nset-collection-tokens <toolId> <erc1155> <ids...>\nconfigure-subscription <toolId> <collection>\nconfigure-trait-gating <toolId> <collection> <traitKey> <values...>\nconfigure-erc20-gate <toolId> <token> <minBalance>", note: "Each setter has a get-* counterpart (get-collections, get-trait-config, get-erc20-config) for reading the live gate. The ERC-721 gate is the common case (canonical ERC721OwnerPredicate); the function is setCollections — 'configure' does not exist there." },
+      { title: "Consumer side: CALL a gated or paid tool", command: "npx -y @opensea/tool-sdk@latest auth <toolUrl>   # EIP-3009 zero-value authorization proves wallet ownership\nnpx -y @opensea/tool-sdk@latest pay <toolUrl>    # x402: probe 402 challenge → sign X-Payment → retry", note: "auth is how an agent proves to a predicate-gated endpoint that it controls a qualifying wallet; pay handles the full x402 dance. smoke does an end-to-end signed request against a live endpoint; dry-run-gate / dry-run-predicate-gate assert locally that your handler answers un-paid requests with a proper 402 challenge." },
+      { title: "Enforcement reality check", note: "The on-chain predicate is discovery metadata plus an auth contract — it does NOT enforce itself. The tool's server must verify the caller's EIP-3009 signature and then check eligibility (e.g. balanceOf(caller) on the gate collection via its own RPC). Consequence: today the CALLING agent wallet itself must hold the gating NFT (hot-wallet problem). Nothing stops an operator's server from being more permissive, e.g. additionally resolving delegate.xyz delegations so a vault-held NFT authorizes a linked agent wallet." },
+    ],
+    warnings: [
+      "Version drift is the #1 failure mode: a hash computed with a cached old SDK differs from OpenSea's — the tool then looks registered but never re-indexes. Always npx -y @opensea/tool-sdk@latest for hashing, even in CI.",
+      "validate, verify and inspect are all LAXER than the ingestion pipeline — a green SDK run does not guarantee listing (see register_onchain_tool for the real limits).",
+      "A predicate without server-side enforcement is decoration: if your endpoint skips the check, the tool is effectively open regardless of what OpenSea displays.",
+      "The auth flow proves control of the calling wallet only — NFT-gated tools therefore push users to move NFTs into hot agent wallets unless the operator also resolves delegations server-side.",
+    ],
+    references: [
+      "https://github.com/ProjectOpenSea/tool-sdk",
+      "https://www.npmjs.com/package/@opensea/tool-sdk",
+      "https://docs.opensea.io/docs/tool-manifest",
+      "https://eips.ethereum.org/EIPS/eip-8257",
+    ],
+  },
+
   eip7702_smart_eoas: {
     topic: "eip7702_smart_eoas",
     title: "EIP-7702: give a normal EOA smart-account powers (Pectra)",
