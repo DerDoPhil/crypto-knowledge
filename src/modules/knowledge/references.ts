@@ -170,9 +170,15 @@ export const ADDRESSES: AddressEntry[] = [
     note: "Safe smart-account master copy (live-verified, 23.5KB). Proxies are deployed via the SafeProxyFactory 0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67 (deterministic per salt). Individual Safes are their own proxy addresses. See safe_multisig guide.",
   },
   {
-    name: "ERC-4337 EntryPoint v0.7",
-    addresses: { evm: "0x0000000071727De22E5E9d8BAf0edAc6f37da032" },
-    note: "Account-abstraction entry point (live-verified). v0.6 (legacy, still widely used): 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789 (live-verified). Same deterministic addresses across EVM chains. See account_abstraction_dev guide for the full paymaster/session-key stack.",
+    name: "ERC-4337 EntryPoints (v0.6–v0.9)",
+    addresses: {
+      evm_v09: "0x433709009B8330FDa32311DF1C2AFA402eD8D009",
+      evm_v08: "0x4337084d9e255ff0702461cf8895ce9e3b5ff108",
+      evm_v07: "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+      evm_v06: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+      sender_creator_v09: "0x0A630a99Df908A81115A3022927Be82f9299987e",
+    },
+    note: "All live-verified 2026-07-12 (v0.8/v0.9 byte-identical on Ethereum AND Base — deterministic deploys). v0.8 (2025-03): native EIP-7702 + ERC-712 UserOp hashing. v0.9 (2025-11): ABI-compatible with v0.8/v0.7; adds paymasterSignature (attach paymaster data AFTER the wallet signs), block-number validity ranges, initCode silently ignored if account exists. Pick the version your bundler's mempool supports. See account_abstraction_dev guide.",
   },
   {
     name: "Wrapped native token (WETH/WPOL/…)",
@@ -1163,7 +1169,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Agent playbooks (multi-tool)": ["playbook_pre_trade_check", "playbook_cross_chain_arbitrage", "playbook_memecoin_launch_analysis"],
-  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "agent_cost_accounting", "error_taxonomy_retries", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jito_bundle_submission", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "base_chain_playbook", "arbitrum_playbook", "polygon_playbook", "avalanche_playbook", "apechain_playbook", "optimism_playbook", "hyperevm_playbook", "kol_copy_trading", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
+  "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "agent_cost_accounting", "error_taxonomy_retries", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jito_bundle_submission", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "base_chain_playbook", "arbitrum_playbook", "polygon_playbook", "avalanche_playbook", "apechain_playbook", "optimism_playbook", "hyperevm_playbook", "kol_copy_trading", "hype_cycles_narrative_rotation", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin"],
   "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection", "mcp_security_for_agents"],

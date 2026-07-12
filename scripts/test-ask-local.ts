@@ -33,6 +33,8 @@ const queries = [
   "is it safe to connect my agent to a random mcp server",
   "pay for an api with bitcoin lightning L402 micropayment",
   "cow protocol eip712 order signing domain",
+  "which entrypoint version should my bundler target v0.8 v0.9",
+  "how do crypto narratives rotate and when does hype collapse",
 ];
 
 for (const q of queries) {
