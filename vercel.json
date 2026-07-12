@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
+    { "source": "/", "has": [{ "type": "host", "value": "crypto-knowlage.vercel.app" }], "destination": "/brain.html" },
     { "source": "/mcp", "destination": "/api/mcp" },
     { "source": "/brain", "destination": "/brain.html" },
     { "source": "/.well-known/ai-tool/crypto-knowledge.json", "destination": "/.well-known/erc8257-manifest.json" },
