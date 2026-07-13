@@ -24,7 +24,7 @@ POST /mcp  — JSON-RPC 2.0 over Streamable HTTP (Model Context Protocol)
 - whale_watch: recent large ERC-20 transfers over a block window
 - simulate: EVM transaction dry-run + revert reason decoding before signing
 - catalog: capabilities + chain discovery
-- knowledge: the chain brain — 152 live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guides + matching endpoints in ONE call. Also list_topics (free), get_guide, search, reference.
+- knowledge: the chain brain — 154 live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guides + matching endpoints in ONE call. Also list_topics (free), get_guide, search, reference.
 
 ## Knowledge coverage (action 'ask' / 'get_guide')
 
@@ -34,7 +34,7 @@ DeFi: Aave/Morpho-Blue lending (marketId derivation, MetaMorpho vaults), ERC-462
 Payments: x402, gasless stablecoin rails (EIP-3009/2612, USDC/PYUSD/USDG domains, Permit2 for USDT). Social: Farcaster read + Mini Apps (build/post/onchain).
 Trading strategies: arbitrage, MEV (attack+defense incl. Solana sandwich defense), copy/sniping/grid bots, liquidations,
 flash loans, perps (GMX/Hyperliquid), funding/basis trade, prediction markets, portfolio management, token discovery,
-agent cost accounting + error/retry taxonomy. Chain playbooks: Base, Arbitrum (Timeboost), BNB, Cronos, Robinhood Chain.
+agent cost accounting + error/retry taxonomy, on-chain perp-DEX landscape (Hyperliquid HIP-3, Lighter, Paradex, Aster, Jupiter). Chain playbooks: Base, Arbitrum (Timeboost), Optimism, Polygon, Avalanche, ApeChain, HyperEVM, Berachain (Proof-of-Liquidity), BNB, Cronos, Robinhood Chain.
 Security: rugpull forensics, wash-trading detection, governance attacks, proxy/upgrade risks, oracle safety,
 real exploit postmortems 2025-26 (Bybit/Cetus/Balancer/Drift/KelpDAO failure classes).
 Protocol state 2026: Ethereum post-Fusaka (blob-fee floor, 21-blob blocks, tx gas cap) and

@@ -866,6 +866,7 @@ export const GUIDES: Record<string, Guide> = {
       { title: "CEX funding (keyless)", command: "GET https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1  (live-verified)\nGET https://api.bybit.com/v5/market/funding/history?category=linear&symbol=BTCUSDT", note: "fundingRate is per interval (usually 8h on CEXes, 1-8h on Hyperliquid — check fundingIntervalHours)." },
       { title: "Interpret the sign", note: "Positive funding = longs pay shorts (bullish crowding); negative = shorts pay longs. Extreme funding is a mean-reversion / squeeze signal, not a directional guarantee." },
       { title: "Basis-trade sanity", note: "Funding is annualized as rate × intervals/year. Compare against the cost of the hedge (spot borrow + gas) before calling it 'free yield'." },
+      { title: "More keyless venues (2026)", note: "Other perp DEXes expose funding keyless too: Lighter https://mainnet.zklighter.elliot.ai/api/v1/fundings, Paradex https://api.prod.paradex.trade/v1/funding/data, Aster (Binance-shaped) https://fapi.asterdex.com/fapi/v1/premiumIndex — all live-verified 2026-07. ⚠️ Jupiter Perps is an LP model: https://perps-api.jup.ag/v1/pool-info returns a BORROW rate (long/shortBorrowRatePercent), NOT orderbook funding — treat it separately in a basis/carry calc. Full venue map: perp_dex_landscape." },
     ],
   },
 
@@ -1707,6 +1708,7 @@ export const GUIDES: Record<string, Guide> = {
       { title: "API wallets: the blast-radius pattern built in", note: "approveAgent authorizes a SEPARATE keypair that can trade but can NOT withdraw funds (1 unnamed + up to 3 named per account, +2 per subaccount). Run your bot on the agent key, keep the funded key cold — this is exactly the wallet_security_checklist blast-radius rule as a protocol feature. Use the official Python SDK (hyperliquid-python-sdk) for the signing details instead of hand-rolling." },
       { title: "Sizing & execution discipline", note: "allMids is a MID — quote real execution from l2Book (best bid/ask + depth). Check the asset's max leverage and isolated-vs-cross margin in meta before sizing; funding settles hourly and flips sign (perps_funding_data)." },
       { title: "HyperEVM", note: "A normal EVM chain (chainId 999, RPC https://rpc.hyperliquid.xyz/evm, live-verified) attached to the same L1 — standard EVM tooling works, with precompiles exposing exchange state to contracts. Useful when you want on-chain logic reacting to the order book." },
+      { title: "HIP-3: builder-deployed perps (2026)", command: 'POST /info {"type":"perpDexs"} → all builder dexes; {"type":"meta","dex":"xyz"} → that dex\'s markets', note: "Beyond the native ~232-asset universe, anyone who stakes 500k HYPE (held ≥183 days) can deploy their own perp dex. perpDexs is keyless and live (2026-07: native null + xyz/flx/vntl/hyna/km/abcd/cash/para/mkts). Assets are named dex:SYMBOL — the xyz dex lists tokenized equities/commodities (xyz:AAPL, xyz:ALUMINIUM…), the only on-chain venue for those. The broader multi-venue map is in perp_dex_landscape." },
     ],
     warnings: [
       "The entire account state is public via clearinghouseState — anyone can read your positions, and copy-/counter-trading bots do exactly that (copy_trading_bots). Randomize sizing/timing if that matters.",
@@ -2832,6 +2834,52 @@ export const GUIDES: Record<string, Guide> = {
       "SDK version, Neynar credit costs and Base-App host behavior were probed 2026-07-13 — re-verify before building, this ecosystem moves fast.",
     ],
     references: ["https://miniapps.farcaster.xyz/docs", "https://docs.neynar.com"],
+  },
+
+  berachain_playbook: {
+    topic: "berachain_playbook",
+    title: "Berachain playbook: Proof-of-Liquidity, BEX (Balancer-fork), Kodiak, HONEY",
+    summary: "The EVM L1 (chainId 80094, native BERA, ~2s blocks) whose whole design is Proof-of-Liquidity: you earn soulbound BGT by staking LP/receipt tokens in Reward Vaults and delegate it to validators. Native DEX BEX is a Balancer-v2 fork; Kodiak is the Uniswap-v3 concentrated-liquidity venue. All addresses on-chain-verified 2026-07-13.",
+    scope: ["evm"],
+    prerequisites: ["aggregator_swaps or uniswap_v4_basics for the swap mechanics"],
+    steps: [
+      { title: "Connect & sanity-check", command: "RPC https://rpc.berachain.com (keyless) → eth_chainId MUST be 0x138de (80094)", note: "Live-verified 2026-07-13: chainId 80094, ~2.0s blocks (measured over 100 blocks), gasPrice ~2.5 gwei, client bera-reth/v1.4.2 (BeaconKit/CometBFT + reth). Explorer: berascan.com. EVM-identical — standard viem/ethers, ABIs work unchanged." },
+      { title: "The tri-token model", note: "BERA = native gas coin (like ETH, no ERC-20 — wrap to WBERA 0x6969696969696969696969696969696969696969 for DeFi, symbol/decimals live-verified 18). BGT 0x656b95E550C07a9ffe548bd4085c72418Ceb1dba = soulbound (non-transferable) governance/emissions token. HONEY 0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce = the stablecoin — ⚠️ 18 decimals (live-verified), NOT 6 like USDC. Mint/redeem HONEY against collateral via HoneyFactory 0xA4aFef880F5cE1f63c9fb48F661E27F8B4216401." },
+      { title: "Swap on Kodiak (recommended for agents)", note: "Uniswap-v3-compatible: SwapRouter 0xEd158C4b336A6FCb5B193A5570e3a571f6cbe690 (factory() → 0xD84CBf0B02636E7f53dB9E5e45A616E05d710990, WETH9() → WBERA — both live cross-verified), or v2 Router 0xd91dd58387Ccd9B66B390ae2d7c66dBD46BC6022. Uniswap-v3/v2 ABIs apply 1:1 (uniswap_v4_basics / aggregator_swaps)." },
+      { title: "Swap on BEX (Balancer-v2 fork)", note: "BEX is NOT CrocSwap anymore (older guides are stale). All swaps/LP go through the Vault 0x4Be03f781C497A489E3cB0287833452cA9B9E80B (swap/batchSwap/joinPool; WETH()→WBERA verified), using pool IDs not pair addresses. WeightedPoolFactory 0xa966fA8F2d5B087FFFA499C0C1240589371Af409, ComposableStablePoolFactory 0xDfA30BDa0375d4763711AB0CC8D91B20bfCC87E1, BalancerQueries 0x3C612e132624f4Bd500eE1495F54565F0bcc9b59 (dry-run swaps). Same mental model as balancer_swaps." },
+      { title: "Earn PoL yield — the chain's whole point", note: "Stake LP/receipt tokens into a Reward Vault (created via RewardVaultFactory 0x94Ad6Ac84f6C6FbA8b8CCbD71d9f4f101def52a8) → accrue BGT. BGT is emissions the protocol mints to liquidity providers; PoL is also the consensus layer (validators are boosted by delegated BGT). This is the structural difference from every other chain — liquidity IS security." },
+      { title: "Use the BGT you earned", note: "Option A: delegate/boost it to a validator (BeraChef 0xdf960E8F3F19C481dDE769edEDD439ea1a63426a) for a share of block emissions + app fees. Option B: redeem BGT 1:1 to BERA (one-way, irreversible). Option C (agents needing transferability): wrap exposure as Infrared iBGT 0xac03CABA51e17c86c921E1f6CBFBdC91F8BB2E6b (liquid, tradeable, symbol verified) instead of holding soulbound BGT." },
+      { title: "Risk & edge check", note: "PoL APRs are emissions-driven and volatile — 'real' yield is app fees + incentives, not just BGT inflation. Liquidity depth outside Kodiak/BEX is thin, so run a security scan + slippage/price-impact check before any sizeable trade (price_oracle_safety). Bend (lending) and Berps (perps) from the CrocSwap era are NOT in the current official deployed-contracts — treat them as deprecated; use third-party lending if needed." },
+    ],
+    warnings: [
+      "HONEY has 18 decimals, not 6 — a USDC-style 6-decimal assumption misprices every amount by 1e12.",
+      "BEX migrated from CrocSwap to a Balancer-v2 fork — any CrocSwapDex address from an old guide is stale. Use the Vault 0x4Be0…E80B.",
+      "BGT is soulbound: you cannot transfer or sell it directly. Plan for delegate / redeem-to-BERA / iBGT before staking for it.",
+    ],
+    references: ["https://docs.berachain.com", "https://documentation.kodiak.finance"],
+  },
+
+  perp_dex_landscape: {
+    topic: "perp_dex_landscape",
+    title: "On-chain perp DEX landscape 2026: which venue an agent can actually reach",
+    summary: "The map of programmatically-accessible perpetual DEXes — orderbook (Hyperliquid, Lighter, Aster, Paradex, edgeX) vs oracle/LP (GMX v2, Jupiter, Ostium) — with keyless data endpoints live-probed 2026-07-13 and a decision rule. Complements hyperliquid_trading and onchain_perps_gmx.",
+    scope: ["evm", "solana"],
+    prerequisites: ["hyperliquid_trading (deep Hyperliquid)", "perps_funding_data"],
+    steps: [
+      { title: "Two model families — pick before venue", note: "Orderbook (Hyperliquid, Lighter, Aster, Paradex, edgeX): off-chain matching, tight spreads, auth via an API-wallet/signature, settlement on the venue's chain. Oracle+LP (GMX v2, Jupiter, Ostium): you trade against a pool, sign a normal on-chain tx, no separate API creds, pay a borrow rate instead of orderbook funding. The model dictates your integration far more than the brand." },
+      { title: "Hyperliquid + HIP-3 (deepest liquidity, default first)", command: 'POST https://api.hyperliquid.xyz/info {"type":"perpDexs"} → builder dexes; {"type":"meta","dex":"xyz"} → its markets', note: "232+ perp assets in the native universe (live-verified). HIP-3 builder-deployed perps are live: perpDexs returns 10 dexes (native null + xyz/flx/vntl/hyna/km/abcd/cash/para/mkts, live-verified). Assets are named dex:SYMBOL — the xyz dex lists tokenized equities/commodities (xyz:AAPL, xyz:AMZN, xyz:ALUMINIUM…). Deployer economics: 500k HYPE staked, held ≥183 days, one perp-dex each, extra assets via Dutch auction, deployer fee-share 0–300%, slashed stake burned. Agent-native API-wallets already covered in hyperliquid_trading." },
+      { title: "Lighter — zero-fee ZK orderbook", command: "GET https://mainnet.zklighter.elliot.ai/api/v1/{orderBooks,orderBookDetails,fundings} (keyless)", note: "Orderbook perp on a ZK-rollup; maker/taker fee currently 0.0000 (incentive phase, live-verified). Fully keyless data layer (markets + hourly funding). Trading is via an L2 API-key/signature SDK (not verified here). Good for read-heavy or fee-sensitive strategies." },
+      { title: "Aster & Paradex", command: "Aster: GET https://fapi.asterdex.com/fapi/v1/{exchangeInfo,premiumIndex} · Paradex: GET https://api.prod.paradex.trade/v1/{markets,markets/summary,funding/data,system/config}", note: "Aster = privacy perps (orders encrypted until execution) on its own L1, with a BINANCE-COMPATIBLE futures REST — a near drop-in for agents that already speak Binance futures (HMAC auth for trading). Paradex = Starknet appchain with perps AND dated options in one venue (e.g. BTC-USD-25DEC26-200000-P), keyless data, Starknet-account→JWT auth; Paraclear settlement contract 0x3ca9388f8d4e04adecbd7b06b9b24a33030a593522248a7bddd87afc0b61a0c." },
+      { title: "Solana venues (self-custody, no API creds)", command: "GET https://perps-api.jup.ag/v1/{pool-info?mint=<custody>,positions?walletAddress=<addr>} (keyless)", note: "Jupiter Perps = LP-pool (JLP) model: you pay a BORROW rate, not funding (pool-info returns long/shortBorrowRatePercent, utilization, 0.06% open fee — live-verified). Custody mints incl. SOL So11111111111111111111111111111111111111112. Trading = direct Solana tx signing, no API credentials. ⚠️ Drift is OFFLINE: its program dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcqYwoQ returns null on-chain (live-verified dead) after the ~$285M April-2026 hack; relaunch is planned Q2 2026 on a NEW address with USDT settlement — do NOT hardcode the old program (real_exploit_postmortems)." },
+      { title: "RWA & niche", note: "Ostium (Arbitrum) = oracle-based forex/commodity/RWA perps (on-chain contracts + subgraph; metadata-backend.ostium.io live). edgeX = StarkEx-L2 orderbook perp (keyless meta at pro.edgex.exchange/api/v1/public/meta/getMetaData). Vertex was unreachable from probing — status unconfirmed, verify before relying on it." },
+      { title: "Decision rules", note: "Max liquidity + agent-native off-chain signing + tokenized RWA → Hyperliquid. Familiar Binance REST / privacy → Aster. Starknet + options in one venue → Paradex. Zero-fee ZK orderbook → Lighter. Solana self-custody with no API creds → Jupiter Perps. Strict per-trade on-chain settlement → GMX v2 (onchain_perps_gmx) / Jupiter / Ostium. Avoid Drift until its relaunch. Pull funding/borrow rates for basis trades from perps_funding_data." },
+    ],
+    warnings: [
+      "Many perp DEXes have hype but no keyless API — only the endpoints marked live-probed here (Hyperliquid, Lighter, Paradex, Aster, Jupiter, edgeX) returned real data on 2026-07-13. Re-verify before building.",
+      "Jupiter Perps quotes a BORROW rate (LP model), not orderbook funding — don't mix the two in a basis/carry calc.",
+      "Drift's old on-chain program is dead post-hack; the relaunch program id is not public yet — hardcoding the old address sends txs into the void.",
+    ],
+    references: ["https://hyperliquid.gitbook.io", "https://docs.jup.ag", "https://docs.paradex.trade"],
   },
 };
 

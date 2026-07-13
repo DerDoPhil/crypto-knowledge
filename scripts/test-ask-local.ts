@@ -47,6 +47,8 @@ const queries = [
   "find safe morpho vaults graphql listed filter fake apy",
   "pay gasless with USDC PYUSD no ETH transferWithAuthorization eip3009",
   "build and post a farcaster mini app frame manifest sdk",
+  "trade defi on berachain proof of liquidity BGT HONEY bex",
+  "which perp dex can my agent use hyperliquid lighter paradex",
 ];
 
 for (const q of queries) {
