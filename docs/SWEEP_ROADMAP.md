@@ -6,7 +6,20 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **149 Guides, 21 Sektionen, 72 Endpunkte** (Blöcke 1–87 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+Stand: **152 Guides, 21 Sektionen, 73 Endpunkte** (Blöcke 1–88 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+
+### Block 88 (2026-07-13) — Morpho Blue + gasless Stablecoin-Rails + Farcaster Mini Apps (3 Opus-Agenten parallel)
+3 Guides, alle Adressen/Endpoints selbst live-verifiziert: **morpho_markets_vaults** (Blue 0xBBBB…effcb owner=Morpho DAO;
+marketId = keccak256(abi.encode(params)) auf 2 Wegen bewiesen; supply/borrow assets-XOR-shares; 1e36-Oracle-Health;
+MetaMorpho-Factories v1.0/v1.1; GraphQL where:{listed:true} PFLICHT — sonst Scam-Vaults mit ~298% Fake-APY; SparkLend-Abgrenzung) ·
+**stablecoin_payment_rails** (EIP-3009-Typehash cross-verifiziert; Domain-version PER Token USDC=2/PYUSD=USDG=1 — falsch=revert;
+USDT braucht Permit2; PYUSD/USDG Solana=Token-2022; CCTP v2 Fast Transfer/Hooks, v1-EOL 31.7.2026) ·
+**farcaster_miniapps** (Mini Apps=ex-Frames-v2, @farcaster/miniapp-sdk@0.3.0, Manifest+account-association,
+fc:miniapp-Embed, Neynar-Post, sdk.wallet EIP-1193, x402-Gating). Deltas: defi_lending/cctp/permit2/x402/sky_usds/farcaster_social.
+Kandidaten-Haken: Morpho-market-creation ✅ (P1-Rest), Farcaster Frames v2 ✅.
+**⚠️ DEPLOY-GOTCHA: GitHub→Vercel-Auto-Deploy feuerte für den Push NICHT** (Commit auf GitHub, aber kein neuer Vercel-Build) →
+manuell `vercel --prod --yes` (eingeloggt als dophil) deployt. Bei künftigen Blöcken: nach Push live-list_topics prüfen; wenn Zahl
+nicht steigt, list_deployments seit Push checken und ggf. manuell deployen.
 
 ### Block 87 (2026-07-13) — Protokoll-Stand 2026 + AA-Combo + Exploit-Postmortems (4 Opus-Agenten parallel)
 4 Guides aus 4 parallelen Opus-Research-Agenten, tragende Aussagen vom Lead nachverifiziert:
