@@ -6,7 +6,19 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **152 Guides, 21 Sektionen, 73 Endpunkte** (Blöcke 1–88 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+Stand: **154 Guides, 21 Sektionen, 74 Endpunkte** (Blöcke 1–89 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+
+### Block 89 (2026-07-13) — Berachain-Playbook + Perp-DEX-Landschaft (2 Opus-Agenten)
+2 Guides, alle Adressen/Endpoints selbst live-verifiziert: **berachain_playbook** (chainId 80094 verifiziert, ~2s Blöcke,
+keyless rpc.berachain.com; Tri-Token BERA/BGT-soulbound/HONEY-18dec; BEX=Balancer-v2-Fork Vault 0x4Be0… WETH()→WBERA
+kreuz-verifiziert — NICHT mehr CrocSwap; Kodiak Uni-v3-Fork router.factory/WETH9 kreuz-verifiziert; Proof-of-Liquidity
+Reward Vaults + BGT delegate/redeem/iBGT; HONEY-6-dec- & CrocSwap-Stale-Fallen) · **perp_dex_landscape** (Orderbook-vs-LP-Modell;
+Hyperliquid HIP-3 perpDexs live 10 Dexes inkl. xyz:AAPL tokenisierte Aktien; Lighter zero-fee-ZK, Paradex Starknet perps+options,
+Aster Binance-shaped, Jupiter Perps borrow-rate LP — alle keyless; Drift Alt-Programm on-chain TOT bestätigt post-Hack).
+Deltas: hyperliquid_trading(+HIP-3), perps_funding_data(+Lighter/Paradex/Aster + Jupiter-borrow-vs-funding).
+ADDRESSES +Berachain core; ENDPOINTS +Berachain RPC +Perp-DEX-Data; Neynar-Endpoint-Duplikat entfernt.
+Kandidaten-Haken: „real_exploit_postmortems" via Drift-Referenz erneut belegt; achtes+ Chain-Playbook (Berachain) ✅.
+Achter Chain-Playbook. Auto-Deploy feuerte diesmal sofort (Block-88-Webhook-Ausfall war Einzelfall).
 
 ### Block 88 (2026-07-13) — Morpho Blue + gasless Stablecoin-Rails + Farcaster Mini Apps (3 Opus-Agenten parallel)
 3 Guides, alle Adressen/Endpoints selbst live-verifiziert: **morpho_markets_vaults** (Blue 0xBBBB…effcb owner=Morpho DAO;
