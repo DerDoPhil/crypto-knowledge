@@ -6,7 +6,18 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **154 Guides, 21 Sektionen, 74 Endpunkte** (Blöcke 1–89 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+Stand: **156 Guides, 21 Sektionen, 76 Endpunkte** (Blöcke 1–90 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+
+### Block 90 (2026-07-13) — Solana-Lending (Kamino) + Monad-Playbook (2 Opus-Agenten)
+2 Guides, alle Programm-IDs/Adressen selbst live-verifiziert: **solana_lending_kamino** (schließt echte Lücke — Tool hatte KEIN
+Solana-Lending; Kamino K-Lend/Kvault/Kliquidity/Scope + MarginFi-v2 + Save + Drift-v2/Vaults ALLE on-chain executable=true selbst
+geprüft; keyless api.kamino.finance reserves/metrics live; Account-Modell-Fallen: refresh_reserve+refresh_obligation PFLICHT,
+Obligation-PDA, Pyth-Pull-Oracles im Tx, ALTs) · **monad_playbook** (9. Chain-Playbook; chainId 143 verifiziert, ~400ms Blöcke
+gemessen, keyless rpc.monad.xyz; WMON+native USDC/USDT0 6dec verifiziert; Uniswap-v3 SwapRouter02 kreuz-verifiziert
+router.factory()→V3-Factory UND WETH9()→WMON; CCTP-v2-Domain 15; V4/Kuru führen Volumen, Adressen NICHT gepinnt).
+ADDRESSES +Solana-Lending-Programme +Monad-core; ENDPOINTS +Kamino-API +Monad-RPC.
+Kandidaten-Haken: Solana-Lending ✅ (neu), 9. Chain-Playbook (Monad) ✅. Sonic/MegaETH als nächste Chain-Kandidaten offen.
+Auto-Deploy feuerte nach ~30s. 9 neue Guides heute (Blöcke 87-90, 145→156).
 
 ### Block 89 (2026-07-13) — Berachain-Playbook + Perp-DEX-Landschaft (2 Opus-Agenten)
 2 Guides, alle Adressen/Endpoints selbst live-verifiziert: **berachain_playbook** (chainId 80094 verifiziert, ~2s Blöcke,
