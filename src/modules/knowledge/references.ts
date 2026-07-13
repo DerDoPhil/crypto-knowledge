@@ -181,6 +181,19 @@ export const ADDRESSES: AddressEntry[] = [
     note: "All live-verified 2026-07-12 (v0.8/v0.9 byte-identical on Ethereum AND Base — deterministic deploys). v0.8 (2025-03): native EIP-7702 + ERC-712 UserOp hashing. v0.9 (2025-11): ABI-compatible with v0.8/v0.7; adds paymasterSignature (attach paymaster data AFTER the wallet signs), block-number validity ranges, initCode silently ignored if account exists. Pick the version your bundler's mempool supports. See account_abstraction_dev guide.",
   },
   {
+    name: "Simple7702Account (canonical EIP-7702 delegate, eth-infinitism v0.8/v0.9)",
+    addresses: { ethereum: "0x4Cd241E8d1510e30b2076397afc7508Ae59C66c9" },
+    note: "The audited minimal delegate from the official ERC-4337 distribution — verified 2026-07-13 from the eth-infinitism deployments artifact (v0.8.0 AND v0.9.0 tags) plus on-chain code (3639 bytes). ⚠️ A same-size look-alike with DIFFERENT bytecode exists at another address — confirm provenance from the repo artifact, never from a search hit. See erc4337_eip7702_combo guide.",
+  },
+  {
+    name: "Circle Paymaster v0.7 (USDC-as-gas, keyless)",
+    addresses: {
+      base: "0x6C973eBe80dCD8660841D4356bf15c32460271C9",
+      arbitrum: "0x6C973eBe80dCD8660841D4356bf15c32460271C9",
+    },
+    note: "Permissionless ERC-4337 paymaster — pay gas in USDC, NO API key or signup. Identical CREATE2 bytecode on Base + Arbitrum (proxy), live-verified 2026-07-13. 10% gas surcharge, USDC only, EntryPoint v0.7. Circle also documents a v0.8 variant on more chains (ETH/OP/Polygon/Avalanche/Unichain) — address not pinned here, pull from developers.circle.com/paymaster and eth_getCode it first. See erc4337_eip7702_combo guide.",
+  },
+  {
     name: "Wrapped native token (WETH/WPOL/…)",
     addresses: {
       ethereum: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
@@ -1169,9 +1182,9 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Contract development (code)": ["foundry_invariant_testing", "web3_ci_cd", "solidity_security_patterns", "solana_program_security", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging", "scripting_with_onchain_tools"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
   "NFTs": ["nft_collection_launch", "opensea_collection_management", "opensea_trading_listings", "nft_metadata_standards", "ipfs_for_nfts", "seaport_orders", "robinhood_chain_nfts", "erc6551_token_bound_accounts", "nft_lending_perps", "famous_nft_collections", "classic_trait_pfp_launch"],
-  "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "jito_bundle_submission", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay"],
+  "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "jito_bundle_submission", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay", "solana_protocol_2026"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning", "lightning_l402_payments"],
-  "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "safe_multisig", "erc6551_token_bound_accounts"],
+  "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "erc4337_eip7702_combo", "safe_multisig", "erc6551_token_bound_accounts"],
   "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "compound_v3_comet", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin", "euler_v2_vaults", "fluid_protocol", "gearbox_leverage", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
@@ -1179,9 +1192,9 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "agent_cost_accounting", "error_taxonomy_retries", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jito_bundle_submission", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "base_chain_playbook", "arbitrum_playbook", "polygon_playbook", "avalanche_playbook", "apechain_playbook", "optimism_playbook", "hyperevm_playbook", "kol_copy_trading", "hype_cycles_narrative_rotation", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin"],
   "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
-  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection", "mcp_security_for_agents"],
+  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "real_exploit_postmortems", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection", "mcp_security_for_agents"],
   "Payments & agent economy": ["x402_payments", "lightning_l402_payments", "mcp_ecosystem_for_agents", "mcp_security_for_agents", "register_onchain_tool", "opensea_tool_sdk", "opensea_tool_logo", "agent_commerce_stack", "agent_wallets_execution", "opensea_api"],
-  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
+  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "ethereum_protocol_2026", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
 export interface AbiInterface {

@@ -39,6 +39,10 @@ const queries = [
   "escrow a job between two agents erc-8183 evaluator",
   "give my agent a wallet with spending limits mpc policies",
   "wrapped cryptopunks seaport punk attributes on chain",
+  "how expensive are blobs now fusaka blob base fee floor",
+  "is alpenglow live on solana finality confirmed finalized",
+  "make my EOA a smart account with sponsored gas 7702 bundler",
+  "biggest defi hacks 2025 2026 lessons bybit drift bridge",
 ];
 
 for (const q of queries) {
