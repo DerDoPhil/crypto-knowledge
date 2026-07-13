@@ -43,6 +43,10 @@ const queries = [
   "is alpenglow live on solana finality confirmed finalized",
   "make my EOA a smart account with sponsored gas 7702 bundler",
   "biggest defi hacks 2025 2026 lessons bybit drift bridge",
+  "supply and borrow on morpho blue derive marketId health",
+  "find safe morpho vaults graphql listed filter fake apy",
+  "pay gasless with USDC PYUSD no ETH transferWithAuthorization eip3009",
+  "build and post a farcaster mini app frame manifest sdk",
 ];
 
 for (const q of queries) {

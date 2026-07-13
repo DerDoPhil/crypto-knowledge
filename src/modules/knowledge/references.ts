@@ -27,7 +27,23 @@ export const ADDRESSES: AddressEntry[] = [
   {
     name: "Morpho Blue (lending) — Ethereum",
     addresses: { ethereum: "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb" },
-    note: "Immutable, isolated-market lending primitive (live-verified, 15.6KB). Markets are (loanToken, collateralToken, oracle, irm, lltv) tuples — supply/borrow via marketParams, no global risk. Data API: blue-api.morpho.org/graphql (keyless). Balancer v2 Vault (flash loans for liquidations): 0xBA12222222228d8Ba445958a75a0704d566BF2C8 (live-verified).",
+    note: "Immutable, isolated-market lending primitive (live-verified 2026-07-13: owner()=Morpho DAO 0xcba28b38…, not a proxy). Markets are (loanToken, collateralToken, oracle, irm, lltv) tuples — marketId = keccak256(abi.encode(params)). AdaptiveCurveIRM (nearly all markets): 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC. MetaMorpho ERC-4626 factories: v1.0 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101, v1.1 0x1897A8997241C1cD4bD0698647e4EB7213535c24 (both live-verified via isMetaMorpho). Data API: blue-api.morpho.org/graphql (keyless — where:{listed:true} is MANDATORY). Balancer v2 Vault (flash loans for liquidations): 0xBA12222222228d8Ba445958a75a0704d566BF2C8. See morpho_markets_vaults.",
+  },
+  {
+    name: "SparkLend (Aave-v3 fork) — Ethereum",
+    addresses: { pool: "0xC13e21B648A5Ee794902342038FF3aDAB66BE987", addresses_provider: "0x02c3ea4e34c0cbd694d2adfa2c690eecbc1793ee" },
+    note: "Aave-v3 fork (live-verified 2026-07-13: 18 reserves, ADDRESSES_PROVIDER cross-checked). supply/borrow/withdraw/repay with variable rate only (interestRateMode=2). NOT the same as Spark Savings (sUSDS/sDAI — see sky_usds_savings). See morpho_markets_vaults for disambiguation.",
+  },
+  {
+    name: "Gasless-payment stablecoins (EIP-3009 / EIP-2612)",
+    addresses: {
+      pyusd_ethereum: "0x6c3ea9036406852006290770BEdFcAbA0e23A0e8",
+      pyusd_solana: "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo",
+      usdg_ethereum: "0xe343167631d89B6Ffc58B88d6b7fB0228795491D",
+      usdg_solana: "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH",
+      usde_ethereum: "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
+    },
+    note: "All live-verified 2026-07-13 (6 decimals unless noted). EIP-712 domain VERSION differs per token and a wrong one reverts: USDC='2', PYUSD ('PayPal USD')='1', USDG ('Global Dollar')='1', USDe='1'. USDC/PYUSD/USDG support both EIP-3009 (transferWithAuthorization) + EIP-2612 (permit); USDe/USDS = permit only; USDT = NEITHER (needs Permit2 0x000000000022D473030F116dDEE9F6B43aC78BA3). ⚠️ Solana PYUSD/USDG are Token-2022 mints. See stablecoin_payment_rails.",
   },
   {
     name: "BNB Chain DeFi core (chain 56)",
@@ -546,11 +562,19 @@ export const ENDPOINTS: EndpointEntry[] = [
   },
   {
     name: "Morpho API (lending markets/positions)",
-    baseUrl: "https://api.morpho.org/graphql",
+    baseUrl: "https://blue-api.morpho.org/graphql",
     auth: "none",
-    what: "GraphQL for Morpho Blue + MetaMorpho vaults: markets, rates, positions, liquidatable borrowers — keyless (live-verified; blue-api.morpho.org/graphql is the older alias).",
-    example: "POST { query: '{ markets(first:5, orderBy: SupplyAssetsUsd, orderDirection: Desc, where:{ chainId_in:[1], listed:true }){ items{ marketId lltv loanAsset{symbol} collateralAsset{symbol} state{ supplyApy borrowApy utilization } } } }' }; positions: userByAddress(chainId, address){ marketPositions{ state{ borrowAssetsUsd collateralUsd } } }",
-    limits: "Complexity-capped; request only the fields you need. ⚠️ ALWAYS filter listed:true — without it the top of SupplyAssetsUsd ordering is junk/manipulated markets (live-observed: fake 41,830% APY entries). APY fields are decimals (0.034 = 3.4%), not percent. Canonical market key is marketId (uniqueKey no longer in schema).",
+    what: "GraphQL for Morpho Blue + MetaMorpho vaults: markets, rates, positions, liquidatable borrowers — keyless (live-verified 2026-07-13; api.morpho.org/graphql is the older alias, blue-api is canonical).",
+    example: "POST { query: '{ vaults(first:5, orderBy: TotalAssetsUsd, orderDirection: Desc, where:{ chainId_in:[1], listed:true }){ items{ name state{ netApy } } } }' }; markets(where:{chainId_in:[1], listed:true}){ items{ marketId lltv loanAsset{symbol} collateralAsset{symbol} state{ supplyApy borrowApy utilization } } }",
+    limits: "Complexity-capped; request only the fields you need. ⚠️ ALWAYS filter listed:true — without it the top of the ordering is scam vaults (live-observed 2026-07: unlisted '1337 USDC' $38M TVL, netApy 2979.96 = 297.996%). Field traps: MARKETS use marketId (id) + uniqueKey_in (id-set filter); the flag is 'listed' (the API rejects 'whitelisted'); APY fields are decimals (0.034 = 3.4%). See morpho_markets_vaults.",
+  },
+  {
+    name: "Neynar (Farcaster hosted API + hubs)",
+    baseUrl: "https://api.neynar.com/v2/farcaster",
+    auth: "free-key",
+    what: "Read + write Farcaster: user/bulk, casts, channels, and POST /cast (needs signer_uuid) to post a cast with a Mini-App embed. Hosted hub reads at hub-api.neynar.com/v1 + snapchain-api.neynar.com/v1. The public docs key NEYNAR_API_DOCS works for reads (live-verified 2026-07-13).",
+    example: 'GET /user/bulk?fids=3 (header x-api-key: NEYNAR_API_DOCS) → dwr; POST /cast { signer_uuid, text, embeds:[{url:"https://your-miniapp"}] }',
+    limits: "Free/Starter tier ~300 RPM / 5 RPS; a cast costs ~150 credits, an active signer ~20,000 credits/month. Reads via the docs key; writes need a real signer (SIWN/managed). See farcaster_miniapps.",
   },
   {
     name: "Curve API (pools, APYs)",
@@ -1185,7 +1209,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "jito_bundle_submission", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay", "solana_protocol_2026"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning", "lightning_l402_payments"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "erc4337_eip7702_combo", "safe_multisig", "erc6551_token_bound_accounts"],
-  "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "compound_v3_comet", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin", "euler_v2_vaults", "fluid_protocol", "gearbox_leverage", "perps_funding_data", "dao_governance_data", "farcaster_social", "robinhood_chain"],
+  "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "morpho_markets_vaults", "compound_v3_comet", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin", "euler_v2_vaults", "fluid_protocol", "gearbox_leverage", "perps_funding_data", "dao_governance_data", "farcaster_social", "farcaster_miniapps", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
   "Agent playbooks (multi-tool)": ["playbook_pre_trade_check", "playbook_cross_chain_arbitrage", "playbook_memecoin_launch_analysis"],
@@ -1193,7 +1217,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin"],
   "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "real_exploit_postmortems", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection", "mcp_security_for_agents"],
-  "Payments & agent economy": ["x402_payments", "lightning_l402_payments", "mcp_ecosystem_for_agents", "mcp_security_for_agents", "register_onchain_tool", "opensea_tool_sdk", "opensea_tool_logo", "agent_commerce_stack", "agent_wallets_execution", "opensea_api"],
+  "Payments & agent economy": ["x402_payments", "stablecoin_payment_rails", "lightning_l402_payments", "mcp_ecosystem_for_agents", "mcp_security_for_agents", "register_onchain_tool", "opensea_tool_sdk", "opensea_tool_logo", "agent_commerce_stack", "agent_wallets_execution", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "ethereum_protocol_2026", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
