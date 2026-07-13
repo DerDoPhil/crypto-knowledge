@@ -6,7 +6,23 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **130 Guides, 21 Sektionen, 67+ Endpunkte** (Blöcke 1–82 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+Stand: **149 Guides, 21 Sektionen, 72 Endpunkte** (Blöcke 1–87 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+
+### Block 87 (2026-07-13) — Protokoll-Stand 2026 + AA-Combo + Exploit-Postmortems (4 Opus-Agenten parallel)
+4 Guides aus 4 parallelen Opus-Research-Agenten, tragende Aussagen vom Lead nachverifiziert:
+**ethereum_protocol_2026** (Fusaka 2025-12-03; EIP-7918-Floor = base_fee/16 LIVE bewiesen — blobBaseFee ~4,4M wei
+statt 1 wei; BPO1/BPO2 → 14/21 Blobs, ratio-Nenner=21 live bewiesen; EIP-7825 Tx-Cap 2^24; Glamsterdam ePBS+BALs
+reported, EIP-7782 raus, Verkle→Binary-Tree EIP-7864) · **solana_protocol_2026** (Alpenglow approved NICHT live,
+Votor ab Agave v4.3 feature-gated; getVersion 4.1.0 + Client-Mix via clientId LIVE; -32020-Breakage LIVE;
+BAM opt-in, AgaveBam 8,7% Nodes; SIMD-96 aktiv/SIMD-228 rejected) · **erc4337_eip7702_combo** (eip7702Auth-Feld,
+Simple7702Account 0x4Cd241E8… aus OFFIZIELLEM Deployment-Artefakt verifiziert — Agent-Gedächtnis-Adresse 0xe6Cae83…
+hatte ANDEREN Bytecode!; Circle-Paymaster 0x6C973e… Base+Arb live-verifiziert, keyless, 10% Surcharge;
+ERC-7715/7710 = Draft/experimental) · **real_exploit_postmortems** (7 Fehlerklassen, 8 Fälle 2025–H1'26 inkl.
+Drift 4/2026 $286M Durable-Nonce/Timelock-Removal + KelpDAO 4/2026 $292M 1-of-1-DVN — beide per Elliptic/Chainalysis
+gegenverifiziert; Agent-Pre-Use-Checkliste). Deltas: eip4844_blobs (Floor+21), solana_priority_fees/jito/sandwich
+(BAM+SIMD), eip7702 (Phishing-Welle), aa_4337 (eip7702Auth). ADDRESSES +Simple7702Account +Circle-Paymaster.
+Kandidaten-Haken: „ERC-4337 v0.8 + EIP-7702-Kombination" ✅ · „real_exploit_postmortems" ✅ ·
+„paymaster_strategies / session keys" ✅ (in combo-Guide aufgegangen) · „Verkle/Statelessness-Ausblick" ✅ (in ethereum_protocol_2026).
 
 ### Block 82 (2026-07-11) — Chain-Playbooks OP + HyperEVM, KOL-Tracking
 3 Guides: **optimism_playbook** (Blockzeit 2,0s + TVL $300M vs Base $4,47B LIVE gemessen; Velodrome
