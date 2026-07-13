@@ -2881,6 +2881,52 @@ export const GUIDES: Record<string, Guide> = {
     ],
     references: ["https://hyperliquid.gitbook.io", "https://docs.jup.ag", "https://docs.paradex.trade"],
   },
+
+  solana_lending_kamino: {
+    topic: "solana_lending_kamino",
+    title: "Solana lending & vaults: Kamino, MarginFi, Save, Drift — and the account-model traps",
+    summary: "How an agent supplies/borrows on Solana — dominated by Kamino (keyless rates API + K-Lend program). Plus MarginFi/Save/Drift placement and the Solana-specific traps (refresh instructions, obligation-as-account, Pyth pull oracles, ALTs) that EVM lending knowledge does not cover. All program IDs on-chain executable-verified 2026-07-13.",
+    scope: ["solana"],
+    prerequisites: ["anchor_program_interaction", "solana_priority_fees"],
+    steps: [
+      { title: "The programs (all on-chain executable-verified)", command: 'getAccountInfo <programId> {"dataSlice":{"offset":0,"length":0}} → executable:true', note: "Kamino: K-Lend KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD, Kvault (curated lending vaults) KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd, Kliquidity (CLMM auto-vaults) 6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc, Scope oracle HFn8GnPADiny6XqUoWE8uRPPxb29ikn4yTuPa9MF2fWJ. MarginFi v2 MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA. Save/Solend So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo. Drift v2 dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH + Drift Vaults vAuLTsyrvSfZRuRB3XgvkPwNGgYSs9YRYymVebLKoxR. All verified executable — re-check with the command above; executable ≠ safe, always read live TVL/rates too." },
+      { title: "Read Kamino rates without a key", command: "GET https://api.kamino.finance/kamino-market → primary market 7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF\nGET https://api.kamino.finance/kamino-market/<market>/reserves/metrics → per-reserve supplyApy/borrowApy/maxLtv/TVL", note: "Keyless, live-verified. reserves/metrics returns {reserve, liquidityTokenMint, maxLtv, borrowApy, supplyApy, totalSupplyUsd, totalBorrowUsd} per asset — the discovery/rate endpoint an agent should hit before touching any program. CLMM vault rates: GET /strategies/metrics?env=mainnet-beta&status=LIVE (515 vaults live-verified)." },
+      { title: "The obligation model (NOT an EVM mapping)", note: "A position is its OWN account (a PDA), not a storage slot in the contract. Kamino/Solend call it an 'obligation', MarginFi a 'marginfi account'. You must CREATE and rent-fund it before the first deposit (costs lamports, partly reclaimable on close). Each asset is a 'reserve' account (config: LTV, liq threshold, rate curve; state: available/borrowed, borrow-rate index). Solana forces you to list every touched account explicitly in the instruction (reserve, obligation, oracle, token vaults, ATA)." },
+      { title: "Supply/borrow flow (K-Lend via @kamino-finance/klend-sdk v9)", note: "THE #1 trap: before deposit/borrow/withdraw you MUST run refresh_reserve + refresh_obligation in the SAME tx (they update accrued interest + oracle prices). Forget them → the tx fails or computes on stale prices. EVM has no equivalent. Then add the deposit/borrow instruction, plus an Address Lookup Table + a raised compute-unit budget + a priority fee (solana_priority_fees) — lending txs almost always exceed the plain account/size limits." },
+      { title: "Vaults: Kvault / Kliquidity / Multiply", note: "Kvault = curated lending vaults (deposit one asset, curator allocates across K-Lend reserves). Kliquidity = CLMM auto-vaults on Orca/Raydium (@kamino-finance/kliquidity-sdk v14, rates via /strategies/metrics). Multiply = leveraged loop (borrow→swap→re-deposit). For passive yield without managing reserves yourself, Kvault is the analogue of a MetaMorpho vault (morpho_markets_vaults)." },
+      { title: "Health, oracles & liquidation", note: "Health = collateral × oracle price × liq-threshold vs borrowed. Oracles are PULL-model since 2024: Pyth price_update accounts (+ Switchboard) must be passed as AccountMetas in the tx; Kamino wraps them via Scope. Liquidation is permissionless but the liquidator must FIND and pass the obligation account (no liquidate(address user) like EVM) — repays part of the debt, seizes collateral + bonus." },
+      { title: "Alternatives & the trap checklist", note: "MarginFi v2 (active, OtterSec-audited; a Sept-2025 flash-loan vuln was patched PRE-exploit, no loss; SDK @mrgnlabs/marginfi-client-v2 v6.4.2, reads banks on-chain — no simple keyless REST). Save/ex-Solend (@solendprotocol/solend-sdk, mints cTokens for deposits). Drift spot-lending + Drift Vaults (@drift-labs/vaults-sdk). Checklist: refresh instructions first · ALT required · CU budget sized · fresh oracle accounts passed · rent for the obligation · NEVER confuse a staging program (e.g. MarginFi stag8sTKds2h4KzjUw3zKTsxbqvT4XKHdaR9X9E6Rct) with mainnet." },
+    ],
+    warnings: [
+      "The refresh_reserve + refresh_obligation instructions are mandatory before any lending action — omitting them is the most common Solana-lending failure, and it can transact against stale oracle prices.",
+      "executable=true only proves a program is deployed, not that a market is safe or un-deprecated — always read live TVL/rates via the Kamino API before committing funds.",
+      "Program-ID strings were on-chain executable-verified; the MarginFi v2 id is the canonical mrgnlabs address — still, cross-check any id against the protocol's own docs before hardcoding it in production.",
+    ],
+    references: ["https://docs.kamino.finance", "https://docs.marginfi.com"],
+  },
+
+  monad_playbook: {
+    topic: "monad_playbook",
+    title: "Monad playbook: the parallel-EVM L1 (chainId 143, ~400ms blocks)",
+    summary: "Monad (chainId 143, mainnet since Nov 2025) — a parallel-execution EVM L1 with measured ~400ms blocks and ~1s finality at full bytecode compatibility. For agents: fast settle loops, native Circle USDC (CCTP v2 domain 15) + USDT0 rails, Uniswap V3/V4 + native Kuru orderbook. All core addresses on-chain-verified 2026-07-13.",
+    scope: ["evm"],
+    prerequisites: ["aggregator_swaps", "cctp_native_usdc"],
+    steps: [
+      { title: "Connect & sanity-check", command: "RPC https://rpc.monad.xyz (keyless) → eth_chainId MUST be 0x8f (143)", note: "Live-verified 2026-07-13: chainId 143, client Monad/0.14.5, ~400ms blocks (measured over 200 blocks), gasPrice ~100 gwei. Fallback RPCs rpc1/rpc2/rpc3.monad.xyz. Explorer monadscan.com. ⚠️ gasPrice is nominally high in gwei but MON is a low-priced token — measure real USD cost before assuming 'cheap'." },
+      { title: "Wrapped native", note: "WMON 0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A (deposit()/withdraw() like WETH, symbol/decimals live-verified 18). Always use WMON, never native MON, inside Uniswap paths." },
+      { title: "Swap via Uniswap V3", command: "SwapRouter02 0xfe31f71c1b106eac32f1a19239c9a9a72ddfb900, Factory 0x204faca1764b154221e35c0d20abb3c525710498", note: "Cross-verified live: router.factory() → the V3 factory AND router.WETH9() → WMON (both exact). Standard Uniswap-v3 ABI. Before a trade, check pool liquidity via Factory.getPool(tokenA,tokenB,fee) — this is a young chain, pools can be thin." },
+      { title: "Advanced routing", note: "Universal Router 0x0d97dc33264bfc1c226207428a79b26757fb9dc3 + canonical Permit2 0x000000000022D473030F116dDEE9F6B43aC78BA3. Deepest liquidity may sit in Uniswap V4 (highest 7d volume, reported) or the native Kuru CLOB orderbook (highest 24h volume, reported) — verify their PoolManager/router on-chain before using; I did not pin those addresses." },
+      { title: "Stablecoins", note: "Native USDC 0x754704Bc059F8C67012fEd69BC8A327a5aafb603 (6 dec, Circle — live-verified) for payments/agent-commerce; USDT0 0xe7cd86e13AC4309349F30B3435a9d337750fC82D (6 dec, LayerZero OFT). ⚠️ Both are 6 decimals, not 18 — the classic amount-math trap." },
+      { title: "Bridge in", note: "(a) native USDC via Circle CCTP v2 — Monad domain 15, TokenMessengerV2 0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d (burn-and-mint, no wrapped assets — cctp_native_usdc); (b) any asset via LiFi (chain 143 fully supported, live-verified via li.quest/v1/chains — call tool route); (c) canonical ETH/SOL via the Monad Native Bridge (monadbridge.com, Wormhole, reported)." },
+      { title: "Agent edge & risk", note: "Edge = ~400ms blocks / ~1s finality → tight trading loops and fast settlement, plus a fresh chain likely running points/airdrop programs. Risk = young chain (~8 months), total DEX volume only ~$29M/day → real slippage at size; V4/Kuru lead volume while some V3 pools are thin; MonadBFT is less battle-tested than Ethereum. Batch reads with Multicall3 0xcA11bde05977b3631167028862bE2a173976CA11." },
+    ],
+    warnings: [
+      "USDC and USDT0 are 6-decimal — a WMON-style 18-decimal assumption misprices every stablecoin amount by 1e12.",
+      "Kuru CLOB and Uniswap V4 lead volume but their addresses are NOT pinned here — verify on-chain before routing through them; the guide's cross-verified DEX is Uniswap V3.",
+      "Young chain: DEX depth is thin vs established L2s. Check Factory.getPool liquidity and size trades to it, and re-verify the CCTP TokenMessenger against Circle's contract page before production bridging.",
+    ],
+    references: ["https://docs.monad.xyz", "https://developers.circle.com"],
+  },
 };
 
 export const GUIDE_TOPICS = Object.keys(GUIDES);

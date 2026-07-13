@@ -49,6 +49,8 @@ const queries = [
   "build and post a farcaster mini app frame manifest sdk",
   "trade defi on berachain proof of liquidity BGT HONEY bex",
   "which perp dex can my agent use hyperliquid lighter paradex",
+  "supply and borrow stablecoins on solana kamino lending obligation",
+  "trade on monad parallel evm chain 143 uniswap usdc",
 ];
 
 for (const q of queries) {
