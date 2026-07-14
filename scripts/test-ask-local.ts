@@ -51,6 +51,8 @@ const queries = [
   "which perp dex can my agent use hyperliquid lighter paradex",
   "supply and borrow stablecoins on solana kamino lending obligation",
   "trade on monad parallel evm chain 143 uniswap usdc",
+  "trade defi on sonic chain 146 shadow exchange fee monetization",
+  "provide liquidity on solana orca whirlpool meteora dlmm bins vs ticks",
 ];
 
 for (const q of queries) {

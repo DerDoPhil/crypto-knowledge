@@ -24,17 +24,17 @@ POST /mcp  — JSON-RPC 2.0 over Streamable HTTP (Model Context Protocol)
 - whale_watch: recent large ERC-20 transfers over a block window
 - simulate: EVM transaction dry-run + revert reason decoding before signing
 - catalog: capabilities + chain discovery
-- knowledge: the chain brain — 156 live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guides + matching endpoints in ONE call. Also list_topics (free), get_guide, search, reference.
+- knowledge: the chain brain — 158 live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guides + matching endpoints in ONE call. Also list_topics (free), get_guide, search, reference.
 
 ## Knowledge coverage (action 'ask' / 'get_guide')
 
 Coding: wallets, EVM+Solana deploys, EIP-712/1271, ERC-20/Permit2, tx debugging, event logs,
 gas optimization, EIP-4844 blobs, Multicall, SIWE, ERC-8257 registration, ENS, AA-4337, EIP-7702, Safe multisig.
-DeFi: Aave/Morpho-Blue lending (marketId derivation, MetaMorpho vaults), Solana lending (Kamino/MarginFi/Save/Drift), ERC-4626 vaults, Curve stableswap, yield farming, DEX aggregators, CCTP v2, bridges, Uniswap v4.
+DeFi: Aave/Morpho-Blue lending (marketId derivation, MetaMorpho vaults), Solana lending (Kamino/MarginFi/Save/Drift), Solana DEXes direct (Orca/Raydium/Meteora ticks-vs-bins LP), ERC-4626 vaults, Curve stableswap, yield farming, DEX aggregators, CCTP v2, bridges, Uniswap v4.
 Payments: x402, gasless stablecoin rails (EIP-3009/2612, USDC/PYUSD/USDG domains, Permit2 for USDT). Social: Farcaster read + Mini Apps (build/post/onchain).
 Trading strategies: arbitrage, MEV (attack+defense incl. Solana sandwich defense), copy/sniping/grid bots, liquidations,
 flash loans, perps (GMX/Hyperliquid), funding/basis trade, prediction markets, portfolio management, token discovery,
-agent cost accounting + error/retry taxonomy, on-chain perp-DEX landscape (Hyperliquid HIP-3, Lighter, Paradex, Aster, Jupiter). Chain playbooks: Base, Arbitrum (Timeboost), Optimism, Polygon, Avalanche, ApeChain, HyperEVM, Berachain (Proof-of-Liquidity), Monad (parallel EVM, chainId 143), BNB, Cronos, Robinhood Chain.
+agent cost accounting + error/retry taxonomy, on-chain perp-DEX landscape (Hyperliquid HIP-3, Lighter, Paradex, Aster, Jupiter). Chain playbooks: Base, Arbitrum (Timeboost), Optimism, Polygon, Avalanche, ApeChain, HyperEVM, Berachain (Proof-of-Liquidity), Monad (parallel EVM, chainId 143), Sonic (ex-Fantom, FeeM, chainId 146), BNB, Cronos, Robinhood Chain.
 Security: rugpull forensics, wash-trading detection, governance attacks, proxy/upgrade risks, oracle safety,
 real exploit postmortems 2025-26 (Bybit/Cetus/Balancer/Drift/KelpDAO failure classes).
 Protocol state 2026: Ethereum post-Fusaka (blob-fee floor, 21-blob blocks, tx gas cap) and

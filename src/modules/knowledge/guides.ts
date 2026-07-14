@@ -2927,6 +2927,53 @@ export const GUIDES: Record<string, Guide> = {
     ],
     references: ["https://docs.monad.xyz", "https://developers.circle.com"],
   },
+
+  sonic_playbook: {
+    topic: "sonic_playbook",
+    title: "Sonic playbook: the ex-Fantom high-speed EVM (chainId 146, Fee Monetization)",
+    summary: "Sonic (Sonic Labs, ex-Fantom, chainId 146) — a high-performance EVM L1 with ~1.4s blocks / sub-second finality. Shadow Exchange is the dominant DEX, Aave v3 is live, and the chain-specific edge is Fee Monetization (FeeM): apps earn back up to 90% of the gas their users spend. All core addresses on-chain-verified 2026-07-13.",
+    scope: ["evm"],
+    prerequisites: ["aggregator_swaps"],
+    steps: [
+      { title: "Connect & sanity-check", command: "RPC https://rpc.soniclabs.com (keyless) → eth_chainId MUST be 0x92 (146)", note: "Live-verified 2026-07-13: chainId 146, client Sonic/v2.2.0 (the Fantom/Opera successor client), ~1.4s block interval (measured over 1000 blocks — note the '~720ms' marketing figure is FINALITY, not block time), gasPrice ~55 gwei in S. Explorer sonicscan.org. LiFi supports chain 146 (key 'son', native S) for cross-chain routing." },
+      { title: "Wrap/unwrap S", note: "wS 0x039e2fB66102314Ce7b64Ce5Ce3E5183bc94aD38 (deposit()/withdraw(), WETH9 interface, symbol/decimals live-verified 18). Always use wS, never native S, inside DEX paths." },
+      { title: "Swap on Shadow Exchange (dominant DEX)", note: "Shadow is a Solidly/ve(3,3) + concentrated-liquidity fork. Volatile/stable pairs: legacy Router 0x1D368773735ee1E678950B7A97bcA2CafB330CDc (swapExactTokensForTokens with route[]{from,to,stable}; factory()→0x2dA25E…74c8 AND WETH()→wS both cross-verified live). Concentrated liquidity: CL SwapRouter 0x5543c6176feb9b4b179078205d7c29eea2e2d695 (Uniswap-v3 exactInputSingle; WETH9()→wS verified). SHADOW token 0x3333b97138D4b086720b5aE8A7844b1345a33333." },
+      { title: "Stablecoins", note: "Native USDC 0x29219dd400f2Bf60E5a23d13Be72B486D4038894 (6 dec, Circle — live-verified). WETH 0x50c42dEAcD8Fc9773493ED674b675bE577f2634b (18 dec). Standard ERC-20 approvals." },
+      { title: "Lending via Aave v3", note: "Aave v3 is live on Sonic: Pool 0x5362dBb1e601abF3a4c14c22ffEdA64042E5eAA3 (supply/borrow/withdraw; ADDRESSES_PROVIDER()→0x5C2e738…6900 cross-verified live). USDC/wS/WETH as assets — same interface as defi_lending." },
+      { title: "Bridge Ethereum↔Sonic", note: "Canonical: Sonic Gateway 0x9Ef7629F9B930168b76283AdD7120777b3c895b3 (native bridge, ~10-15 min L1→Sonic, longer fail-safe window Sonic→L1). Aggregator: LiFi (chain 146, key 'son') for multi-chain routing incl. USDC — call tool route." },
+      { title: "FeeM — the Sonic edge", note: "Fee Monetization: if an agent deploys its OWN contract, register it via selfRegister(uint256 projectId) at the FeeM registrar 0xDC2B0D2Dd2b7759D97D50db4eabDC36973110830 → the app earns back up to 90% of the gas fees its transactions generate (registration fee 25 S, refunded). Passive income for on-chain-active agent contracts — unique to Sonic among these playbooks." },
+      { title: "Maturity & risk check", note: "⚠️ The Sonic Points/Gems AIRDROP program ENDED (Season 2 closed 2026-11-01 — no active farming window as of mid-2026). Liquidity concentrates on Shadow (+ SwapX, Beethoven X — not verified here). Check on-chain reserves/TVL before sizeable trades. Sonic uses proxy contracts (163-byte) for core infra (WETH/Gateway/FeeM) — introspect via the proxy; the CL SwapRouter does NOT expose factory() (reverts) — use WETH9() to cross-check instead." },
+    ],
+    warnings: [
+      "The '~720ms' figure is finality, not block time — measured block interval is ~1.4s. Don't size latency-critical logic off the marketing number.",
+      "The Points/Gems airdrop ended Nov 2025 — there is no active incentive-farming window; don't chase it.",
+      "Shadow's CL SwapRouter reverts on factory() — cross-verify via WETH9() (→wS) instead; the legacy router uses WETH() (0xad5c4648), not wETH().",
+    ],
+    references: ["https://docs.soniclabs.com", "https://sonicscan.org"],
+  },
+
+  solana_dex_amms: {
+    topic: "solana_dex_amms",
+    title: "Solana DEXes direct: Orca, Raydium, Meteora — swaps, LP, ticks vs bins",
+    summary: "Direct interaction with Solana's underlying AMM/CLMM/DLMM DEXes for swaps AND liquidity provision — Orca Whirlpools, Raydium (AMM v4/CLMM/CPMM), Meteora (DLMM/DAMM). On-chain-verified program IDs, keyless data/swap APIs, the CLMM-ticks-vs-DLMM-bins difference, and the Jupiter-vs-direct decision. Complements the Jupiter swap path — this is for specific pools and LP, which Jupiter does not do.",
+    scope: ["solana"],
+    prerequisites: ["token_discovery", "solana_priority_fees"],
+    steps: [
+      { title: "Decision: Jupiter aggregator vs direct DEX", note: "For any SWAP, default to the Jupiter aggregator (the solana_swap tool / quote+swap API) — it routes across all these DEXes, picks best price, and auto-handles ATAs/wSOL. Go direct only to (a) provide liquidity (Jupiter can't), (b) target a specific pool, or (c) avoid aggregator dependency. Among the three, only RAYDIUM offers a full keyless swap-transaction REST API; Orca/Meteora swaps are built via their SDK." },
+      { title: "Program IDs (on-chain executable-verified — never from memory)", command: 'getAccountInfo <id> {"dataSlice":{"offset":0,"length":0}} → executable:true', note: "Orca Whirlpools (CLMM) whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc. Raydium: AMM v4 675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8, CLMM CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK, CPMM CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C, Stable 5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h (⚠️ last char 'h' — the memory-guess '…Uev3P' is NOT-FOUND on-chain; this is why you verify). Meteora: DLMM LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo, DAMM v1 Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB, DAMM v2 cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG. All verified executable 2026-07-13." },
+      { title: "Pool discovery via keyless APIs", command: "Orca: GET https://api.orca.so/v2/solana/pools | Raydium: GET https://api-v3.raydium.io/pools/info/list | Meteora: GET https://dlmm.datapi.meteora.ag/pools", note: "Filter by token mints; read fee tier, liquidity/TVL, and tickSpacing (Orca/Raydium) or binStep (Meteora) before choosing a pool. ⚠️ Meteora's legacy dlmm-api.meteora.ag/pair/all is now 404 — the current base is dlmm.datapi.meteora.ag (~30 req/s). Orca's API is data-only (no swap-quote REST)." },
+      { title: "Raydium: the one keyless swap API", command: "GET https://transaction-v1.raydium.io/compute/swap-base-in?inputMint=…&outputMint=…&amount=…&slippageBps=50&txVersion=V0 → {outputAmount, priceImpactPct, routePlan}\nthen POST https://transaction-v1.raydium.io/transaction/swap-base-in → serialized v0 tx", note: "Raydium's own router across its pools, fully keyless (live-verified). Priority-fee tiers: GET https://api-v3.raydium.io/main/auto-fee → {vh,h,m}. This is the direct-DEX swap path that does NOT need an SDK — but Jupiter usually still gives a better cross-DEX price." },
+      { title: "CLMM (Orca/Raydium): ticks & ranges", note: "Concentrated liquidity: continuous price discretized into ticks; price = sqrtPrice²; an LP picks a [tickLower, tickUpper] range and only earns fees while price is in range. tickSpacing sets granularity. SDKs: @orca-so/whirlpools (current, needs @solana/kit) or @orca-so/whirlpools-sdk (legacy web3.js); raydium-sdk-V2. Best for majors where you can manage a range." },
+      { title: "DLMM (Meteora): bins & shapes", note: "Price space is split into discrete BINS of fixed binStep (bps); ZERO slippage inside the active bin; an LP distributes liquidity across bins (spot/curve/bid-ask shapes) and the position is an NFT. Only the active bin earns fees, so positions need rebalancing as price moves. This is why DLMM dominates memecoin LP (single-sided launches, fee capture). SDK @meteora-ag/dlmm. Simple full-range LP instead → Raydium CPMM or Meteora DAMM v2 (constant-product, Token-2022 support, no tick management)." },
+      { title: "Solana DEX traps (checklist)", note: "Compute budget: CLMM/DLMM multi-tick/bin swaps exceed 200k CU → setComputeUnitLimit. Priority fee: setComputeUnitPrice (Raydium main/auto-fee tiers). ALTs: these programs touch many accounts → use a v0 tx + Address Lookup Tables to stay under the 1232-byte limit (Raydium's API returns txVersion:V0 + tables). ATA + wSOL: create idempotent ATAs, wrap/unwrap native SOL ↔ So11111111111111111111111111111111111111112. Token-2022 pools (CPMM/DAMM v2/newer DLMM): use the correct token program and be transfer-hook-aware. Set slippage in the SDK/API quote (solana_priority_fees)." },
+    ],
+    warnings: [
+      "Never trust a copied Solana program ID from memory or an old guide — verify getAccountInfo→executable first. The Raydium-Stable 'h'-vs-'P' case shows a one-character memory error points at a non-existent account.",
+      "pump.fun tokens graduate to PumpSwap, NOT to Raydium (that changed in 2024) — don't route graduated-token liquidity assuming Raydium (pumpswap_graduation).",
+      "Meteora's dlmm-api.meteora.ag/pair/* endpoints are dead (404); use dlmm.datapi.meteora.ag. Many older guides/SDK samples still reference the stale host.",
+    ],
+    references: ["https://docs.orca.so", "https://docs.raydium.io", "https://docs.meteora.ag"],
+  },
 };
 
 export const GUIDE_TOPICS = Object.keys(GUIDES);
