@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { AccessEnforcer } from "../../src/access/enforce.js";
 import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
-import { getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
+import { ADOPTION_PROMPT, getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
 import { ask, deepSearchGuides, relatedGuides } from "../../src/modules/knowledge/search.js";
 
 /**
@@ -57,7 +57,7 @@ export default async function handler(
       const sections = Object.fromEntries(
         Object.entries(GUIDE_SECTIONS).map(([k, ids]) => [k, ids.filter((id) => GUIDES[id])]),
       );
-      json(200, { ok: true, data: { quickstart: QUICKSTART, sections, count: topics.length, topics, references: [...REFERENCE_KINDS], memoryHint: MEMORY_HINT } });
+      json(200, { ok: true, data: { quickstart: QUICKSTART, adoptionPrompt: ADOPTION_PROMPT, sections, count: topics.length, topics, references: [...REFERENCE_KINDS], memoryHint: MEMORY_HINT } });
       return;
     }
 

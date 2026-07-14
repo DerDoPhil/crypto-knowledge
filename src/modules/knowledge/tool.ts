@@ -4,7 +4,7 @@ import { fail, ok } from "../../core/envelope.js";
 import { ErrorCode } from "../../core/errors.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 import { GUIDES, GUIDE_TOPICS } from "./guides.js";
-import { getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
+import { ADOPTION_PROMPT, getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
 import { ask, deepSearchGuides, relatedGuides } from "./search.js";
 
 export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): void {
@@ -47,7 +47,7 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
           Object.entries(GUIDE_SECTIONS).map(([k, ids]) => [k, ids.filter((id) => GUIDES[id])]),
         );
         return toToolResult(
-          ok({ quickstart: QUICKSTART, sections, count: topics.length, topics, references: [...REFERENCE_KINDS], memoryHint: MEMORY_HINT }, meta),
+          ok({ quickstart: QUICKSTART, adoptionPrompt: ADOPTION_PROMPT, sections, count: topics.length, topics, references: [...REFERENCE_KINDS], memoryHint: MEMORY_HINT }, meta),
         );
       }
 
