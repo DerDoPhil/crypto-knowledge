@@ -6,7 +6,16 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **156 Guides, 21 Sektionen, 76 Endpunkte** (Blöcke 1–90 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+Stand: **158 Guides, 21 Sektionen, 78 Endpunkte** (Blöcke 1–91 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+
+### Block 91 (2026-07-13/14) — Sonic-Playbook + Solana-DEXe (2 Opus-Agenten)
+2 Guides, alle Adressen/Programm-IDs selbst live-verifiziert: **sonic_playbook** (10. Chain-Playbook; chainId 146, ~1.4s Blöcke,
+keyless rpc.soniclabs.com; wS+USDC(6); Shadow-DEX kreuz-verifiziert legacy-Router factory()→pair-factory UND WETH()→wS,
+CL-Router WETH9()→wS; Aave-v3 ADDRESSES_PROVIDER kreuz-verifiziert; FeeM-Edge selfRegister→90% Gas-Rebate; ehrlicher Vorbehalt:
+Airdrop endete Nov 2025) · **solana_dex_amms** (Lücke: kein direkter Solana-DEX-Guide; Orca/Raydium/Meteora ALLE executable
+selbst geprüft, Raydium keyless Swap-API, CLMM-ticks-vs-DLMM-bins, Jupiter-vs-direkt, „h"-vs-„P"-Stable-Falle gefangen).
+ADDRESSES +Sonic +Solana-DEX; ENDPOINTS +Solana-DEX-APIs +Sonic-RPC. **NEUE REGEL: about.html-Übersicht (Guide/Endpoint/Adress-Zahlen)
+bei JEDEM Block mit-aktualisieren (Philipp-Auftrag) — jetzt 158/78/67.** Auto-Deploy ~30s.
 
 ### Block 90 (2026-07-13) — Solana-Lending (Kamino) + Monad-Playbook (2 Opus-Agenten)
 2 Guides, alle Programm-IDs/Adressen selbst live-verifiziert: **solana_lending_kamino** (schließt echte Lücke — Tool hatte KEIN
