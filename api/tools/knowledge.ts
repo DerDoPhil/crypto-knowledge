@@ -14,7 +14,7 @@ import { ask, deepSearchGuides, relatedGuides } from "../../src/modules/knowledg
  *        "topic"?: string, "query"?: string, "kind"?: string }
  *
  * list_topics is free (discovery); the actual knowledge (get_guide, search,
- * reference) requires a Normies holder proof or a settled x402 payment.
+ * reference) requires a settled x402 payment ($0.01, pay-per-call, no NFT gate).
  */
 export const config = { maxDuration: 30 };
 
@@ -38,7 +38,7 @@ export default async function handler(
       usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"query"?,"kind"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guides + endpoints in one call. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
       topics: GUIDE_TOPICS,
       references: [...REFERENCE_KINDS],
-      access: "list_topics + skill are free. Guides/references: free for Normies NFT holders (X-Wallet + X-Wallet-Signature) or $0.02 USDC per request via x402 (X-PAYMENT).",
+      access: "list_topics + skill are free. Guides/references: $0.01 USDC per request via x402 (X-PAYMENT) — pay-per-call, no NFT gate.",
       memoryHint: MEMORY_HINT,
     });
     return;

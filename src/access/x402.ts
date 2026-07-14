@@ -1,5 +1,5 @@
 /**
- * x402 payment building blocks ($0.02 per request for non-holders).
+ * x402 payment building blocks ($0.01 per request — pay-per-call for everyone).
  *
  * Implements the HTTP 402 "Payment Required" handshake used by SwarmSkill's
  * keyless xpay facilitator: the server answers an unpaid request with payment
@@ -13,7 +13,7 @@ import { fetchJson } from "../core/http.js";
 export interface PaymentRequirements {
   scheme: "exact";
   network: string;
-  /** Atomic units of `asset` (e.g. "20000" = $0.02 in 6-decimals USDC). */
+  /** Atomic units of `asset` (e.g. "10000" = $0.01 in 6-decimals USDC). */
   maxAmountRequired: string;
   resource: string;
   description: string;
@@ -49,7 +49,7 @@ export function build402Body(resource: string, cfg: X402Config): { x402Version: 
         network: cfg.network,
         maxAmountRequired: cfg.priceAtomic,
         resource,
-        description: "Crypto-Knowledge per-request access ($0.02). Hold the gating NFT for free access.",
+        description: "Crypto-Knowledge per-request access ($0.01 USDC on Base via x402).",
         mimeType: "application/json",
         payTo: cfg.payTo,
         maxTimeoutSeconds: 120,

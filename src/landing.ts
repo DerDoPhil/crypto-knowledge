@@ -29,14 +29,10 @@ Ethereum, Base, Arbitrum, Polygon, Cronos, ApeChain, Solana.
 ## Access
 
 Discovery is free: initialize, tools/list and the catalog tool need no credentials.
-Every other tools/call requires ONE of:
-1. Normies NFT holder (free): send headers
-   X-Wallet: 0x<your address>
-   X-Wallet-Signature: personal_sign of "crypto-knowledge-auth <wallet-lowercase> <YYYY-MM-DD>" (UTC date, today)
-   Collection: https://opensea.io/collection/normies (Ethereum)
-2. x402 payment ($0.02 USDC on Base per request): an unpaid call answers HTTP 402
-   with the exact payment requirements (scheme "exact", payTo, asset). Retry with
-   the X-PAYMENT header; the payment is verified and settled via the facilitator.
+Every other tools/call requires an x402 payment ($0.01 USDC on Base per request):
+an unpaid call answers HTTP 402 with the exact payment requirements (scheme "exact",
+payTo, asset). Retry with the X-PAYMENT header; the payment is verified and settled
+via the keyless facilitator. Pay-per-call for everyone — there is no NFT gate.
 
 ## Source
 

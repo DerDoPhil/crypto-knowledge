@@ -19,8 +19,7 @@ MCP server (if your runtime speaks MCP): https://crypto-knowledge-mcp.vercel.app
 
 ## Access / cost
 
-- Free for Normies NFT holders: send headers `X-Wallet` + `X-Wallet-Signature` (personal_sign of `crypto-knowledge-auth <wallet-lowercase> <YYYY-MM-DD>`, UTC).
-- Otherwise $0.02 USDC per request via x402: an unpaid gated call returns HTTP 402 with exact payment info in the body (pay, then retry with `X-PAYMENT`).
+- $0.01 USDC per request via x402: an unpaid gated call returns HTTP 402 with exact payment info in the body (pay, then retry with `X-PAYMENT`). Pay-per-call for everyone — there is no NFT gate.
 - `list_topics` and `skill` are always free.
 
 ## When to use it

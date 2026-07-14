@@ -10,7 +10,7 @@ import { runSecurityScan } from "../../src/modules/security/tool.js";
  *
  * POST { "chain": "ethereum" | ... | "solana", "address": "0x… | mint" }
  * → uniform envelope { ok, data, warnings, errors }
- * Same access rules as /mcp: Normies holder headers or x402 payment.
+ * Same access rules as /mcp: x402 payment ($0.01, pay-per-call, no NFT gate).
  */
 export const config = { maxDuration: 60 };
 
@@ -32,7 +32,7 @@ export default async function handler(
       ok: true,
       tool: "crypto-knowledge-security",
       usage: 'POST {"chain":"<evm chain or solana>","address":"<token address>"}',
-      access: "Free for Normies NFT holders (X-Wallet + X-Wallet-Signature headers) or $0.02 USDC per request via x402 (X-PAYMENT header).",
+      access: "$0.01 USDC per request via x402 (X-PAYMENT header) — pay-per-call for everyone, no NFT gate.",
     });
     return;
   }

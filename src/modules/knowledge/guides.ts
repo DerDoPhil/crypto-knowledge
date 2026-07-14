@@ -404,7 +404,7 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Verify AND settle via the keyless facilitator", command: "POST https://facilitator.xpay.sh/verify  { x402Version: 1, paymentPayload, paymentRequirements }\nPOST https://facilitator.xpay.sh/settle  (same body)", note: "verify alone moves NO money — you must settle. xpay needs no account, no KYB, payTo is just your address." },
       { title: "The primitive underneath: EIP-3009", note: "The signed payment payload is an EIP-3009 transferWithAuthorization on the asset — so the facilitator needs the asset's EIP-712 domain (name/version) to reconstruct it, and the version field is PER TOKEN (USDC='2', Paxos tokens like PYUSD/USDG='1'). Building the payload by hand with the wrong version yields a valid-looking signature that the facilitator rejects. Full mechanics: stablecoin_payment_rails." },
     ],
-    warnings: ["Asset addresses in requirements are chain-specific: USDC on Base = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 (6 decimals — $0.02 = '20000')."],
+    warnings: ["Asset addresses in requirements are chain-specific: USDC on Base = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 (6 decimals — $0.01 = '10000')."],
     references: ["https://www.x402.org", "https://facilitator.xpay.sh", "https://blog.cloudflare.com/monetization-gateway/ (edge-enforced x402 for sites behind Cloudflare, waitlist since 2026-07)"],
   },
 
