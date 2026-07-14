@@ -6,7 +6,17 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **158 Guides, 21 Sektionen, 78 Endpunkte** (Blöcke 1–91 erledigt; Manifest v1.3.1, Baseline `0xe0a6553a…df6b`).
+Stand: **158 Guides, 21 Sektionen, 78 Endpunkte** (Blöcke 1–91 erledigt; **Manifest v1.4.0, Baseline `0x575dfe50…5219`**).
+
+### 🔓 ACCESS-MODELL GEÄNDERT (2026-07-14, Philipp): Normie-Gate RAUS + Preis $0.02→$0.01
+Reines x402-Pay-per-call für alle, KEIN NFT-Gate mehr. Server (config.ts priceAtomic=10000, enforce.ts
+Holder-Pfad entfernt, gate.ts NFT-Check raus) + Manifest (access + io.opensea.access ENTFERNT, pricing 10000,
+v1.4.0) + alle user-facing Texte + skill.md. **On-chain (creator #2 0x6f35): updateToolMetadata(71) tx
+0x48ed6f01 → neue Hash-Baseline `0x575dfe50241ec86f552cc8ac87e6d9082cfe224484316c87d998c143b1915219`
+(ersetzt 0xe0a6553a); setCollections(71,[]) tx 0xc5f80cdb → getRequirements(71)=0, Gate weg.** Live verifiziert
+(402→$0.01/10000 ohne holderAccess, Manifest v1.4.0 kein access, on-chain Hash+getRequirements). vitest 75
+(3 Holder-Tests entfernt). **NEUE REGRESSION-BASELINE für künftige Blöcke: 0x575dfe50 (nicht mehr 0xe0a6553a).**
+
 
 ### Block 91 (2026-07-13/14) — Sonic-Playbook + Solana-DEXe (2 Opus-Agenten)
 2 Guides, alle Adressen/Programm-IDs selbst live-verifiziert: **sonic_playbook** (10. Chain-Playbook; chainId 146, ~1.4s Blöcke,
