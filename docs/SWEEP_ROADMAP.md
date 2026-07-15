@@ -264,3 +264,10 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [x] optimism_playbook-Delta: natives USDC 0x0b2C… vs USDC.e 0x7F5c… — BEIDE symbol()='USDC' (live) → per Adresse pinnen. Bestand des Playbooks unabhängig re-verifiziert (chainId/Blockzeit/Velodrome/Uni-v3) — Roadmap-Eintrag „Optimism-Playbook" war stale, Guide existierte seit 07-11
 - [x] ADDRESSES +Delegation registries (3) · ENDPOINTS +delegate.xyz API · llms.txt 158→160+Coverage · about.html 160/79/68 · +2 ask-Queries Rang 1 · Vault-Dual-Write komplett (Signaturen-Note, Contract-Dev-Note, Optimism.md, Adressen, Endpoints, MOC 160)
 - Commit bed0660, Auto-Deploy feuerte, live verifiziert (list_topics 160 + beide Topics + Manifest-md5==lokal → Baseline 0x575dfe50 UNBERÜHRT)
+
+## ✅ Block 93 (2026-07-15) — Wallet-Batching + Advanced Gas + Pendle-Staleness-Fix
+- [x] `eip5792_wallet_calls` — Wallet Call API FINAL: 4 RPC-Methoden, atomic-Capability (supported/ready/unsupported, MetaMask='ready'→7702-Upgrade-Prompt), viem sendCalls (forceAtomic, experimental_fallback), 6xx-Partial-Failure-Reconciliation; Wallet-Support reported 03/2026 (MetaMask/Coinbase/Rainbow/Trust)
+- [x] `advanced_gas_patterns` — EIP-1153 transient (100 Gas, TX-scoped ≠ call-scoped → Batch-Falle!), **TSTORE-Poison solc 0.8.28–0.8.33 via-IR (delete-Helper-Cache vertauscht sstore/tstore, Fix 0.8.34 — Hexens-Disclosure)**, SSTORE2, Assembly-Kosten/Nutzen; schließt Grok-§18 „gas-optimization-assembly deep" — §18 KOMPLETT
+- [x] Pendle-Delta: **alte /v1/sdk/…/swap-Routen sind 404 (live geprobt)** → Convert-API v2 GET / v3 POST, live-verifiziert mit echter wstETH→PT-Quote; Router V4 0x8888…F946 API-returned + Code-verifiziert; ENDPOINTS gefixt, ADDRESSES +Pendle — schließt Grok-P1 „Pendle-SDK-Calldata"
+- [x] llms.txt 160→162+Coverage · about.html 162/79/69 · +2 ask-Queries Rang 1 · Vault-Dual-Write (EVM-Transaktionen-Note +2 Sektionen, DeFi-Pendle-Delta, Endpoints, Adressen, MOC 162+Zähler 12)
+- Commit b7cac43, live verifiziert (list_topics 162), Manifest unberührt → Baseline 0x575dfe50
