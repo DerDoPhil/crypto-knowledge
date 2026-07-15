@@ -257,3 +257,10 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [x] `lightning_l402_payments` (L402-Flow, lightning-agent-tools, lightning-enable-mcp; x402-vs-L402-Entscheid)
 - [x] ADDRESSES: Jito tip accounts (9 Einträge) · ENDPOINTS: deBridge Agents MCP, X MCP, Hive MCP, UniswapX orders, Zerion
 - Nicht eingebaut (unverifiziert): RWA-MCPs (IXS/HYRE), FluxA/AEP2, Cryptohopper/ThinkMarkets/BitGo-Details, GateLane/Satring/Newhedge → Backlog mit Verifikationspflicht
+
+## ✅ Block 92 (2026-07-15) — Dev-Fokus: delegate.xyz + Storage-Layout (Philipp-Auftrag „delegate xyz etc")
+- [x] `wallet_delegation` — delegate.xyz v2 Registry 0x…447e…493 (Bytecode identisch ETH/Base/OP/Arb/Polygon verifiziert), Selektoren berechnet, checkDelegateForAll live-gecallt, keyless REST-API (25 req/10s) + LIVE-GEFANGENE Docs-Falle: check-Endpoints verlangen to/from, nicht delegate/vault; zkSync-Variante 0x…d797; v1/EIP-5639-Legacy; Token-Gating-Muster (ERC-8257-Kontext OpenSea-Dev-DM)
+- [x] `storage_layout_introspection` — EIP-1967-Slots (Aave v3 OP live gelesen), ZeppelinOS-Falle AN USDC BEWIESEN (EIP-1967-Slot leer, zOS-Slot hält Impl 0x435068…), Mapping-Slot-Mathe kreuzbewiesen (balanceOf == raw slot 9), EIP-7201-Formel ausgeführt (OZ Ownable 0x9016d0…), packed slots/strings, forge/cast — schließt Grok-§18 „proxy-mastery-with-storage-layout"
+- [x] optimism_playbook-Delta: natives USDC 0x0b2C… vs USDC.e 0x7F5c… — BEIDE symbol()='USDC' (live) → per Adresse pinnen. Bestand des Playbooks unabhängig re-verifiziert (chainId/Blockzeit/Velodrome/Uni-v3) — Roadmap-Eintrag „Optimism-Playbook" war stale, Guide existierte seit 07-11
+- [x] ADDRESSES +Delegation registries (3) · ENDPOINTS +delegate.xyz API · llms.txt 158→160+Coverage · about.html 160/79/68 · +2 ask-Queries Rang 1 · Vault-Dual-Write komplett (Signaturen-Note, Contract-Dev-Note, Optimism.md, Adressen, Endpoints, MOC 160)
+- Commit bed0660, Auto-Deploy feuerte, live verifiziert (list_topics 160 + beide Topics + Manifest-md5==lokal → Baseline 0x575dfe50 UNBERÜHRT)
