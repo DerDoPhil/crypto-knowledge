@@ -53,6 +53,8 @@ const queries = [
   "trade on monad parallel evm chain 143 uniswap usdc",
   "trade defi on sonic chain 146 shadow exchange fee monetization",
   "provide liquidity on solana orca whirlpool meteora dlmm bins vs ticks",
+  "prove my cold wallet nft from a hot wallet delegate.xyz delegation",
+  "read proxy implementation slot eip-1967 getStorageAt mapping slot",
 ];
 
 for (const q of queries) {

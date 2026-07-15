@@ -103,6 +103,15 @@ export const ADDRESSES: AddressEntry[] = [
     note: "All live-verified 2026-07-13 (chainId 80094, ~2s blocks, keyless RPC rpc.berachain.com). WBERA/HONEY/BGT/iBGT symbol()+decimals() checked — ⚠️ HONEY has 18 decimals, not 6. BEX = Balancer-v2 fork (Vault-centric, WETH()→WBERA cross-verified), NOT CrocSwap anymore. Kodiak = Uniswap-v3 fork (router.factory()/WETH9() cross-verified). BGT soulbound (delegate via BeraChef, redeem 1:1→BERA, or hold liquid iBGT). PoL Reward Vaults via reward_vault_factory. See berachain_playbook.",
   },
   {
+    name: "Delegation registries (delegate.xyz)",
+    addresses: {
+      delegate_registry_v2: "0x00000000000000447e69651d841bD8D104Bed493",
+      delegate_registry_v2_zksync: "0x0000000059A24EB229eED07Ac44229DB56C5d797",
+      delegate_registry_v1_legacy: "0x00000000000076A84feF008CDAbe6409d2FE638B",
+    },
+    note: "v2 = CREATE2 singleton, SAME address on 29+ EVM chains — bytecode verified identical on Ethereum/Base/Optimism/Arbitrum/Polygon 2026-07-15; zkSync-stack chains (Abstract/Era/Treasure) use the separate 0x…d797 address (the canonical one has NO code there). v1 (EIP-5639, 2022) read-only legacy. Pure attestation — a delegation grants zero token control. Keyless API api.delegate.xyz. See wallet_delegation.",
+  },
+  {
     name: "SparkLend (Aave-v3 fork) — Ethereum",
     addresses: { pool: "0xC13e21B648A5Ee794902342038FF3aDAB66BE987", addresses_provider: "0x02c3ea4e34c0cbd694d2adfa2c690eecbc1793ee" },
     note: "Aave-v3 fork (live-verified 2026-07-13: 18 reserves, ADDRESSES_PROVIDER cross-checked). supply/borrow/withdraw/repay with variable rate only (interestRateMode=2). NOT the same as Spark Savings (sUSDS/sDAI — see sky_usds_savings). See morpho_markets_vaults for disambiguation.",
@@ -471,6 +480,14 @@ export interface EndpointEntry {
 }
 
 export const ENDPOINTS: EndpointEntry[] = [
+  {
+    name: "delegate.xyz registry API",
+    baseUrl: "https://api.delegate.xyz/registry/v2",
+    auth: "optional-key",
+    what: "Wallet-delegation lookups without an RPC: enumerate a wallet's delegations and run the checkDelegate* checks over REST (multichain via chainId param).",
+    example: "GET /{wallet}?chainId=1 → Delegation[]; GET /check/all?to=…&from=… → true/false; GET /check/erc721?to=…&from=…&contract=…&tokenId=… (⚠️ live API requires to/from — the docs' delegate/vault names 400, verified 2026-07-15)",
+    limits: "Keyless: 25 req/10s; X-API-KEY header lifts limits (delegate.xyz/developer/api-keys).",
+  },
   {
     name: "DefiLlama prices",
     baseUrl: "https://coins.llama.fi",
@@ -1327,9 +1344,9 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Tokens (ERC-20 / SPL)": ["erc20_patterns", "permit2_usage", "spl_token_basics", "erc_standards_cheatsheet"],
   "Swaps, bridging & routing": ["aggregator_swaps", "intent_based_trading", "balancer_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "layerzero_oapp_messaging", "uniswap_v4_basics", "chaintrade_p2p_swap"],
   "Deploying contracts": ["deploy_contract_evm", "deploy_contract_solana", "deploy_erc20", "deterministic_deploys_create2", "verify_contract"],
-  "Contract development (code)": ["foundry_invariant_testing", "web3_ci_cd", "solidity_security_patterns", "solana_program_security", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging", "scripting_with_onchain_tools"],
-  "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution"],
-  "NFTs": ["nft_collection_launch", "opensea_collection_management", "opensea_trading_listings", "nft_metadata_standards", "ipfs_for_nfts", "seaport_orders", "robinhood_chain_nfts", "erc6551_token_bound_accounts", "nft_lending_perps", "famous_nft_collections", "classic_trait_pfp_launch"],
+  "Contract development (code)": ["foundry_invariant_testing", "web3_ci_cd", "solidity_security_patterns", "solana_program_security", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging", "scripting_with_onchain_tools", "storage_layout_introspection"],
+  "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution", "wallet_delegation"],
+  "NFTs": ["nft_collection_launch", "opensea_collection_management", "opensea_trading_listings", "nft_metadata_standards", "ipfs_for_nfts", "seaport_orders", "robinhood_chain_nfts", "erc6551_token_bound_accounts", "nft_lending_perps", "famous_nft_collections", "classic_trait_pfp_launch", "wallet_delegation"],
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "jito_bundle_submission", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay", "solana_protocol_2026", "solana_dex_amms"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning", "lightning_l402_payments"],
   "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "erc4337_eip7702_combo", "safe_multisig", "erc6551_token_bound_accounts"],
@@ -1340,7 +1357,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Trading & strategies": ["token_discovery", "arbitrage_basics", "basis_trade", "hyperliquid_trading", "portfolio_management", "trading_bot_architecture", "agent_cost_accounting", "error_taxonomy_retries", "copy_trading_bots", "sniping_launches", "grid_dca_bots", "mev_strategies", "solana_sandwich_defense", "jito_bundle_submission", "jit_liquidity", "robinhood_chain_playbook", "bnb_chain_playbook", "cronos_playbook", "base_chain_playbook", "arbitrum_playbook", "polygon_playbook", "avalanche_playbook", "apechain_playbook", "optimism_playbook", "hyperevm_playbook", "berachain_playbook", "monad_playbook", "sonic_playbook", "kol_copy_trading", "hype_cycles_narrative_rotation", "liquidation_bots", "flash_loans", "airdrop_farming", "onchain_perps_gmx", "perp_dex_landscape", "prediction_markets", "perps_funding_data", "price_oracle_safety"],
   "Stablecoins": ["stablecoin_mechanics", "tokenized_treasuries", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin"],
   "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
-  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "real_exploit_postmortems", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection", "mcp_security_for_agents"],
+  "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "real_exploit_postmortems", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection", "mcp_security_for_agents", "storage_layout_introspection"],
   "Payments & agent economy": ["x402_payments", "stablecoin_payment_rails", "lightning_l402_payments", "mcp_ecosystem_for_agents", "mcp_security_for_agents", "register_onchain_tool", "opensea_tool_sdk", "opensea_tool_logo", "agent_commerce_stack", "agent_wallets_execution", "opensea_api"],
   "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "ethereum_protocol_2026", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
