@@ -103,6 +103,11 @@ export const ADDRESSES: AddressEntry[] = [
     note: "All live-verified 2026-07-13 (chainId 80094, ~2s blocks, keyless RPC rpc.berachain.com). WBERA/HONEY/BGT/iBGT symbol()+decimals() checked — ⚠️ HONEY has 18 decimals, not 6. BEX = Balancer-v2 fork (Vault-centric, WETH()→WBERA cross-verified), NOT CrocSwap anymore. Kodiak = Uniswap-v3 fork (router.factory()/WETH9() cross-verified). BGT soulbound (delegate via BeraChef, redeem 1:1→BERA, or hold liquid iBGT). PoL Reward Vaults via reward_vault_factory. See berachain_playbook.",
   },
   {
+    name: "Pendle (yield tokenization) — Ethereum",
+    addresses: { router_v4: "0x888888888889758F76e7103c6CbF23ABbF58F946" },
+    note: "Router V4 = the tx.to that Pendle's Convert API returns for every swap/LP route (live-verified 2026-07-15: API-returned + eth_getCode has code). Per-market PT/YT/SY addresses are DYNAMIC — resolve them from /v1/{chainId}/markets/active per trade, never pin them. See pendle_yield_tokenization.",
+  },
+  {
     name: "Delegation registries (delegate.xyz)",
     addresses: {
       delegate_registry_v2: "0x00000000000000447e69651d841bD8D104Bed493",
@@ -694,9 +699,9 @@ export const ENDPOINTS: EndpointEntry[] = [
     name: "Pendle API v2 (yield tokenization)",
     baseUrl: "https://api-v2.pendle.finance/core",
     auth: "none",
-    what: "Pendle markets, PT/YT/SY token addresses, expiries, implied yields — keyless (live-verified: /v1/1/markets/active returns live markets incl. wstETH 2027). Hosted SDK routes also generate ready-to-sign calldata for PT/YT swaps and LP.",
-    example: "GET /v1/{chainId}/markets/active → [{name, address, expiry, pt, yt, sy}]; docs at api-v2.pendle.finance/core/docs",
-    limits: "See pendle_yield_tokenization guide for the PT/YT mechanics before trading.",
+    what: "Pendle markets, PT/YT/SY token addresses, expiries, implied yields AND ready-to-sign calldata — keyless. ⚠️ The old per-market hosted-SDK routes (/v1/sdk/…/swap) are DEAD (404, probed 2026-07-15); calldata now comes from the Convert API (v2 GET / v3 POST), which returns routes[].tx {to: Router V4 0x888888888889758F76e7103c6CbF23ABbF58F946, data} + requiredApprovals (live-verified with a real wstETH→PT quote).",
+    example: "GET /v1/{chainId}/markets/active → [{name, address, expiry, pt, yt, sy}]; GET /v2/sdk/{chainId}/convert?receiver=…&slippage=0.01&tokensIn=…&tokensOut=…&amountsIn=…; docs at api-v2.pendle.finance/core/docs",
+    limits: "Computing-Unit-based rate limits per endpoint. See pendle_yield_tokenization for PT/YT mechanics before trading.",
   },
   {
     name: "Pimlico public bundler (ERC-4337)",
@@ -1340,16 +1345,16 @@ export function getSkill(): unknown {
  */
 export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Getting started & wallets": ["create_wallet", "testnets_and_faucets", "wallet_security_checklist", "vanity_address"],
-  "Sending & debugging transactions": ["debug_failed_tx", "tx_confirmation_patterns", "error_taxonomy_retries", "eth_jsonrpc_cheatsheet", "fetch_event_logs"],
+  "Sending & debugging transactions": ["debug_failed_tx", "tx_confirmation_patterns", "error_taxonomy_retries", "eth_jsonrpc_cheatsheet", "fetch_event_logs", "eip5792_wallet_calls"],
   "Tokens (ERC-20 / SPL)": ["erc20_patterns", "permit2_usage", "spl_token_basics", "erc_standards_cheatsheet"],
   "Swaps, bridging & routing": ["aggregator_swaps", "intent_based_trading", "balancer_swaps", "bridge_funds", "l2_bridging_basics", "cctp_native_usdc", "crosschain_message_tracking", "layerzero_oapp_messaging", "uniswap_v4_basics", "chaintrade_p2p_swap"],
   "Deploying contracts": ["deploy_contract_evm", "deploy_contract_solana", "deploy_erc20", "deterministic_deploys_create2", "verify_contract"],
-  "Contract development (code)": ["foundry_invariant_testing", "web3_ci_cd", "solidity_security_patterns", "solana_program_security", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging", "scripting_with_onchain_tools", "storage_layout_introspection"],
+  "Contract development (code)": ["foundry_invariant_testing", "web3_ci_cd", "solidity_security_patterns", "solana_program_security", "uniswap_v4_hook_development", "account_abstraction_dev", "layerzero_oapp_messaging", "scripting_with_onchain_tools", "storage_layout_introspection", "advanced_gas_patterns"],
   "Signing & auth": ["eip712_signing", "siwe_auth", "account_abstraction_4337", "ens_resolution", "wallet_delegation"],
   "NFTs": ["nft_collection_launch", "opensea_collection_management", "opensea_trading_listings", "nft_metadata_standards", "ipfs_for_nfts", "seaport_orders", "robinhood_chain_nfts", "erc6551_token_bound_accounts", "nft_lending_perps", "famous_nft_collections", "classic_trait_pfp_launch", "wallet_delegation"],
   "Solana specifics": ["anchor_program_interaction", "solana_subscriptions", "solana_versioned_tx", "solana_token_extensions", "solana_priority_fees", "jito_bundle_submission", "pumpfun_token2022_gotchas", "pumpswap_graduation", "solana_sandwich_defense", "solana_pay", "solana_protocol_2026", "solana_dex_amms"],
   "Bitcoin": ["bitcoin_basics", "bitcoin_taproot", "bitcoin_ordinals_runes", "bitcoin_runes_minting", "bitcoin_lightning", "lightning_l402_payments"],
-  "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "erc4337_eip7702_combo", "safe_multisig", "erc6551_token_bound_accounts"],
+  "Smart accounts & upgrades": ["account_abstraction_4337", "account_abstraction_dev", "eip7702_smart_eoas", "erc4337_eip7702_combo", "safe_multisig", "erc6551_token_bound_accounts", "eip5792_wallet_calls"],
   "Market, DeFi & social data": ["defi_yield_research", "yield_farming_mechanics", "defi_lending", "morpho_markets_vaults", "solana_lending_kamino", "compound_v3_comet", "erc4626_vaults", "stableswap_pools", "pendle_yield_tokenization", "ethena_usde_mechanics", "sky_usds_savings", "gho_stablecoin", "euler_v2_vaults", "fluid_protocol", "gearbox_leverage", "perps_funding_data", "dao_governance_data", "farcaster_social", "farcaster_miniapps", "robinhood_chain"],
   "Staking": ["solana_staking", "eth_staking", "restaking_eigenlayer"],
   "NFTs (Solana compressed)": ["solana_compressed_nfts"],
@@ -1359,7 +1364,7 @@ export const GUIDE_SECTIONS: Record<string, string[]> = {
   "Token launches": ["token_launch_mechanics", "sniping_launches", "pumpswap_graduation"],
   "Security": ["price_oracle_safety", "wallet_security_checklist", "rugpull_forensics", "real_exploit_postmortems", "solidity_security_patterns", "solana_program_security", "proxy_upgrade_patterns", "governance_attacks", "wash_trading_detection", "mcp_security_for_agents", "storage_layout_introspection"],
   "Payments & agent economy": ["x402_payments", "stablecoin_payment_rails", "lightning_l402_payments", "mcp_ecosystem_for_agents", "mcp_security_for_agents", "register_onchain_tool", "opensea_tool_sdk", "opensea_tool_logo", "agent_commerce_stack", "agent_wallets_execution", "opensea_api"],
-  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "eip4844_blobs", "ethereum_protocol_2026", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
+  "Infra & performance": ["multicall_batching", "fetch_event_logs", "gas_optimization", "advanced_gas_patterns", "eip4844_blobs", "ethereum_protocol_2026", "opstack_l2_fees", "robinhood_chain", "solana_priority_fees", "chainlink_price_feeds", "vercel_dapp_deploy_gotchas"],
 };
 
 export interface AbiInterface {

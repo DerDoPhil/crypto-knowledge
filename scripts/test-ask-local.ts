@@ -55,6 +55,8 @@ const queries = [
   "provide liquidity on solana orca whirlpool meteora dlmm bins vs ticks",
   "prove my cold wallet nft from a hot wallet delegate.xyz delegation",
   "read proxy implementation slot eip-1967 getStorageAt mapping slot",
+  "batch approve and swap one confirmation wallet_sendCalls eip-5792",
+  "transient storage tstore reentrancy lock sstore2 gas",
 ];
 
 for (const q of queries) {
