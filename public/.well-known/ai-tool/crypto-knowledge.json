@@ -1,101 +1,101 @@
 {
-  "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
-  "name": "Crypto-Knowledge",
-  "description": "The on-chain brain for AI agents: action 'ask' returns correct, live-verified Web3 knowledge in ONE call instead of burning search/reasoning credits. 100+ runbooks across Bitcoin, Ethereum & Solana — contract dev (Foundry invariants, v4 hooks, account abstraction, security patterns), DeFi (lending, vaults, yield, Pendle, Ethena), trading (arbitrage, MEV, perps) — plus multi-tool playbooks, chain playbooks (Robinhood/BNB/Cronos), a keyless-API directory, canonical addresses and an error playbook.",
-  "version": "1.4.0",
-  "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/knowledge",
-  "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
-  "image": "https://crypto-knowledge-mcp.vercel.app/icon.png",
-  "featuredImage": "https://crypto-knowledge-mcp.vercel.app/featured.jpg",
-  "inputs": {
-    "type": "object",
-    "description": "POST this JSON body to the endpoint.",
-    "properties": {
-      "action": {
-        "type": "string",
-        "enum": [
-          "list_topics",
-          "ask",
-          "get_guide",
-          "search",
-          "reference"
-        ],
-        "description": "ask (RECOMMENDED) — send a natural-language question, get the best guides AND matching endpoints/addresses in ONE call; list_topics (free) lists all guides + reference tables; get_guide returns one runbook by id; search does deep full-text over guide bodies; reference returns a curated table."
-      },
-      "topic": {
-        "type": "string",
-        "description": "Guide id for get_guide, e.g. create_wallet, debug_failed_tx, x402_payments, register_onchain_tool."
-      },
-      "query": {
-        "type": "string",
-        "description": "Your question (ask) or keywords (search)."
-      },
-      "kind": {
-        "type": "string",
-        "enum": [
-          "addresses",
-          "endpoints",
-          "errors",
-          "rpc_gotchas",
-          "abis"
-        ],
-        "description": "Reference table for action=reference."
-      }
-    },
-    "required": [
-      "action"
-    ]
+ "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
+ "name": "Crypto-Knowledge",
+ "description": "The on-chain brain for AI agents: action 'ask' returns correct, live-verified Web3 knowledge in ONE call instead of burning search/reasoning credits. 160+ runbooks across Bitcoin, Ethereum & Solana — contract dev (Foundry invariants, v4 hooks, account abstraction, security patterns), DeFi (lending, vaults, yield, Pendle, Ethena), swaps & bridging (Uniswap v3/v4, aggregators, Across intents, CCTP), trading (arbitrage, MEV, perps) — plus multi-tool playbooks, 13 chain playbooks (Base, Arbitrum, Optimism, Monad, Berachain, Sonic …), a keyless-API directory, canonical addresses and an error playbook.",
+ "version": "1.4.1",
+ "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/knowledge",
+ "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
+ "image": "https://crypto-knowledge-mcp.vercel.app/icon.png",
+ "featuredImage": "https://crypto-knowledge-mcp.vercel.app/featured.jpg",
+ "inputs": {
+  "type": "object",
+  "description": "POST this JSON body to the endpoint.",
+  "properties": {
+   "action": {
+    "type": "string",
+    "enum": [
+     "list_topics",
+     "ask",
+     "get_guide",
+     "search",
+     "reference"
+    ],
+    "description": "ask (RECOMMENDED) — send a natural-language question, get the best guides AND matching endpoints/addresses in ONE call; list_topics (free) lists all guides + reference tables; get_guide returns one runbook by id; search does deep full-text over guide bodies; reference returns a curated table."
+   },
+   "topic": {
+    "type": "string",
+    "description": "Guide id for get_guide, e.g. create_wallet, debug_failed_tx, x402_payments, register_onchain_tool."
+   },
+   "query": {
+    "type": "string",
+    "description": "Your question (ask) or keywords (search)."
+   },
+   "kind": {
+    "type": "string",
+    "enum": [
+     "addresses",
+     "endpoints",
+     "errors",
+     "rpc_gotchas",
+     "abis"
+    ],
+    "description": "Reference table for action=reference."
+   }
   },
-  "outputs": {
-    "type": "object",
-    "description": "Uniform envelope.",
-    "properties": {
-      "ok": {
-        "type": "boolean",
-        "description": "true on success"
-      },
-      "data": {
-        "type": "object",
-        "description": "guide (title, steps with real commands, warnings, references) or reference table entries"
-      },
-      "errors": {
-        "type": "array",
-        "description": "canonical error codes on failure"
-      }
-    }
-  },
-  "tags": [
-    "ai",
-    "agent-tools",
-    "web3",
-    "defi",
-    "trading",
-    "mev",
-    "security",
-    "solidity",
-    "smart-contracts",
-    "bitcoin",
-    "ethereum",
-    "solana",
-    "onchain",
-    "playbooks",
-    "x402",
-    "normies"
-  ],
-  "io.opensea.display": {
-    "title": "Crypto-Knowledge",
-    "subtitle": "The on-chain brain for AI agents — runbooks, addresses, endpoints, error playbooks",
-    "category": "Agent tools",
-    "icon": "https://crypto-knowledge-mcp.vercel.app/icon.png"
-  },
-  "io.dophil.docs": "https://crypto-knowledge-mcp.vercel.app/llms.txt",
-  "pricing": [
-    {
-      "amount": "10000",
-      "asset": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "recipient": "eip155:8453:0xbC5CbC5434D3846BC445723e82B51b3932795e6d",
-      "protocol": "x402",
-      "description": "Per-request fee: $0.01 USDC on Base via x402. Pay-per-call for everyone; listing topics is free. No NFT gate."
-    }
+  "required": [
+   "action"
   ]
+ },
+ "outputs": {
+  "type": "object",
+  "description": "Uniform envelope.",
+  "properties": {
+   "ok": {
+    "type": "boolean",
+    "description": "true on success"
+   },
+   "data": {
+    "type": "object",
+    "description": "guide (title, steps with real commands, warnings, references) or reference table entries"
+   },
+   "errors": {
+    "type": "array",
+    "description": "canonical error codes on failure"
+   }
+  }
+ },
+ "tags": [
+  "ai",
+  "agent-tools",
+  "web3",
+  "defi",
+  "trading",
+  "mev",
+  "security",
+  "solidity",
+  "smart-contracts",
+  "bitcoin",
+  "ethereum",
+  "solana",
+  "onchain",
+  "playbooks",
+  "x402",
+  "bridges"
+ ],
+ "io.opensea.display": {
+  "title": "Crypto-Knowledge",
+  "subtitle": "The on-chain brain for AI agents — runbooks, addresses, endpoints, error playbooks",
+  "category": "Agent tools",
+  "icon": "https://crypto-knowledge-mcp.vercel.app/icon.png"
+ },
+ "io.dophil.docs": "https://crypto-knowledge-mcp.vercel.app/llms.txt",
+ "pricing": [
+  {
+   "amount": "10000",
+   "asset": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "recipient": "eip155:8453:0xbC5CbC5434D3846BC445723e82B51b3932795e6d",
+   "protocol": "x402",
+   "description": "Per-request fee: $0.01 USDC on Base via x402. Pay-per-call for everyone; listing topics is free. No NFT gate."
+  }
+ ]
 }
