@@ -6,7 +6,7 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **164 Guides, 21 Sektionen, 79 Endpunkte** (Blöcke 1–94 erledigt; **Manifest v1.4.0, Baseline `0x575dfe50…5219`**).
+Stand: **164 Guides, 21 Sektionen, 79 Endpunkte** (Blöcke 1–94 erledigt; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4`**).
 
 ### 🔓 ACCESS-MODELL GEÄNDERT (2026-07-14, Philipp): Normie-Gate RAUS + Preis $0.02→$0.01
 Reines x402-Pay-per-call für alle, KEIN NFT-Gate mehr. Server (config.ts priceAtomic=10000, enforce.ts
@@ -278,3 +278,4 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [x] bridge_funds-Delta (+Alternativen-Step Across/CCTP/kanonisch) · ADDRESSES +2 (SpokePools 5 Chains, v3-Periphery) · ENDPOINTS: Across-Eintrag ANGEREICHERT statt neu (Duplikat-Falle wie Neynar Block 88 diesmal GEFANGEN — vor Anlegen grep!)
 - [x] llms.txt 162→164+Coverage · about.html 164/79/71 · +2 ask-Queries Rang 1 · gen:brain 164/21/79 · Vault-Dual-Write (Swaps-Note +2 Sektionen +Delta, Adressen 59 Gruppen, Endpoints 80, MOC 164 + Swaps-Zähler 12 + 2 Topic-Links; stale Vault-Kopfzähler 44/67 auf real 59/80 korrigiert)
 - Commit 536335c, Auto-Deploy nach 30s, live verifiziert (list_topics + brain-data + llms.txt + about), Manifest-md5 live==lokal → Baseline 0x575dfe50 UNBERÜHRT
+- [x] **Manifest v1.4.1 + ON-CHAIN-SYNC (Philipp: „Angaben auf OpenSea aktuell"):** description „100+"→„160+ runbooks" + swaps&bridging + 13 chain playbooks (≤500-Zeichen-Schema-Limit!), Tag normies→bridges (Gate seit 07-14 weg). Sequenz deploy→verify(beide Domains md5==lokal)→updateToolMetadata(71) tx 0xbbae81d6 Block 25548049 → **NEUE HASH-BASELINE `0xf5ff3a2929882cbf89b52daa46c26ec5aca7e9e48b005a2ca1babce9ac2bebc4`** (ersetzt 0x575dfe50; on-chain raw-eth_call verifiziert). Commits eac77a4+8d3fa29.
