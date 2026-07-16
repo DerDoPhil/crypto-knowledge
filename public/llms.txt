@@ -24,7 +24,7 @@ POST /mcp  — JSON-RPC 2.0 over Streamable HTTP (Model Context Protocol)
 - whale_watch: recent large ERC-20 transfers over a block window
 - simulate: EVM transaction dry-run + revert reason decoding before signing
 - catalog: capabilities + chain discovery
-- knowledge: the chain brain — 162 live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guides + matching endpoints in ONE call. Also list_topics (free), get_guide, search, reference.
+- knowledge: the chain brain — 164 live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guides + matching endpoints in ONE call. Also list_topics (free), get_guide, search, reference.
 
 ## Knowledge coverage (action 'ask' / 'get_guide')
 
@@ -32,7 +32,7 @@ Coding: wallets, EVM+Solana deploys, EIP-712/1271, ERC-20/Permit2, tx debugging,
 gas optimization, EIP-4844 blobs, Multicall, SIWE, ERC-8257 registration, ENS, AA-4337, EIP-7702, Safe multisig,
 wallet delegation (delegate.xyz), storage-layout introspection (EIP-1967/7201 slots, raw mapping reads),
 EIP-5792 batch calls (wallet_sendCalls), transient storage EIP-1153 + SSTORE2 (incl. the TSTORE-Poison solc bug).
-DeFi: Aave/Morpho-Blue lending (marketId derivation, MetaMorpho vaults), Solana lending (Kamino/MarginFi/Save/Drift), Solana DEXes direct (Orca/Raydium/Meteora ticks-vs-bins LP), ERC-4626 vaults, Curve stableswap, yield farming, DEX aggregators, CCTP v2, bridges, Uniswap v4.
+DeFi: Aave/Morpho-Blue lending (marketId derivation, MetaMorpho vaults), Solana lending (Kamino/MarginFi/Save/Drift), Solana DEXes direct (Orca/Raydium/Meteora ticks-vs-bins LP), ERC-4626 vaults, Curve stableswap, yield farming, DEX aggregators, CCTP v2, bridges incl. Across intent bridging (depositV3 code flow), Uniswap v3 swap coding (QuoterV2, path encoding, Router02 deadline trap) + v4.
 Payments: x402, gasless stablecoin rails (EIP-3009/2612, USDC/PYUSD/USDG domains, Permit2 for USDT). Social: Farcaster read + Mini Apps (build/post/onchain).
 Trading strategies: arbitrage, MEV (attack+defense incl. Solana sandwich defense), copy/sniping/grid bots, liquidations,
 flash loans, perps (GMX/Hyperliquid), funding/basis trade, prediction markets, portfolio management, token discovery,

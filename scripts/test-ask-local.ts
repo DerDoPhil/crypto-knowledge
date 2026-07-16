@@ -57,6 +57,8 @@ const queries = [
   "read proxy implementation slot eip-1967 getStorageAt mapping slot",
   "batch approve and swap one confirmation wallet_sendCalls eip-5792",
   "transient storage tstore reentrancy lock sstore2 gas",
+  "bridge eth to base fast across depositV3 relayer fill",
+  "swap on uniswap v3 quoter router02 path encoding deadline",
 ];
 
 for (const q of queries) {

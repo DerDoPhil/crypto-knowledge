@@ -2532,6 +2532,7 @@ export const GUIDES: Record<string, Guide> = {
       { title: "Get the best cross-chain route", command: 'call tool "route" { action:"quote", fromChain, toChain, fromToken, toToken, amount, fromAddress }', note: "Queries LiFi + deBridge, returns the best route and an unsigned transactionRequest." },
       { title: "Check it's worth it", command: 'call tool "profitability" with the route\'s txs + expectedRevenueUsd', note: "Confirms the move is net-positive after gas + slippage." },
       { title: "Sign + broadcast the returned transaction with your own wallet", note: "This server never signs — you sign the unsigned tx it returns." },
+      { title: "Alternatives for special cases", note: "Canonical/large amounts → l2_bridging_basics (trust-minimized, slow exits). Speed on major assets with zero API keys and a fixed output → across_bridge_intents (intent fills in seconds, keyless API). Native USDC specifically → cctp_native_usdc (burn-and-mint, no bridged variant)." },
     ],
     references: ["https://li.fi", "https://debridge.finance"],
   },
@@ -3071,6 +3072,52 @@ export const GUIDES: Record<string, Guide> = {
       "Gas golf that changes storage layout or adds assembly to an upgradeable contract is how proxies die — run the storage-layout diff (storage_layout_introspection) before shipping.",
     ],
     references: ["https://eips.ethereum.org/EIPS/eip-1153", "https://soliditylang.org/blog/2024/01/26/transient-storage/", "https://github.com/0xsequence/sstore2"],
+  },
+
+  across_bridge_intents: {
+    topic: "across_bridge_intents",
+    title: "Across Protocol: intent-based bridging in seconds (depositV3, keyless API, code guide)",
+    summary: "The fastest widely-used bridge model: you deposit on the origin SpokePool with a fixed outputAmount, a relayer fills you on the destination from its own inventory within seconds, and gets refunded later. Full keyless flow — quote API, depositV3 parameters, status tracking — everything below live-verified 2026-07-16.",
+    scope: ["evm"],
+    prerequisites: ["A funded wallet on the origin chain", "erc20_patterns (approvals)"],
+    steps: [
+      { title: "The intent model (vs liquidity-pool bridges)", note: "depositV3 locks your input on the origin SpokePool and names a FIXED outputAmount on the destination. Independent relayers race to fill it from their own funds (fill observed via API: ETH→Base estimated ~17s, L2→L1 ~8s — API estimates, not guarantees); the protocol refunds relayers later from pooled liquidity after optimistic verification. For you: no slippage concept at all — you get exactly outputAmount or (if nobody fills before fillDeadline) an automatic refund on the origin chain. Across co-authored ERC-7683, the cross-chain-intents standard, with Uniswap — this guide's flow is the canonical instance of it." },
+      { title: "Check the pair is supported", command: "GET https://app.across.to/api/available-routes?originChainId=1&destinationChainId=8453", note: "Keyless (live-verified: 7 routes ETH→Base). Across bridges a curated set of canonical assets (WETH/ETH, USDC, USDT, DAI, WBTC…), not arbitrary tokens — for exotic pairs use an aggregator that swaps en route (bridge_funds). isNative tells you whether the route takes raw ETH." },
+      { title: "Get the quote — it contains almost every depositV3 parameter", command: "GET https://app.across.to/api/suggested-fees?inputToken=…&outputToken=…&originChainId=…&destinationChainId=…&amount=…", note: "Keyless (live-verified). Returns outputAmount (= amount − totalRelayFee.total, cross-checked exact), timestamp (→ quoteTimestamp), fillDeadline, exclusiveRelayer + exclusivityDeadline, spokePoolAddress + destinationSpokePoolAddress, estimatedFillTimeSec, and limits {minDeposit, maxDeposit, maxDepositInstant}. Respect the limits: below minDeposit the API flags isAmountTooLow; above maxDepositInstant fills wait for relayer rebalancing." },
+      { title: "Deposit on the origin SpokePool", command: "spokePool.depositV3(depositor, recipient, inputToken, outputToken, inputAmount, outputAmount, destinationChainId, exclusiveRelayer, quoteTimestamp, fillDeadline, exclusivityDeadline, message)  // selector 0x7b939232", note: "Copy quote values verbatim — a self-invented quoteTimestamp outside the pool's tolerance reverts, an outputAmount above the quote never gets filled (refund after deadline), one far below it fills instantly but overpays the relayer. approve(spokePool, inputAmount) first; for native ETH send msg.value with inputToken = the chain's WETH. message='0x' unless you want a contract call on fill. The current SpokePools also expose deposit(bytes32,…) (selector 0xad5425c6, bytes32 addresses for non-EVM destinations) — both selectors verified in the implementation bytecode on all 5 chains below." },
+      { title: "Track the fill", command: "GET https://app.across.to/api/deposit/status?originChainId=1&depositId=…", note: "Keyless (live-verified: returns status 'filled' + depositTxHash + fillTx). The depositId is emitted in the SpokePool's FundsDeposited event of your deposit tx. Poll this instead of watching destination-chain logs yourself." },
+      { title: "If nobody fills: the refund path", note: "fillDeadline caps how long relayers may fill (the API quotes ~2h; the on-chain maximum fillDeadlineBuffer() is 21600s = 6h — read live on all 5 SpokePools). After expiry the protocol refunds inputAmount on the ORIGIN chain automatically in a later bundle — funds are never stuck on neither side, but a refund is slow (hours). Quote again and redeposit." },
+      { title: "SpokePool addresses (API + on-chain double-verified 2026-07-16)", note: "Ethereum 0x5c7BCd6E7De5423a257D81B442095A1a6ced35C5 · Base 0x09aea4b2242abC8bb4BB78D537A67a245A7bEC64 · Arbitrum 0xe35e9842fceaCA96570B734083f4a58e8F7C5f2A · Optimism 0x6f26Bf09B1C792e3228e5467807a900A503c0281 · Polygon 0x9295ee1d8C5b022Be115A2AD3c30C72E34e7F096. Each cross-checked: wrappedNativeToken() returns the chain's canonical WETH/WPOL. All are EIP-1967 proxies (implementations change!) — prefer reading spokePoolAddress fresh from the suggested-fees response over hardcoding." },
+    ],
+    warnings: [
+      "There is no slippage parameter — outputAmount is a fixed promise. The risk lives in the quote: stale quotes revert or fill badly. Quote → approve → deposit promptly, and always copy timestamp/fillDeadline/exclusiveRelayer/exclusivityDeadline verbatim from the API.",
+      "Unfilled deposits refund on the ORIGIN chain after fillDeadline — an agent that assumes 'money arrived or tx failed' misses this third state. Poll deposit/status until 'filled' before acting on the destination.",
+      "SpokePools are upgradeable proxies; the deposit selectors were verified against today's implementations. Re-derive via the API's spokePoolAddress rather than pinning addresses in long-lived code.",
+    ],
+    references: ["https://docs.across.to", "https://eips.ethereum.org/EIPS/eip-7683"],
+  },
+
+  uniswap_v3_swap_coding: {
+    topic: "uniswap_v3_swap_coding",
+    title: "Uniswap v3 swaps in code: QuoterV2, path encoding, SwapRouter02 (and its deadline trap)",
+    summary: "The standard direct-DEX integration every EVM dev ends up writing: quote off-chain via QuoterV2 eth_call, encode multi-hop paths as packed bytes, swap through SwapRouter02 — whose exactInputSingle has NO deadline field (that moved to multicall). All selectors and quotes below executed live 2026-07-16.",
+    scope: ["evm"],
+    prerequisites: ["erc20_patterns (approvals)", "aggregator_swaps — for pure best-price you usually want an aggregator; go direct for determinism, on-chain integration, or zero API dependencies"],
+    steps: [
+      { title: "Quote with QuoterV2 — off-chain eth_call ONLY", command: 'eth_call QuoterV2.quoteExactInputSingle({tokenIn, tokenOut, amountIn, fee, sqrtPriceLimitX96: 0})  // selector 0xc6a5026a', note: "QuoterV2 (Ethereum 0x61fFE014bA17989E743c5F6cB21bF9697530B21e, factory() cross-verified) is NOT a view function — it simulates the swap and is far too expensive to call on-chain. Use it via eth_call from your client. Returns (amountOut, sqrtPriceX96After, initializedTicksCrossed, gasEstimate) — live: 1 WETH → 1876.25 USDC at fee 500, gasEstimate 98710. The gasEstimate is a realistic gas-limit hint for the actual swap." },
+      { title: "Multi-hop: packed path encoding", command: "path = tokenIn(20B) ‖ fee(3B) ‖ tokenMid(20B) ‖ fee(3B) ‖ tokenOut(20B) → eth_call QuoterV2.quoteExactInput(path, amountIn)  // 0xcdca1753", note: "Fees are 3-byte big-endian (500 = 0x0001f4). Live-verified: WETH→(500)→USDC→(100)→DAI quoted 1 WETH → 1875.35 DAI. Fee tiers: 100 / 500 / 3000 / 10000 (0.01/0.05/0.3/1%) — quote the plausible tiers and take the best; the deepest pool wins, there is no on-chain 'default tier'." },
+      { title: "⚠️ SwapRouter02's deadline trap", command: "router.multicall(deadline, [encoded exactInputSingle])  // multicall(uint256,bytes[]) = 0x5ae401dc", note: "SwapRouter02 (Ethereum 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45) exactInputSingle takes {tokenIn, tokenOut, fee, recipient, amountIn, amountOutMinimum, sqrtPriceLimitX96} — selector 0x04e45aaf, NO deadline field. The old SwapRouter-v1 signature WITH deadline (0x414bf389) is not in Router02's bytecode (verified) — code or ABIs copied from v1 tutorials revert. Deadline protection now wraps the call: multicall(deadline, calls). Skipping it leaves your tx valid forever in the mempool — a classic stale-price execution vector." },
+      { title: "Slippage: amountOutMinimum from the quote", note: "amountOutMinimum = quotedAmountOut × (1 − slippageBps/10000) — the ONLY on-chain protection you have (the quote itself guarantees nothing). sqrtPriceLimitX96 = 0 means no intra-pool price limit; nonzero values are for advanced partial-fill strategies, not routine swaps. Approve the router for the exact amountIn (or use Permit2 → permit2_usage; the Universal Router runs all approvals through Permit2)." },
+      { title: "Native-ETH output: the sentinel + unwrap pattern", command: "swap with recipient = address(2), then append unwrapWETH9(amountMinimum, to) in the same multicall", note: "Sourcify-verified constants in Router02: MSG_SENDER = address(1), ADDRESS_THIS = address(2). recipient=address(2) parks the WETH output in the router, unwrapWETH9 (0x49404b7c) converts and sends ETH — both calls atomic inside one multicall. Same pattern for ETH input: send msg.value, router wraps." },
+      { title: "⚠️ Addresses differ per chain — and the wrong one may not even fail", note: "Router02 on Base is 0x2626664c2603336E57B271c5C0b26F421741e481 (factory()→0x33128a…, WETH9()→0x4200…0006, live cross-verified). The MAINNET router address on Base holds an unrelated 2109-byte contract (live-checked) — a call there doesn't cleanly fail with 'no code', it hits foreign code. Before using any router/quoter address on a new chain, cross-check factory() and WETH9() against the chain's known v3 factory + wrapped native (chain playbooks pin these per chain)." },
+      { title: "When to go direct vs aggregator vs v4", note: "Direct v3: deterministic calldata you can audit/pin, contract-to-contract swaps, no third-party API at runtime. Aggregator (aggregator_swaps): best execution across many venues. v4 (uniswap_v4_basics): singleton + hooks, different integration surface entirely — v3 remains the deepest liquidity on most chains and the simplest audited path." },
+    ],
+    warnings: [
+      "QuoterV2 is not view — calling it on-chain from a contract costs a full swap simulation. On-chain price checks belong to oracles (price_oracle_safety), not the Quoter.",
+      "exactInputSingle without the multicall(deadline, …) wrapper has NO expiry — always wrap.",
+      "A quote and the swap execute in different blocks: enforce amountOutMinimum, never trust the quoted number (mev_strategies — loose minOut is sandwich bait).",
+    ],
+    references: ["https://docs.uniswap.org/contracts/v3/reference/deployments", "https://github.com/Uniswap/swap-router-contracts"],
   },
 };
 
