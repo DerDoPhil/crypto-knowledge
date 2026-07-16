@@ -6,7 +6,7 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **158 Guides, 21 Sektionen, 78 Endpunkte** (Blöcke 1–91 erledigt; **Manifest v1.4.0, Baseline `0x575dfe50…5219`**).
+Stand: **164 Guides, 21 Sektionen, 79 Endpunkte** (Blöcke 1–94 erledigt; **Manifest v1.4.0, Baseline `0x575dfe50…5219`**).
 
 ### 🔓 ACCESS-MODELL GEÄNDERT (2026-07-14, Philipp): Normie-Gate RAUS + Preis $0.02→$0.01
 Reines x402-Pay-per-call für alle, KEIN NFT-Gate mehr. Server (config.ts priceAtomic=10000, enforce.ts
@@ -271,3 +271,10 @@ Pyth-Hermes, Circle-Iris, Curve, Morpho, GMX, Polymarket, Safe-TxService.
 - [x] Pendle-Delta: **alte /v1/sdk/…/swap-Routen sind 404 (live geprobt)** → Convert-API v2 GET / v3 POST, live-verifiziert mit echter wstETH→PT-Quote; Router V4 0x8888…F946 API-returned + Code-verifiziert; ENDPOINTS gefixt, ADDRESSES +Pendle — schließt Grok-P1 „Pendle-SDK-Calldata"
 - [x] llms.txt 160→162+Coverage · about.html 162/79/69 · +2 ask-Queries Rang 1 · Vault-Dual-Write (EVM-Transaktionen-Note +2 Sektionen, DeFi-Pendle-Delta, Endpoints, Adressen, MOC 162+Zähler 12)
 - Commit b7cac43, live verifiziert (list_topics 162), Manifest unberührt → Baseline 0x575dfe50
+
+## ✅ Block 94 (2026-07-16) — Swap/Bridge-Fokus: Across-Intents + Uniswap-v3-Coding (Lead inline)
+- [x] `across_bridge_intents` — Intent-Bridging end-to-end: suggested-fees/available-routes/deposit/status ALLE keyless live-verifiziert; **5 SpokePools DOPPELT verifiziert (API + on-chain wrappedNativeToken()→WETH/WPOL je Chain)**; depositV3 0x7b939232 + deposit(bytes32) 0xad5425c6 in Impl-Bytecode bestätigt (EIP-1967-Proxies!); fillDeadlineBuffer()=21600s alle 5; outputAmount=amount−relayFee exakt gegengerechnet; Refund-Pfad als dritter Zustand; ERC-7683-Kontext
+- [x] `uniswap_v3_swap_coding` — das Standard-Handwerk, fehlte komplett: QuoterV2 non-view via eth_call (LIVE 1 WETH→1876,25 USDC, gasEstimate 98710), Pfad-Encoding 20B‖3B‖20B (Multi-Hop LIVE 1875,35 DAI), **Router02-DEADLINE-FALLE: exactInputSingle 0x04e45aaf OHNE deadline-Feld, v1-Signatur 0x414bf389 NICHT im Bytecode — deadline nur via multicall(uint256,bytes[])**; Sentinel MSG_SENDER=address(1)/ADDRESS_THIS=address(2) Sourcify-verifiziert (unwrapWETH9-Muster); **Chain-Falle: Mainnet-Router-Adresse hält auf Base FREMDEN 2109-Byte-Code (Call schlägt nicht sauber fehl!)**
+- [x] bridge_funds-Delta (+Alternativen-Step Across/CCTP/kanonisch) · ADDRESSES +2 (SpokePools 5 Chains, v3-Periphery) · ENDPOINTS: Across-Eintrag ANGEREICHERT statt neu (Duplikat-Falle wie Neynar Block 88 diesmal GEFANGEN — vor Anlegen grep!)
+- [x] llms.txt 162→164+Coverage · about.html 164/79/71 · +2 ask-Queries Rang 1 · gen:brain 164/21/79 · Vault-Dual-Write (Swaps-Note +2 Sektionen +Delta, Adressen 59 Gruppen, Endpoints 80, MOC 164 + Swaps-Zähler 12 + 2 Topic-Links; stale Vault-Kopfzähler 44/67 auf real 59/80 korrigiert)
+- Commit 536335c, Auto-Deploy nach 30s, live verifiziert (list_topics + brain-data + llms.txt + about), Manifest-md5 live==lokal → Baseline 0x575dfe50 UNBERÜHRT
