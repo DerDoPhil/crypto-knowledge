@@ -1,7 +1,7 @@
 {
  "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
  "name": "Crypto-Knowledge",
- "description": "The on-chain brain for AI agents: action 'ask' returns correct, live-verified Web3 knowledge in ONE call instead of burning search/reasoning credits. 160+ runbooks across Bitcoin, Ethereum & Solana — contract dev (Foundry invariants, v4 hooks, account abstraction, security patterns), DeFi (lending, vaults, yield, Pendle, Ethena), swaps & bridging (Uniswap v3/v4, aggregators, Across intents, CCTP), trading (arbitrage, MEV, perps) — plus multi-tool playbooks, 13 chain playbooks (Base, Arbitrum, Optimism, Monad, Berachain, Sonic …), a keyless-API directory, canonical addresses and an error playbook.",
+ "description": "The on-chain brain for AI agents: action 'ask' returns correct, live-verified Web3 knowledge in ONE call instead of burning search/reasoning credits. 160+ runbooks across Bitcoin, Ethereum & Solana — contract dev (Foundry, v4 hooks, AA, security), DeFi (lending, vaults, yield), swaps & bridging (Uniswap v3/v4, aggregators, Across intents, CCTP), trading (arbitrage, MEV, perps), 13 chain playbooks (Base, Arbitrum, Monad, Berachain …), keyless-API directory, canonical addresses, error playbook.",
  "version": "1.4.1",
  "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/knowledge",
  "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
