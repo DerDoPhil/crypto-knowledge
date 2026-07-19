@@ -1006,9 +1006,9 @@ export const ENDPOINTS: EndpointEntry[] = [
     name: "Magic Eden (Solana NFT floor/stats + BTC Runes market)",
     baseUrl: "https://api-mainnet.magiceden.dev/v2",
     auth: "none",
-    what: "Solana NFT collection floor/volume/listed count AND Bitcoin Runes market data — keyless (both live-verified).",
-    example: "GET /collections/{symbol}/stats (e.g. mad_lads); GET /ord/btc/runes/market/{RUNENAME}/info → supply, divisibility, floor (e.g. DOGGOTOTHEMOON)",
-    limits: "Rate-limited public tier.",
+    what: "Solana NFT collection floor/volume/listed count AND Bitcoin Runes market data — keyless (both live-verified). ⚠️ Magic Eden CLOSED its Ethereum + Bitcoin-NFT (Ordinals) marketplaces on 2026-03-09 — the EVM 'RTP' path (/v3/rtp/{chain}/…) is DEAD (400); only Solana v2 + BTC Runes remain. See nft_market_data_apis guide.",
+    example: "GET /collections/{symbol}/stats (e.g. mad_lads) → {floorPrice (lamports, /1e9=SOL), listedCount, avgPrice24hr, volumeAll}; GET /collections/{symbol}/listings; GET /wallets/{addr}/tokens; GET /ord/btc/runes/market/{RUNENAME}/info → supply, divisibility, floor (e.g. DOGGOTOTHEMOON)",
+    limits: "Rate-limited public tier. Solana only for NFTs (EVM markets shut down 2026).",
   },
   {
     name: "ordinals.com (Ord server JSON API)",
@@ -1045,10 +1045,10 @@ export const ENDPOINTS: EndpointEntry[] = [
   {
     name: "OpenSea REST API v2",
     baseUrl: "https://api.opensea.io/api/v2",
-    auth: "free-key",
-    what: "NFT/collection data, floor prices, listings/offers, events, swap quotes across chains.",
-    example: "GET /collections/{slug} with header x-api-key: KEY — a free key is issued WITHOUT signup: POST /auth/keys",
-    limits: "Free tier ~60 reads/min, 5 writes/min.",
+    auth: "optional-key",
+    what: "NFT/collection data, floor prices, listings/offers, events. In 2026 the best cross-chain NFT market API (after Reservoir shut down). Some read endpoints are KEYLESS (live-verified 2026-07); the rest need a free x-api-key.",
+    example: "KEYLESS (no key): GET /collections/{slug} (metadata); GET /collections/{slug}/stats (volume, sales, num_owners, floor); GET /listings/collection/{slug}/best (best listings + Seaport order_hash). KEY-REQUIRED (401): /collection/{slug}/nfts, /chain/{chain}/contract/{addr}/nfts/{id}, /events/collection/{slug}, /listings/…/all, /orders/*, /offers/*. Free key WITHOUT signup: POST /auth/keys.",
+    limits: "Free tier ~60 reads/min, 5 writes/min. Keyless endpoints share the public rate limit. See nft_market_data_apis guide.",
   },
   {
     name: "mempool.space (Bitcoin)",

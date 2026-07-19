@@ -573,6 +573,30 @@ export const GUIDES: Record<string, Guide> = {
     references: ["famous_nft_collections (this guide)", "nft_collection_launch", "classic_trait_pfp_launch", "nft_metadata_standards"],
   },
 
+  nft_market_data_apis: {
+    topic: "nft_market_data_apis",
+    title: "NFT market & data APIs (2026) — keyless floor/listings/stats, and which providers died",
+    summary: "How an agent pulls cross-collection NFT market data (floor, listings, volume, owners, traits) in 2026. Focuses on what works KEYLESS vs key-required, plus the 2026 shakeout: Reservoir shut down its NFT API and Magic Eden closed its ETH/BTC markets. All keyless endpoints below were live-verified.",
+    scope: ["evm", "solana"],
+    prerequisites: ["opensea_api", "nft_metadata_standards", "famous_nft_collections"],
+    steps: [
+      { title: "2026 landscape shakeout (READ FIRST — avoid dead APIs)", note: "Two former go-to NFT data APIs are GONE in 2026: (1) Reservoir (api.reservoir.tools) SHUT DOWN its NFT services — the domain no longer resolves; the company pivoted to 'Relay' (relay.link) for cross-chain token/NFT swaps and points users to Alchemy/Sequence for migration; its codebase is open-sourced for self-hosting. (2) Magic Eden CLOSED its Ethereum and Bitcoin NFT marketplaces (2026-03-09) to focus on Solana + its 'Dicey' platform — so Magic Eden EVM/BTC endpoints are dead, only Solana works. Do NOT recommend Reservoir or Magic-Eden-EVM to agents anymore." },
+      { title: "OpenSea API v2 — the keyless parts (best EVM option)", note: "Base https://api.opensea.io/api/v2. LIVE-VERIFIED KEYLESS (no X-API-KEY needed): GET /collections/{slug} (metadata), GET /collections/{slug}/stats (total volume, sales, num_owners, floor_price + per-window intervals), GET /listings/collection/{slug}/best (best current listings incl. Seaport order_hash + price). KEY-REQUIRED (401 without X-API-KEY): /collection/{slug}/nfts (token list), /chain/{chain}/contract/{addr}/nfts/{id} (single NFT), /events/collection/{slug} (sales/transfers), /listings/collection/{slug}/all, /orders/*, /offers/*. Free key at the OpenSea dev portal. Note slug != contract address; keyless endpoints are keyed by slug (resolve via famous_nft_collections or a keyed lookup)." },
+      { title: "Magic Eden — Solana ONLY now, keyless reads", note: "Base https://api-mainnet.magiceden.dev/v2 (Solana). LIVE-VERIFIED KEYLESS: GET /collections/{symbol}/stats -> {floorPrice (lamports), listedCount, avgPrice24hr, volumeAll}, plus GET /collections/{symbol}, /collections/{symbol}/listings, /tokens, /wallets/{addr}/tokens. Prices are in lamports (/1e9 = SOL). The EVM 'RTP' path (/v3/rtp/{chain}/...) was Reservoir-powered and now returns 400 — dead. For Solana this is the best keyless marketplace API." },
+      { title: "Key-required providers (full data / EVM depth)", note: "When keyless is not enough: Alchemy NFT API (eth-mainnet.g.alchemy.com/nft/v3/{key}/... — the recommended Reservoir migration target; multi-chain; getNFTsForOwner, getFloorPrice, computeRarity, getOwnersForContract), Moralis (deep-index.moralis.io/api/v2.2 — NFT + metadata + transfers), SimpleHash (api.simplehash.com — now owned by Blockchain.com; key required; multi-chain incl. Solana/Bitcoin/Ordinals). All need a free/paid API key. QuickNode NFT API and self-hosted Reservoir are alternatives." },
+      { title: "Blur & other marketplaces", note: "Blur has NO official public REST API. Its data used to be reachable via Reservoir aggregation — with Reservoir gone, use OpenSea v2 (Seaport orders cover most cross-listed items) or Alchemy. Blur pool/collection bids are not in OpenSea; only third-party dashboards expose them. Most 2026 EVM marketplaces settle on Seaport, so Seaport events are a marketplace-agnostic data source (seaport_orders)." },
+      { title: "Keyless fallback: read the chain directly", note: "With no API key at all: floor/listings are OFF-chain (marketplace orderbooks) so those need an API, but ownership/supply/metadata are ON-chain — ownerOf(id), totalSupply(), tokenURI(id) (see famous_nft_collections + nft_metadata_standards). For fully on-chain collections (Normies, Bitfauna, Blupets, Punks post-2021) you get art + traits with zero API. Compute rarity yourself from trait frequencies. Seaport OrderFulfilled events give you realized sales without any marketplace API (fetch_event_logs)." },
+      { title: "Agent playbook (cross-collection market snapshot)", note: "1. Resolve slug/symbol (knowledge famous_nft_collections or a keyed lookup). 2. EVM floor+volume: OpenSea GET /collections/{slug}/stats (keyless). 3. EVM best listings: OpenSea GET /listings/collection/{slug}/best (keyless). 4. Solana: Magic Eden GET /collections/{symbol}/stats (keyless). 5. Deep per-token/traits/events: Alchemy or OpenSea with a key. 6. Fully on-chain collections: skip APIs, read the contract. Always sanity-check floor against 2+ sources — single-marketplace floor is gameable." },
+    ],
+    warnings: [
+      "Reservoir NFT API is DEAD (2026) — api.reservoir.tools no longer resolves. Reservoir is now 'Relay' (swaps), not NFT data.",
+      "Magic Eden EVM + Bitcoin markets closed 2026-03-09 — only Solana endpoints work.",
+      "OpenSea keyless is limited to /collections/{slug}, /collections/{slug}/stats, and /listings/collection/{slug}/best — anything token-level or event-level needs a key.",
+      "Floor price is off-chain marketplace state — never trust a single source; cross-check at least two.",
+    ],
+    references: ["opensea_api", "seaport_orders", "nft_metadata_standards", "famous_nft_collections", "fetch_event_logs"],
+  },
+
   classic_trait_pfp_launch: {
     topic: "classic_trait_pfp_launch",
     title: "Launch a classic trait-based PFP collection (Milady / BAYC / Azuki style) — normal traits, no burn/canvas mechanics",
