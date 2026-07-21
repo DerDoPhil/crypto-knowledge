@@ -3,7 +3,7 @@ import { AccessEnforcer } from "../../src/access/enforce.js";
 import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
 import { ADOPTION_PROMPT, getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
-import { ask, deepSearchGuides, relatedGuides } from "../../src/modules/knowledge/search.js";
+import { ask, compactGuides, deepSearchGuides, PREVIEW_NOTE, relatedGuides, resolveTopicMiss } from "../../src/modules/knowledge/search.js";
 
 /**
  * Standalone REST endpoint for the ERC-8257 tool "Crypto-Knowledge" — the chain
@@ -35,7 +35,7 @@ export default async function handler(
     json(200, {
       ok: true,
       tool: "crypto-knowledge",
-      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"query"?,"kind"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guides + endpoints in one call. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
+      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"query"?,"kind"?,"filter"?,"full"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guide (full) + previews + endpoints in one call (full:true for every match in full). reference supports "filter" (e.g. {"kind":"endpoints","filter":"solana"}) so you don\'t pay tokens for a whole table. A near-miss get_guide topic resolves or returns suggestions — the paid call is not wasted. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
       topics: GUIDE_TOPICS,
       references: [...REFERENCE_KINDS],
       access: "list_topics + skill are free. Guides/references: $0.01 USDC per request via x402 (X-PAYMENT) — pay-per-call, no NFT gate.",
@@ -49,8 +49,10 @@ export default async function handler(
   }
 
   try {
-    const body = (req.body ?? {}) as { action?: unknown; topic?: unknown; query?: unknown; kind?: unknown };
+    const body = (req.body ?? {}) as { action?: unknown; topic?: unknown; query?: unknown; kind?: unknown; filter?: unknown; full?: unknown };
     const action = typeof body.action === "string" ? body.action : "list_topics";
+    const full = body.full === true;
+    const filter = typeof body.filter === "string" ? body.filter : undefined;
 
     if (action === "list_topics") {
       const topics = GUIDE_TOPICS.map((t) => ({ topic: t, title: GUIDES[t]!.title, scope: GUIDES[t]!.scope }));
@@ -89,19 +91,21 @@ export default async function handler(
         json(400, { ok: false, errors: [{ code: "INVALID_INPUT", message: `kind must be one of: ${REFERENCE_KINDS.join(", ")}` }] });
         return;
       }
-      json(200, { ok: true, data: { kind, ...(getReference(kind as ReferenceKind) as object) } });
+      json(200, { ok: true, data: { kind, ...(getReference(kind as ReferenceKind, filter) as object) } });
       return;
     }
 
     if (action === "ask") {
-      json(200, { ok: true, data: ask(typeof body.query === "string" ? body.query : "") });
+      json(200, { ok: true, data: ask(typeof body.query === "string" ? body.query : "", { full }) });
       return;
     }
 
     if (action === "search") {
-      // Deep full-text over guide bodies; returns FULL matching guides so one call answers.
-      const results = deepSearchGuides(typeof body.query === "string" ? body.query : "", 5);
-      json(200, { ok: true, data: { query: body.query ?? "", count: results.length, results } });
+      // Deep full-text over guide bodies. Default: rank 1 full + previews (token saving); full:true returns every match in full.
+      const ranked = deepSearchGuides(typeof body.query === "string" ? body.query : "", 5);
+      const results = full ? ranked : compactGuides(ranked, 1);
+      const note = !full && ranked.length > 1 ? PREVIEW_NOTE : undefined;
+      json(200, { ok: true, data: { query: body.query ?? "", count: results.length, results, ...(note ? { note } : {}) } });
       return;
     }
 
@@ -109,7 +113,23 @@ export default async function handler(
       const topic = typeof body.topic === "string" ? body.topic : "";
       const guide = GUIDES[topic];
       if (!guide) {
-        json(404, { ok: false, errors: [{ code: "NOT_FOUND", message: `unknown topic '${topic}' — action list_topics shows all` }] });
+        // Rescue the paid call: unique substring match resolves directly;
+        // otherwise the id is treated as a query and suggestions come back.
+        const miss = resolveTopicMiss(topic);
+        if (miss.bestMatch && miss.resolvedTopic) {
+          json(200, { ok: true, data: { ...miss.bestMatch, resolvedFrom: topic, related: relatedGuides(miss.resolvedTopic) } });
+          return;
+        }
+        json(404, {
+          ok: false,
+          errors: [{ code: "NOT_FOUND", message: `unknown topic '${topic}' — action list_topics shows all` }],
+          ...(miss.suggestions.length > 0
+            ? {
+                suggestions: miss.suggestions,
+                hint: "Pick one of the suggestions via { action: 'get_guide', topic: '<id>' } — or use { action: 'ask', query: '…' } with your question in plain words.",
+              }
+            : {}),
+        });
         return;
       }
       json(200, { ok: true, data: { ...guide, related: relatedGuides(topic) } });

@@ -3,10 +3,10 @@
 Laufender autonomer Ausbau des Chain-Brains (Tool #71 auf OpenSea). Jeder Block:
 **recherchieren → LIVE verifizieren (curl/eth_call) → einbauen → tsc + vitest → deploy →
 list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk hash, Baseline
-`0x6305190e…240e`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
+`0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **164 Guides, 21 Sektionen, 79 Endpunkte** (Blöcke 1–94 erledigt; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4`**).
+Stand: **169 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–95 erledigt; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4`**).
 
 ### 🔓 ACCESS-MODELL GEÄNDERT (2026-07-14, Philipp): Normie-Gate RAUS + Preis $0.02→$0.01
 Reines x402-Pay-per-call für alle, KEIN NFT-Gate mehr. Server (config.ts priceAtomic=10000, enforce.ts
@@ -17,6 +17,36 @@ v1.4.0) + alle user-facing Texte + skill.md. **On-chain (creator #2 0x6f35): upd
 (402→$0.01/10000 ohne holderAccess, Manifest v1.4.0 kein access, on-chain Hash+getRequirements). vitest 75
 (3 Holder-Tests entfernt). **NEUE REGRESSION-BASELINE für künftige Blöcke: 0x575dfe50 (nicht mehr 0xe0a6553a).**
 
+
+### Block 95 (2026-07-21/22) — Dev-Fokus ETH/Robinhood/Solana + API-Credit-Saving (4 Opus-Agenten + PhilzAgents)
+4 Guides (165→169), tragende Aussagen ALLE vom Lead unabhängig nachverifiziert (2 Wege): **solana_kit_web3js2**
+(@solana/kit 7.0.0 = umbenanntes web3.js v2, 1.98.4 = Maintenance-Branch README-verbatim; kompletter build/sign-Pfad
+live auf mainnet-beta exekutiert; gill-0.14.0-Falle: pinnt kit ^5.0.0 vs latest 7.0.0 → doppelte Kit-Kopien; Anchor 0.32.1
+weiter web3.js-1.x; Codama 1.9.0 = Anchor-IDL→Kit-Client) · **solana_program_testing** (bankrun DEPRECATED README-verbatim
+→ LiteSVM 1.3.0 Nachfolger, Live-Test 2× unabhängig: System-Transfer=150 CU; litesvm-1.x-läuft-auf-Kit-Falle 'value.split'
+live reproduziert; Mollusk 0.14.0 CU-Bencher; surfpool v1.5.0 = anvil-für-Solana, crates.io-Eintrag 0.1.0 STALE;
+LiteSVM-simulate-CU=0-Quirk dokumentiert) · **onchain_data_indexing** (Ponder 0.17.1/graph-cli 0.98.1/envio 3.2.1;
+LEAD-KORREKTUR am Agenten-Report: publicnode served getLogs DOCH — aber nur ~50–100-Block-Fenster nahe Head (50 ok,
+100→Archive-Fehler, selbst gemessen); HyperSync präzisiert: GET /height offen, POST /query 401 → NICHT keyless;
+drpc Code-35-10k-Cap bestätigt; TheGraph hosted tot seit 2024-06; Helius-Webhooks free-tier UNSICHER gelabelt) ·
+**robinhood_chain_dev** (Agent korrigierte eigene Task-Prämissen: scope ["evm"] statt "robinhood", L1-Fee fluktuiert statt 0;
+DER Fang: Stock-Tokens sind BeaconProxies über EINE Stock-Impl 0xb35490d6… mit mint/adminBurn/pause + uiMultiplier —
+Lead re-verifiziert inkl. Selektor 0xa60bf13d selbst berechnet → NVDA uiMultiplier()=1e18; Blockzeit 0,10s gemessen;
+Blockscout-Verify keyless; ETFs SPY/SGOV neu; Playbook-Delta „field is EMPTY"→CROWDED CASHCAT 33k Holder; Stats 7.4M→126.7M txs).
+**API-CREDIT-SAVING (Philipps Frage „System verbessern?", PhilzAgents-Zweitmeinung deckungsgleich; Gemini-CLI nicht mehr
+installiert → Fallback):** (1) ask/search default: Rang 1 VOLL + Rang 2+ Previews (topic/title/summary/score) + PREVIEW_NOTE,
+`full:true` = altes Verhalten — spart Output-Tokens massiv ohne den Ein-Call-Vorteil zu opfern; (2) get_guide-Miss RETTET den
+bezahlten Call: eindeutiger Substring-Match → voller Guide mit resolvedFrom (uniswap_v3→uniswap_v3_swap_coding), sonst
+Suggestions statt nacktem 404 (REST 404+suggestions, MCP ok-Envelope found:false); (3) reference bekommt `filter`-Param
+(server-side AND-Terme, count+totalCount+hint) — ganze Tabellen nicht mehr nötig; (4) QUICKSTART/skill.md/llms.txt-Texte
+nachgezogen. Alles rein additiv-optional → **Manifest v1.4.1 UNANGETASTET, Baseline 0xf5ff3a29 UNBERÜHRT**. vitest 75→101
+(26 neue Tests), tsc grün. ask-Ranking: 6/6 neue Queries Rang 1. ADDRESSES Robinhood +6 (USDG/USDe/syrupUSDG/Stock-Impl/
+Registry/NVDA) · ENDPOINTS +Envio-HyperSync (Duplikat-grep vorher!), TheGraph/Helius/Robinhood angereichert ·
+ERRORS/RPC_GOTCHAS getLogs-Fenster präzisiert. llms.txt 164→169+Coverage · about.html 169/80/71 · gen:brain 169/21/80 ·
+skill.md regeneriert. Vault-Dual-Write komplett: Solana-Note +2 Sektionen, Robinhood-Note +Dev-Sektion+3 Deltas,
+NEUE Note „On-Chain-Daten indexieren (EVM + Solana)", Endpoints/Adressen/Gotchas-Deltas, MOC 169 + stale Zähler
+44/67→71/80 gefixt + 4 Sektionslisten. Offen für Philipp (Preis-Politik, nicht eigenmächtig): Batch-get_guide
+(mehrere Topics pro Call) und ask-topK-Param.
 
 ### Block 91 (2026-07-13/14) — Sonic-Playbook + Solana-DEXe (2 Opus-Agenten)
 2 Guides, alle Adressen/Programm-IDs selbst live-verifiziert: **sonic_playbook** (10. Chain-Playbook; chainId 146, ~1.4s Blöcke,

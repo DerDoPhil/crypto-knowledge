@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ask, deepSearchGuides, relatedGuides, searchReferences } from "../src/modules/knowledge/search.js";
+import { ask, compactGuides, deepSearchGuides, relatedGuides, resolveTopicMiss, searchReferences } from "../src/modules/knowledge/search.js";
+import { getReference } from "../src/modules/knowledge/references.js";
 
 describe("deepSearchGuides", () => {
   it("finds a guide by BODY content (not just title/summary)", () => {
@@ -60,6 +61,78 @@ describe("ask (one-shot)", () => {
     const r = ask("qqzzxx wwvvkk jjhhgg zzptrq");
     expect(r.guides.length).toBe(0);
     expect(r.hint).toBeTruthy();
+  });
+
+  it("keeps rank 1 FULL and compacts lower ranks to previews (token saving)", () => {
+    const r = ask("how do I bridge native usdc across chains");
+    const top = r.guides[0]! as { steps?: unknown[] };
+    expect(Array.isArray(top.steps)).toBe(true); // rank 1 answers in one call
+    for (const g of r.guides.slice(1)) {
+      const p = g as { preview?: boolean; steps?: unknown[]; summary?: string };
+      expect(p.preview).toBe(true);
+      expect(p.steps).toBeUndefined();
+      expect(p.summary).toBeTruthy();
+    }
+    if (r.guides.length > 1) expect(r.note).toBeTruthy();
+  });
+
+  it("full: true returns every match as a full guide (old behavior)", () => {
+    const r = ask("how do I bridge native usdc across chains", { full: true });
+    for (const g of r.guides) expect(Array.isArray((g as { steps?: unknown[] }).steps)).toBe(true);
+    expect(r.note).toBeUndefined();
+  });
+});
+
+describe("compactGuides", () => {
+  it("keeps the first N full and previews the rest", () => {
+    const ranked = deepSearchGuides("solana token", 4);
+    const out = compactGuides(ranked, 1);
+    expect(out.length).toBe(ranked.length);
+    expect(Array.isArray((out[0] as { steps?: unknown[] }).steps)).toBe(true);
+    for (const g of out.slice(1)) expect((g as { preview?: boolean }).preview).toBe(true);
+  });
+});
+
+describe("resolveTopicMiss (get_guide rescue)", () => {
+  it("resolves a unique substring near-miss directly to the guide", () => {
+    const r = resolveTopicMiss("uniswap_v3");
+    expect(r.resolvedTopic).toBe("uniswap_v3_swap_coding");
+    expect(r.bestMatch?.topic).toBe("uniswap_v3_swap_coding");
+  });
+
+  it("returns suggestions (not a bestMatch) when the miss is ambiguous", () => {
+    const r = resolveTopicMiss("solana");
+    expect(r.bestMatch).toBeUndefined();
+    expect(r.suggestions.length).toBeGreaterThan(1);
+    for (const s of r.suggestions) expect(s.preview).toBe(true);
+  });
+
+  it("falls back to search-based suggestions for a keyword-ish miss", () => {
+    const r = resolveTopicMiss("bridging_usdc");
+    expect(r.suggestions.some((s) => s.topic === "cctp_native_usdc" || s.topic === "bridge_funds")).toBe(true);
+  });
+});
+
+describe("getReference filter", () => {
+  it("narrows endpoints server-side and reports totalCount", () => {
+    const all = getReference("endpoints") as { count: number };
+    const filtered = getReference("endpoints", "solana") as { count: number; totalCount: number; entries: unknown[] };
+    expect(filtered.totalCount).toBe(all.count);
+    expect(filtered.count).toBeGreaterThan(0);
+    expect(filtered.count).toBeLessThan(all.count);
+    expect(filtered.entries.length).toBe(filtered.count);
+  });
+
+  it("hints instead of failing when the filter matches nothing", () => {
+    const r = getReference("errors", "zzqqxx_no_such_thing") as { count: number; hint?: string };
+    expect(r.count).toBe(0);
+    expect(r.hint).toBeTruthy();
+  });
+
+  it("without filter returns the plain table shape (unchanged)", () => {
+    const r = getReference("abis") as { count: number; entries: unknown[]; totalCount?: number };
+    expect(r.count).toBeGreaterThan(0);
+    expect(r.totalCount).toBeUndefined();
   });
 });
 

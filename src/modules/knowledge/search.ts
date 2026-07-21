@@ -65,6 +65,74 @@ export interface RankedGuide extends Guide {
 }
 
 /**
+ * Compact search hit: enough to decide relevance (title + summary + score)
+ * without paying the tokens for the full step list. Fetch the winner with
+ * get_guide — or pass full:true to skip previews entirely.
+ */
+export interface GuidePreview {
+  topic: string;
+  title: string;
+  summary: string;
+  scope: string[];
+  score: number;
+  preview: true;
+}
+
+export function toPreview(g: RankedGuide): GuidePreview {
+  return { topic: g.topic, title: g.title, summary: g.summary, scope: g.scope, score: g.score, preview: true };
+}
+
+/**
+ * Token-saving default shape for ask/search results: rank 1 stays a FULL guide
+ * (one call still answers), lower ranks become previews the agent can expand
+ * with get_guide only when needed.
+ */
+export function compactGuides(ranked: RankedGuide[], fullCount = 1): (RankedGuide | GuidePreview)[] {
+  return ranked.map((g, i) => (i < fullCount ? g : toPreview(g)));
+}
+
+/** Note appended to compacted results so agents know how to expand a preview. */
+export const PREVIEW_NOTE =
+  "Rank 1 is the full guide; lower ranks are previews (topic/title/summary/score). Expand one with { action: 'get_guide', topic: '<id>' }, or repeat this call with full: true to get every match in full.";
+
+/**
+ * Rescue path for get_guide with an unknown topic id, so a paid call is never
+ * wasted: a UNIQUE substring match on topic ids resolves directly to that guide
+ * (e.g. 'uniswap_v3' → uniswap_v3_swap_coding); otherwise the id is treated as
+ * a search query and the best guides come back as previews.
+ */
+export function resolveTopicMiss(requested: string): {
+  resolvedTopic?: string;
+  bestMatch?: Guide;
+  suggestions: GuidePreview[];
+} {
+  const norm = requested.toLowerCase().trim().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "");
+  const ids = Object.keys(GUIDES);
+  const substring = norm.length >= 3 ? ids.filter((id) => id.includes(norm) || norm.includes(id)) : [];
+  const ranked = deepSearchGuides(norm.replace(/_/g, " "), 5);
+  // Substring candidates first (most likely what was meant), then search hits.
+  const seen = new Set<string>();
+  const suggestions: GuidePreview[] = [];
+  for (const id of substring) {
+    if (!seen.has(id)) {
+      seen.add(id);
+      suggestions.push(toPreview({ ...GUIDES[id]!, score: 0 }));
+    }
+  }
+  for (const g of ranked) {
+    if (!seen.has(g.topic) && suggestions.length < 5) {
+      seen.add(g.topic);
+      suggestions.push(toPreview(g));
+    }
+  }
+  if (substring.length === 1) {
+    const id = substring[0]!;
+    return { resolvedTopic: id, bestMatch: GUIDES[id]!, suggestions };
+  }
+  return { suggestions };
+}
+
+/**
  * Related guides, derived at runtime: other guide topic-ids that THIS guide already
  * mentions in its body text (guides cross-reference each other in prose, e.g.
  * "(defi_lending)" / "see solana_pay"). No per-guide maintenance needed.
@@ -159,16 +227,24 @@ export function searchReferences(query: string, limit = 6): ReferenceHit[] {
 /**
  * One-shot answer: best guides + relevant reference entries for a natural-language
  * question. Collapses the common discover→fetch round-trip into a single call.
+ * Default keeps rank 1 as a FULL guide and compacts ranks 2–3 to previews
+ * (token saving); pass { full: true } for the old all-full behavior.
  */
-export function ask(query: string): {
+export function ask(
+  query: string,
+  opts: { full?: boolean } = {},
+): {
   query: string;
-  guides: RankedGuide[];
+  guides: (RankedGuide | GuidePreview)[];
   references: ReferenceHit[];
+  note?: string;
   hint?: string;
 } {
-  const guides = deepSearchGuides(query, 3);
+  const ranked = deepSearchGuides(query, 3);
+  const guides = opts.full ? ranked : compactGuides(ranked, 1);
   const references = searchReferences(query, 6);
-  const out: { query: string; guides: RankedGuide[]; references: ReferenceHit[]; hint?: string } = { query, guides, references };
+  const out: { query: string; guides: (RankedGuide | GuidePreview)[]; references: ReferenceHit[]; note?: string; hint?: string } = { query, guides, references };
+  if (!opts.full && ranked.length > 1) out.note = PREVIEW_NOTE;
   if (guides.length === 0 && references.length === 0) {
     out.hint = "No direct match. Try action 'list_topics' to browse categories, or rephrase with concrete terms (chain, protocol, error text).";
   }

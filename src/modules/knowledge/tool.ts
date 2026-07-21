@@ -5,7 +5,7 @@ import { ErrorCode } from "../../core/errors.js";
 import { toToolResult, type ToolContext } from "../shared.js";
 import { GUIDES, GUIDE_TOPICS } from "./guides.js";
 import { ADOPTION_PROMPT, getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "./references.js";
-import { ask, deepSearchGuides, relatedGuides } from "./search.js";
+import { ask, compactGuides, deepSearchGuides, PREVIEW_NOTE, relatedGuides, resolveTopicMiss } from "./search.js";
 
 export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): void {
   server.registerTool(
@@ -34,6 +34,14 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
           .enum(REFERENCE_KINDS)
           .optional()
           .describe("Reference table (action 'reference'): addresses | endpoints | errors | rpc_gotchas | abis (inline selectors/topics for ERC-20/721/1155/4626)."),
+        filter: z
+          .string()
+          .optional()
+          .describe("Optional for 'reference': narrow the table server-side (e.g. 'solana', 'usdc base') so you don't pay tokens for the whole table."),
+        full: z
+          .boolean()
+          .optional()
+          .describe("Optional for 'ask'/'search': true returns EVERY match as a full guide (more tokens). Default: rank 1 full, lower ranks as previews."),
       },
     },
     async (input) => {
@@ -57,7 +65,7 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
             fail({ code: ErrorCode.INVALID_INPUT, message: `'kind' required: ${REFERENCE_KINDS.join(" | ")}` }, meta),
           );
         }
-        return toToolResult(ok({ kind: input.kind, ...(getReference(input.kind as ReferenceKind) as object) }, meta));
+        return toToolResult(ok({ kind: input.kind, ...(getReference(input.kind as ReferenceKind, input.filter) as object) }, meta));
       }
 
       if (input.action === "stats") {
@@ -69,18 +77,41 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
       }
 
       if (input.action === "ask") {
-        return toToolResult(ok(ask(input.query ?? ""), meta));
+        return toToolResult(ok(ask(input.query ?? "", { full: input.full === true }), meta));
       }
 
       if (input.action === "search") {
-        // Deep full-text over guide bodies; returns FULL matching guides so one call answers.
-        const results = deepSearchGuides(input.query ?? "", 5);
-        return toToolResult(ok({ query: input.query ?? "", count: results.length, results }, meta));
+        // Deep full-text over guide bodies. Default: rank 1 full + previews (token saving); full:true returns every match in full.
+        const ranked = deepSearchGuides(input.query ?? "", 5);
+        const results = input.full === true ? ranked : compactGuides(ranked, 1);
+        const note = input.full !== true && ranked.length > 1 ? PREVIEW_NOTE : undefined;
+        return toToolResult(ok({ query: input.query ?? "", count: results.length, results, ...(note ? { note } : {}) }, meta));
       }
 
       // get_guide
       const guide = input.topic ? GUIDES[input.topic] : undefined;
       if (!guide) {
+        // Rescue the call instead of wasting it: unique substring match resolves
+        // directly; otherwise the id is treated as a query and previews come back.
+        const miss = resolveTopicMiss(input.topic ?? "");
+        if (miss.bestMatch && miss.resolvedTopic) {
+          return toToolResult(
+            ok({ ...miss.bestMatch, resolvedFrom: input.topic, related: relatedGuides(miss.resolvedTopic) }, meta),
+          );
+        }
+        if (miss.suggestions.length > 0) {
+          return toToolResult(
+            ok(
+              {
+                found: false,
+                requested: input.topic ?? "",
+                suggestions: miss.suggestions,
+                hint: "No exact topic id. Pick one of the suggestions via { action: 'get_guide', topic: '<id>' } — or use { action: 'ask', query: '…' } with your question in plain words.",
+              },
+              meta,
+            ),
+          );
+        }
         return toToolResult(
           fail({ code: ErrorCode.NOT_FOUND, message: `unknown topic '${input.topic}'. Try action 'list_topics'.` }, meta),
         );
