@@ -6,7 +6,7 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **169 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–95 erledigt; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4`**).
+Stand: **169 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–96 erledigt; Block 95 = NFT-Vertiefung/nft_market_data_apis 2026-07-19, commits 02c3036+f71b809; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4`**).
 
 ### 🔓 ACCESS-MODELL GEÄNDERT (2026-07-14, Philipp): Normie-Gate RAUS + Preis $0.02→$0.01
 Reines x402-Pay-per-call für alle, KEIN NFT-Gate mehr. Server (config.ts priceAtomic=10000, enforce.ts
@@ -18,7 +18,7 @@ v1.4.0) + alle user-facing Texte + skill.md. **On-chain (creator #2 0x6f35): upd
 (3 Holder-Tests entfernt). **NEUE REGRESSION-BASELINE für künftige Blöcke: 0x575dfe50 (nicht mehr 0xe0a6553a).**
 
 
-### Block 95 (2026-07-21/22) — Dev-Fokus ETH/Robinhood/Solana + API-Credit-Saving (4 Opus-Agenten + PhilzAgents)
+### Block 96 (2026-07-21/22) — Dev-Fokus ETH/Robinhood/Solana + API-Credit-Saving (4 Opus-Agenten + PhilzAgents)
 4 Guides (165→169), tragende Aussagen ALLE vom Lead unabhängig nachverifiziert (2 Wege): **solana_kit_web3js2**
 (@solana/kit 7.0.0 = umbenanntes web3.js v2, 1.98.4 = Maintenance-Branch README-verbatim; kompletter build/sign-Pfad
 live auf mainnet-beta exekutiert; gill-0.14.0-Falle: pinnt kit ^5.0.0 vs latest 7.0.0 → doppelte Kit-Kopien; Anchor 0.32.1
