@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ask, compactGuides, deepSearchGuides, relatedGuides, resolveTopicMiss, searchReferences } from "../src/modules/knowledge/search.js";
+import { ask, clampTopK, compactGuides, deepSearchGuides, getGuidesBatch, MAX_BATCH_TOPICS, relatedGuides, resolveTopicMiss, searchReferences } from "../src/modules/knowledge/search.js";
 import { getReference } from "../src/modules/knowledge/references.js";
 
 describe("deepSearchGuides", () => {
@@ -110,6 +110,57 @@ describe("resolveTopicMiss (get_guide rescue)", () => {
   it("falls back to search-based suggestions for a keyword-ish miss", () => {
     const r = resolveTopicMiss("bridging_usdc");
     expect(r.suggestions.some((s) => s.topic === "cctp_native_usdc" || s.topic === "bridge_funds")).toBe(true);
+  });
+});
+
+describe("getGuidesBatch (agent-friendly batch get_guide)", () => {
+  it("serves multiple full guides in one call", () => {
+    const r = getGuidesBatch(["create_wallet", "debug_failed_tx", "cctp_native_usdc"]);
+    expect(r.batch).toBe(true);
+    expect(r.count).toBe(3);
+    expect(r.guides.map((g) => g.topic)).toEqual(["create_wallet", "debug_failed_tx", "cctp_native_usdc"]);
+    for (const g of r.guides) expect(g.steps.length).toBeGreaterThan(0);
+  });
+
+  it("rescues near-miss ids per topic and reports real misses with suggestions", () => {
+    const r = getGuidesBatch(["uniswap_v3", "zzqqxx_nothing"]);
+    expect(r.guides.some((g) => g.topic === "uniswap_v3_swap_coding" && g.resolvedFrom === "uniswap_v3")).toBe(true);
+    expect(r.notFound?.length).toBe(1);
+    expect(r.notFound![0]!.requested).toBe("zzqqxx_nothing");
+  });
+
+  it("truncates overlong lists instead of failing (paid call never wasted)", () => {
+    const many = ["create_wallet", "debug_failed_tx", "cctp_native_usdc", "eip712_signing", "solana_pay", "ens_resolution", "safe_multisig"];
+    const r = getGuidesBatch(many);
+    expect(r.count).toBe(MAX_BATCH_TOPICS);
+    expect(r.note).toBeTruthy();
+  });
+
+  it("dedupes repeated topics", () => {
+    const r = getGuidesBatch(["create_wallet", "create_wallet"]);
+    expect(r.count).toBe(1);
+  });
+});
+
+describe("topK (ask/search result count)", () => {
+  it("clamps to 1..10 with a fallback", () => {
+    expect(clampTopK(undefined, 3)).toBe(3);
+    expect(clampTopK(0, 3)).toBe(1);
+    expect(clampTopK(99, 3)).toBe(10);
+    expect(clampTopK(2.9, 3)).toBe(2);
+  });
+
+  it("ask honors topK=1 (single best guide, minimal tokens)", () => {
+    const r = ask("how do I bridge native usdc across chains", { topK: 1 });
+    expect(r.guides.length).toBe(1);
+    expect(r.guides[0]!.topic).toBe("cctp_native_usdc");
+    expect(Array.isArray((r.guides[0] as { steps?: unknown[] }).steps)).toBe(true);
+  });
+
+  it("ask honors a larger topK", () => {
+    const r = ask("solana token", { topK: 5 });
+    expect(r.guides.length).toBeGreaterThan(3);
+    expect(r.guides.length).toBeLessThanOrEqual(5);
   });
 });
 

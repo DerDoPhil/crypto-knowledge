@@ -3,7 +3,7 @@ import { AccessEnforcer } from "../../src/access/enforce.js";
 import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
 import { ADOPTION_PROMPT, getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
-import { ask, compactGuides, deepSearchGuides, PREVIEW_NOTE, relatedGuides, resolveTopicMiss } from "../../src/modules/knowledge/search.js";
+import { ask, clampTopK, compactGuides, deepSearchGuides, getGuidesBatch, PREVIEW_NOTE, relatedGuides, resolveTopicMiss } from "../../src/modules/knowledge/search.js";
 
 /**
  * Standalone REST endpoint for the ERC-8257 tool "Crypto-Knowledge" — the chain
@@ -35,7 +35,7 @@ export default async function handler(
     json(200, {
       ok: true,
       tool: "crypto-knowledge",
-      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"query"?,"kind"?,"filter"?,"full"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guide (full) + previews + endpoints in one call (full:true for every match in full). reference supports "filter" (e.g. {"kind":"endpoints","filter":"solana"}) so you don\'t pay tokens for a whole table. A near-miss get_guide topic resolves or returns suggestions — the paid call is not wasted. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
+      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"topics"?,"query"?,"kind"?,"filter"?,"full"?,"topK"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guide (full) + previews + endpoints in one call (full:true for every match in full; topK 1-10 controls result count). BATCH: {"action":"get_guide","topics":["a","b","c"]} serves up to 5 full runbooks for ONE paid call. reference supports "filter" (e.g. {"kind":"endpoints","filter":"solana"}) so you don\'t pay tokens for a whole table. A near-miss get_guide topic resolves or returns suggestions — the paid call is not wasted. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
       topics: GUIDE_TOPICS,
       references: [...REFERENCE_KINDS],
       access: "list_topics + skill are free. Guides/references: $0.01 USDC per request via x402 (X-PAYMENT) — pay-per-call, no NFT gate.",
@@ -49,10 +49,11 @@ export default async function handler(
   }
 
   try {
-    const body = (req.body ?? {}) as { action?: unknown; topic?: unknown; query?: unknown; kind?: unknown; filter?: unknown; full?: unknown };
+    const body = (req.body ?? {}) as { action?: unknown; topic?: unknown; topics?: unknown; query?: unknown; kind?: unknown; filter?: unknown; full?: unknown; topK?: unknown };
     const action = typeof body.action === "string" ? body.action : "list_topics";
     const full = body.full === true;
     const filter = typeof body.filter === "string" ? body.filter : undefined;
+    const topK = typeof body.topK === "number" ? body.topK : undefined;
 
     if (action === "list_topics") {
       const topics = GUIDE_TOPICS.map((t) => ({ topic: t, title: GUIDES[t]!.title, scope: GUIDES[t]!.scope }));
@@ -96,13 +97,13 @@ export default async function handler(
     }
 
     if (action === "ask") {
-      json(200, { ok: true, data: ask(typeof body.query === "string" ? body.query : "", { full }) });
+      json(200, { ok: true, data: ask(typeof body.query === "string" ? body.query : "", { full, topK }) });
       return;
     }
 
     if (action === "search") {
       // Deep full-text over guide bodies. Default: rank 1 full + previews (token saving); full:true returns every match in full.
-      const ranked = deepSearchGuides(typeof body.query === "string" ? body.query : "", 5);
+      const ranked = deepSearchGuides(typeof body.query === "string" ? body.query : "", clampTopK(topK, 5));
       const results = full ? ranked : compactGuides(ranked, 1);
       const note = !full && ranked.length > 1 ? PREVIEW_NOTE : undefined;
       json(200, { ok: true, data: { query: body.query ?? "", count: results.length, results, ...(note ? { note } : {}) } });
@@ -110,7 +111,21 @@ export default async function handler(
     }
 
     if (action === "get_guide") {
-      const topic = typeof body.topic === "string" ? body.topic : "";
+      // Batch path: 'topics' array or a comma-separated 'topic' string —
+      // up to 5 full runbooks for ONE paid call (agent-friendly pricing).
+      const rawTopic = typeof body.topic === "string" ? body.topic : "";
+      const batchTopics =
+        Array.isArray(body.topics) && body.topics.length > 0
+          ? body.topics.map((t) => String(t))
+          : rawTopic.includes(",")
+            ? rawTopic.split(",")
+            : undefined;
+      if (batchTopics && batchTopics.length > 1) {
+        const result = getGuidesBatch(batchTopics);
+        json(200, { ok: true, data: { ...result, guides: result.guides.map((g) => ({ ...g, related: relatedGuides(g.topic) })) } });
+        return;
+      }
+      const topic = (batchTopics?.[0] ?? rawTopic).trim();
       const guide = GUIDES[topic];
       if (!guide) {
         // Rescue the paid call: unique substring match resolves directly;

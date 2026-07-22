@@ -45,8 +45,11 @@ Registry/NVDA) · ENDPOINTS +Envio-HyperSync (Duplikat-grep vorher!), TheGraph/H
 ERRORS/RPC_GOTCHAS getLogs-Fenster präzisiert. llms.txt 164→169+Coverage · about.html 169/80/71 · gen:brain 169/21/80 ·
 skill.md regeneriert. Vault-Dual-Write komplett: Solana-Note +2 Sektionen, Robinhood-Note +Dev-Sektion+3 Deltas,
 NEUE Note „On-Chain-Daten indexieren (EVM + Solana)", Endpoints/Adressen/Gotchas-Deltas, MOC 169 + stale Zähler
-44/67→71/80 gefixt + 4 Sektionslisten. Offen für Philipp (Preis-Politik, nicht eigenmächtig): Batch-get_guide
-(mehrere Topics pro Call) und ask-topK-Param.
+44/67→71/80 gefixt + 4 Sektionslisten. Philipp-Entscheid 2026-07-22 („erstmal auf Agentenfreundlichkeit"): BEIDE umgesetzt —
+**Batch-get_guide** ({topics:[…]} ODER Komma-topic; bis 5 volle Runbooks pro $0.01-Call; Überlänge wird GEKAPPT statt
+abgelehnt + note, Miss-Rettung pro Topic mit resolvedFrom/suggestions, Dedupe) und **topK** (1–10, ask default 3 /
+search default 5; topK:1 = bester Guide minimal-Token). vitest 101→108. Manifest weiter UNANGETASTET (additiv-optional),
+Baseline 0xf5ff3a29 unberührt.
 
 ### Block 91 (2026-07-13/14) — Sonic-Playbook + Solana-DEXe (2 Opus-Agenten)
 2 Guides, alle Adressen/Programm-IDs selbst live-verifiziert: **sonic_playbook** (10. Chain-Playbook; chainId 146, ~1.4s Blöcke,

@@ -93,7 +93,69 @@ export function compactGuides(ranked: RankedGuide[], fullCount = 1): (RankedGuid
 
 /** Note appended to compacted results so agents know how to expand a preview. */
 export const PREVIEW_NOTE =
-  "Rank 1 is the full guide; lower ranks are previews (topic/title/summary/score). Expand one with { action: 'get_guide', topic: '<id>' }, or repeat this call with full: true to get every match in full.";
+  "Rank 1 is the full guide; lower ranks are previews (topic/title/summary/score). Expand several at once with { action: 'get_guide', topics: ['<id>', …] } (up to 5 in ONE paid call), or repeat this call with full: true to get every match in full.";
+
+/** How many results ask/search may return (agent-controlled via topK). */
+export function clampTopK(topK: number | undefined, fallback: number): number {
+  if (typeof topK !== "number" || !Number.isFinite(topK)) return fallback;
+  return Math.max(1, Math.min(10, Math.floor(topK)));
+}
+
+/** Max guide topics served in one paid get_guide call. */
+export const MAX_BATCH_TOPICS = 5;
+
+export interface BatchMiss {
+  requested: string;
+  suggestions: GuidePreview[];
+}
+
+export interface BatchResult {
+  batch: true;
+  requested: number;
+  count: number;
+  guides: (Guide & { resolvedFrom?: string })[];
+  notFound?: BatchMiss[];
+  note?: string;
+}
+
+/**
+ * Resolve a list of requested topic ids into full guides — ONE paid call for up
+ * to MAX_BATCH_TOPICS runbooks (agent-friendly pricing). Each miss goes through
+ * the same rescue as a single get_guide: unique substring match resolves,
+ * anything else returns suggestions. Overlong lists are truncated, never
+ * rejected — a paid call must not be wasted on a validation error.
+ */
+export function getGuidesBatch(requestedTopics: string[]): BatchResult {
+  const cleaned = requestedTopics.map((t) => String(t).trim()).filter((t) => t.length > 0);
+  const truncated = cleaned.length > MAX_BATCH_TOPICS;
+  const use = cleaned.slice(0, MAX_BATCH_TOPICS);
+  const guides: (Guide & { resolvedFrom?: string })[] = [];
+  const notFound: BatchMiss[] = [];
+  const seen = new Set<string>();
+  for (const t of use) {
+    const direct = GUIDES[t];
+    if (direct) {
+      if (!seen.has(t)) {
+        seen.add(t);
+        guides.push(direct);
+      }
+      continue;
+    }
+    const miss = resolveTopicMiss(t);
+    if (miss.bestMatch && miss.resolvedTopic) {
+      if (!seen.has(miss.resolvedTopic)) {
+        seen.add(miss.resolvedTopic);
+        guides.push({ ...miss.bestMatch, resolvedFrom: t });
+      }
+    } else {
+      notFound.push({ requested: t, suggestions: miss.suggestions.slice(0, 3) });
+    }
+  }
+  const out: BatchResult = { batch: true, requested: cleaned.length, count: guides.length, guides };
+  if (notFound.length > 0) out.notFound = notFound;
+  if (truncated) out.note = `Only the first ${MAX_BATCH_TOPICS} topics were served (batch limit). Fetch the rest in a follow-up call.`;
+  return out;
+}
 
 /**
  * Rescue path for get_guide with an unknown topic id, so a paid call is never
@@ -232,7 +294,7 @@ export function searchReferences(query: string, limit = 6): ReferenceHit[] {
  */
 export function ask(
   query: string,
-  opts: { full?: boolean } = {},
+  opts: { full?: boolean; topK?: number } = {},
 ): {
   query: string;
   guides: (RankedGuide | GuidePreview)[];
@@ -240,7 +302,8 @@ export function ask(
   note?: string;
   hint?: string;
 } {
-  const ranked = deepSearchGuides(query, 3);
+  const topK = clampTopK(opts.topK, 3);
+  const ranked = deepSearchGuides(query, topK);
   const guides = opts.full ? ranked : compactGuides(ranked, 1);
   const references = searchReferences(query, 6);
   const out: { query: string; guides: (RankedGuide | GuidePreview)[]; references: ReferenceHit[]; note?: string; hint?: string } = { query, guides, references };
