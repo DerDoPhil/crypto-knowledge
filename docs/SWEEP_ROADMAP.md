@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **201 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–113 erledigt; Block 113 = On-Chain-Options-Protokolle, autonome Fortsetzung 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+Stand: **202 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–114 erledigt; Block 114 = EIP-6963 Wallet-Discovery, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp: Pause nach Block 114/202**).
+
+### Block 114 (2026-07-29) — letzter Block dieser Session (Philipp: „nach 202 kannst du Pause machen")
+1 Guide (201→202): `eip6963_wallet_discovery` — Multi-Wallet-Discovery via Announce/Request-Events statt der window.ethereum-„letzte-Extension-gewinnt"-Kollision. Status direkt gegen eips.ethereum.org verifiziert: **Final**, kein Draft. Event-Namen (eip6963:announceProvider/requestProvider) + Interface-Shapes (EIP6963ProviderInfo/ProviderDetail, uuid vs. rdns-Unterscheidung) exakt zitiert. wagmi als dominante Connector-Library aktiv verifiziert (gepusht am Tag des Checks).
+
+Vault-Dual-Write (Wallets, Dev-Setup & Testnets +1, 6→7 Guides), MOC/Praxis-Referenz 201→202, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt. **SESSION-ABSCHLUSS: 169→202 (33 neue Guides, Blöcke 97-114) + kompletter Architektur-Umbau (Guide-Content in privates Repo ausgelagert) + Repo-Neuanlage (Historie-Purge auf Philipps expliziten Wunsch) + neue Domain web3knowlage.vercel.app.**
 
 ### Block 113 (2026-07-29) — autonome Fortsetzung
 1 Guide (200→201): `onchain_options_protocols` — Options als strukturell andere DeFi-Primitive neben Perps: Off-Chain-Orderbook + On-Chain-Settlement (Derive, Aevo) statt On-Chain-AMM, European-Style TWAP-Settlement (30-Min-Fenster, verifiziert gegen Derives eigene Doku), Cash-Settlement + Cross-/Portfolio-Margining, DOV-Structured-Products-Linie (Lyra-Ursprung). **Echtes, unabhängig verifiziertes Aktivitäts-Delta:** derivexyz-SDK-Repos (derive-rs/derive-ts) gepusht am/kurz vor dem Check-Tag, aevoxyz/aevo-sdk zuletzt 2024-03-12 (>2 Jahre ruhig) — ehrlich als „prüfbares Signal, kein Beweis für Exchange-Status" gelabelt.
