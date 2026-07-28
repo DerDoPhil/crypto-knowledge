@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **200 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–112 erledigt; Block 112 = OP-Stack Fault Proofs, autonome Fortsetzung 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+Stand: **201 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–113 erledigt; Block 113 = On-Chain-Options-Protokolle, autonome Fortsetzung 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+
+### Block 113 (2026-07-29) — autonome Fortsetzung
+1 Guide (200→201): `onchain_options_protocols` — Options als strukturell andere DeFi-Primitive neben Perps: Off-Chain-Orderbook + On-Chain-Settlement (Derive, Aevo) statt On-Chain-AMM, European-Style TWAP-Settlement (30-Min-Fenster, verifiziert gegen Derives eigene Doku), Cash-Settlement + Cross-/Portfolio-Margining, DOV-Structured-Products-Linie (Lyra-Ursprung). **Echtes, unabhängig verifiziertes Aktivitäts-Delta:** derivexyz-SDK-Repos (derive-rs/derive-ts) gepusht am/kurz vor dem Check-Tag, aevoxyz/aevo-sdk zuletzt 2024-03-12 (>2 Jahre ruhig) — ehrlich als „prüfbares Signal, kein Beweis für Exchange-Status" gelabelt.
+
+Vault-Dual-Write (Marktdaten, Perps & Oracles +1, 10→11 Guides), MOC/Praxis-Referenz 200→201, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 112 (2026-07-29) — autonome Fortsetzung
 1 Guide (199→200): `op_stack_fault_proofs` — schließt die Lücke, die opstack_l2_fees bewusst offenließ: WARUM Withdrawals 7 Tage dauern. Cannon (MIPS64-Fault-Proof-VM) + FaultDisputeGame-Bisektions-Mechanismus (Streit verengt sich bis zu EINER MIPS64-Instruktion, die on-chain in MIPS64.sol entschieden wird) + DelayedWETH-Bond-Delay (7 Tage, damit der Contract-Owner bei Fehlern eingreifen kann) — alle Contract-Namen + Mechanismus direkt gegen das ethereum-optimism/specs-Repo verifiziert (gepusht am selben Tag wie dieser Check). Permissionless seit 2024-06-10 (Optimisms eigene Ankündigung), Multi-Proof-Zukunft (ZK neben Cannon) als Roadmap-Richtung benannt, nicht als Ist-Zustand.
