@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **199 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–111 erledigt; Block 111 = Based Rollups & Preconfirmations, autonome Fortsetzung 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+Stand: **200 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–112 erledigt; Block 112 = OP-Stack Fault Proofs, autonome Fortsetzung 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+
+### Block 112 (2026-07-29) — autonome Fortsetzung
+1 Guide (199→200): `op_stack_fault_proofs` — schließt die Lücke, die opstack_l2_fees bewusst offenließ: WARUM Withdrawals 7 Tage dauern. Cannon (MIPS64-Fault-Proof-VM) + FaultDisputeGame-Bisektions-Mechanismus (Streit verengt sich bis zu EINER MIPS64-Instruktion, die on-chain in MIPS64.sol entschieden wird) + DelayedWETH-Bond-Delay (7 Tage, damit der Contract-Owner bei Fehlern eingreifen kann) — alle Contract-Namen + Mechanismus direkt gegen das ethereum-optimism/specs-Repo verifiziert (gepusht am selben Tag wie dieser Check). Permissionless seit 2024-06-10 (Optimisms eigene Ankündigung), Multi-Proof-Zukunft (ZK neben Cannon) als Roadmap-Richtung benannt, nicht als Ist-Zustand.
+
+Vault-Dual-Write (EVM Transaktionen, Gas & Debugging +1, 14→15 Guides), MOC/Praxis-Referenz 199→200, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 110 (2026-07-28) — autonome Fortsetzung
 1 Guide (197→198): `zkvm_onchain_verification` — SP1 (`ISP1Verifier.verifyProof`) vs. RISC Zero (`IRiscZeroVerifier.verify`/`verifyIntegrity`) On-Chain-Interfaces, beide direkt gegen die Raw-GitHub-Quelle verifiziert (sp1-contracts, risc0-ethereum — sp1 gepusht am selben Tag wie dieser Check). SP1-Verifier-Gateway-Adresse auf Ethereum-Mainnet via eth_getCode als echter Bytecode bestätigt. STARK-in-SNARK-Wrap-Pattern erklärt (warum On-Chain-Verifikation konstant-billig ist, unabhängig von der Off-Chain-Rechenmenge). Prover-Netzwerk-Modell (Succinct Prover Network, RISC Zeros Boundless — Mainnet-Beta auf Base) als Alternative zum Selbst-Betreiben einer Prover-Farm; Boundless-Produktionsnutzung (EigenLayer/Celestia/Taiko/Lido) klar als „reported, nicht unabhängig nachverifiziert" gelabelt.
