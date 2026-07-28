@@ -6,12 +6,19 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **198 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–110 erledigt; Block 110 = zkVM-On-Chain-Verifikation, autonome Fortsetzung 2026-07-28; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; neuer Sweep-Workflow ab Block 109: Guides werden ab jetzt im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+Stand: **199 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–111 erledigt; Block 111 = Based Rollups & Preconfirmations, autonome Fortsetzung 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
 
 ### Block 110 (2026-07-28) — autonome Fortsetzung
 1 Guide (197→198): `zkvm_onchain_verification` — SP1 (`ISP1Verifier.verifyProof`) vs. RISC Zero (`IRiscZeroVerifier.verify`/`verifyIntegrity`) On-Chain-Interfaces, beide direkt gegen die Raw-GitHub-Quelle verifiziert (sp1-contracts, risc0-ethereum — sp1 gepusht am selben Tag wie dieser Check). SP1-Verifier-Gateway-Adresse auf Ethereum-Mainnet via eth_getCode als echter Bytecode bestätigt. STARK-in-SNARK-Wrap-Pattern erklärt (warum On-Chain-Verifikation konstant-billig ist, unabhängig von der Off-Chain-Rechenmenge). Prover-Netzwerk-Modell (Succinct Prover Network, RISC Zeros Boundless — Mainnet-Beta auf Base) als Alternative zum Selbst-Betreiben einer Prover-Farm; Boundless-Produktionsnutzung (EigenLayer/Celestia/Taiko/Lido) klar als „reported, nicht unabhängig nachverifiziert" gelabelt.
 
 Vault-Dual-Write (Smart-Contract-Entwicklung EVM +1, 15→16 Guides), MOC/Praxis-Referenz 197→198, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
+
+**Zwischenzeitlich (2026-07-28, spät):** Auf Philipps expliziten Wunsch wurde die Repo-Historie zusätzlich WIRKLICH bereinigt (reiner Squash reichte nicht — alte SHAs blieben per direkter GitHub-API abrufbar). Repo komplett gelöscht + unter demselben Namen neu angelegt (via sauberes Zwischen-Repo + Rename, um nie ganz ohne Repo dazustehen), Backup lokal im Vault. Vercel-Git-Integration blieb automatisch verbunden. Neue Zusatz-Domain `web3knowlage.vercel.app` hinzugefügt. Details: Memory `reference_crypto_knowledge_private_content.md`.
+
+### Block 111 (2026-07-29) — autonome Fortsetzung
+1 Guide (198→199): `based_rollups_preconfirmations` — Taikos Based-Rollup-Design (Ethereum-L1-Validatoren sequenzieren L2-Blöcke direkt, kein separater Sequencer) + Preconfirmations als Ersatz für die verlorene Instant-Soft-Confirmation. Sequencing→Batching→Proposing-Flow + PreconfWhitelist-Contract (2 Operatoren) + 3 Block-Building-Operatoren (Nethermind/Chainbound/Gattaca) direkt aus Taikos Doku übernommen (nicht gegen den Contract selbst nachverifiziert). Commit-Boost als teamübergreifender Standard-Sidecar (70+ Teams). Puffers UniFi AVS (EigenLayer-Restaking) **Aktivitäts-Delta ehrlich benannt**: Taiko+Commit-Boost-Repos beide am Tag des Checks gepusht, Puffers Preconf-Repo ~3,5 Monate ruhig.
+
+Vault-Dual-Write (EVM Transaktionen, Gas & Debugging +1, 13→14 Guides), MOC/Praxis-Referenz 198→199, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 109 (2026-07-28) — Guide + Architektur-Umbau (Philipp-Auftrag: Content darf nicht mehr kostenlos über GitHub lesbar sein)
 **1 Guide (196→197):** `solana_staked_connections` — Gegenstück zu `jito_bundle_submission` für Einzel-Txs ohne Atomaritäts-Bedarf: Helius Sender (Multi-Pathway-Fan-out, Endpoints+Tip-Mechanik live gegen Heliusʼ eigene Doku verifiziert), 0slot (eigener Tip-Account/Minimum, live gegen 0slots Seite verifiziert), breitere Relay-Kategorie (Nozomi/Temporal/NextBlock) explizit als „reported, nicht endpoint-getestet" gelabelt.
