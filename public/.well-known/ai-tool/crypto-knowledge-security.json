@@ -1,0 +1,61 @@
+{
+  "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
+  "name": "Crypto-Knowledge Security",
+  "description": "Anti-rug token scanner for AI agents: screen any token before buying, on EVM chains (Ethereum, Base, Arbitrum, Optimism, Polygon, BNB, Avalanche and more) and Solana. Cross-checks GoPlus static analysis with a live honeypot.is buy/sell simulation and returns a 0-100 risk score with concrete red flags: honeypot status, buy/sell taxes, liquidity locks, mint/freeze/blacklist/pause powers, ownership and holder concentration.",
+  "version": "1.0.0",
+  "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/security",
+  "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
+  "image": "https://crypto-knowledge-mcp.vercel.app/icon.png",
+  "inputs": {
+    "type": "object",
+    "description": "POST this JSON body to the endpoint.",
+    "properties": {
+      "chain": { "type": "string", "description": "Chain key: ethereum, base, arbitrum, optimism, polygon, bsc, avalanche, cronos, apechain or solana." },
+      "address": { "type": "string", "description": "Token contract address (EVM) or mint address (Solana)." }
+    },
+    "required": ["chain", "address"]
+  },
+  "outputs": {
+    "type": "object",
+    "description": "Uniform envelope with the scan report.",
+    "properties": {
+      "ok": { "type": "boolean", "description": "true on success" },
+      "data": { "type": "object", "description": "riskScore (0-100), verdict, redFlags[], checks (honeypot, taxes, liquidity, permissions, holders), dataSources[]" },
+      "warnings": { "type": "array", "description": "non-fatal notes" },
+      "errors": { "type": "array", "description": "canonical error codes on failure" }
+    }
+  },
+  "tags": [
+    "security", "ai", "defi", "trading", "anti-rug", "honeypot", "rug-pull",
+    "token-scanner", "risk-score", "goplus", "crypto", "web3", "solana",
+    "ethereum", "base", "normies"
+  ],
+  "access": {
+    "logic": "OR",
+    "requirements": [
+      {
+        "kind": "0xbdf8c428",
+        "data": "0x0000000000000000000000009eb6e2025b64f340691e424b7fe7022ffde12438",
+        "label": "Hold >=1 Normies NFT (ERC-721, Ethereum) for free access; otherwise pay $0.10 USDC per request via x402 on Base. Enforced on-chain by the canonical ERC721OwnerPredicate.",
+        "links": {
+          "collection": "https://opensea.io/collection/normies",
+          "etherscan": "https://etherscan.io/address/0x9Eb6E2025B64f340691e424b7fe7022fFDE12438"
+        }
+      }
+    ]
+  },
+  "io.opensea.access": {
+    "type": "erc721-owner",
+    "chain": "eip155:1",
+    "contract": "0x9Eb6E2025B64f340691e424b7fe7022fFDE12438",
+    "collection": "Normies",
+    "description": "Holding a Normies NFT grants free access. Non-holders pay $0.10 USDC per request via x402 on Base."
+  },
+  "io.opensea.display": {
+    "title": "Crypto-Knowledge Security",
+    "subtitle": "Anti-rug token scanner — 0-100 risk score across 10 chains",
+    "category": "Agent tools",
+    "icon": "https://crypto-knowledge-mcp.vercel.app/icon.png"
+  },
+  "io.dophil.docs": "https://crypto-knowledge-mcp.vercel.app/llms.txt"
+}

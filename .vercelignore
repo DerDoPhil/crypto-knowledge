@@ -1,0 +1,9 @@
+node_modules
+dist
+tests
+scripts
+docs
+.git
+*.log
+ARCHITECTURE.md
+CHANGELOG.md

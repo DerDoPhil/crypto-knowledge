@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://crypto-knowledge-mcp.vercel.app/sitemap.xml

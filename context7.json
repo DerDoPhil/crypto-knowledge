@@ -1,0 +1,14 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Crypto-Knowledge",
+  "description": "The on-chain brain for autonomous AI agents — an MCP server for cross-chain routing (LiFi + deBridge), smart-contract ABI decoding, portfolio & allowance management, EIP-1559 gas/profit estimation, anti-rug security scanning (GoPlus, EVM + Solana) and MEV protection. Keystore-free: returns only unsigned transactions for the agent to sign.",
+  "folders": [],
+  "excludeFolders": ["node_modules", "dist", "tests", "scripts"],
+  "rules": [
+    "Crypto-Knowledge is an MCP (Model Context Protocol) server. Connect over stdio (npx) or Streamable HTTP (POST /mcp).",
+    "It is keystore-free: it never holds private keys and returns unsigned transactions; the calling agent signs them.",
+    "Tools: route, pumpfun, profitability, abi, portfolio, security, mev_protection.",
+    "Provider modes per call: open (public RPC), own_key (bring your own Helius/Alchemy key, recommended), tool (operator key, gated).",
+    "Supported chains: Ethereum, Base, Arbitrum, Polygon, Cronos, ApeChain, Solana."
+  ]
+}
