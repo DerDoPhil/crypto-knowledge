@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **207 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–119 erledigt; Block 119 = Agent-Local-Fork-Dry-Run, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+Stand: **208 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–120 erledigt; Block 120 = On-Chain-Daten als Prompt-Injection-Vektor, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+
+### Block 120 (2026-07-29) — autonome Fortsetzung (Agent-Dev/Security-Fokus)
+1 Guide (207→208): `onchain_data_prompt_injection` — Token-Namen/NFT-Metadaten/ENS-Records als unauthentifizierte Freitext-Felder, die einen On-Chain-Agenten indirekt prompt-injizieren können. Zscaler-ThreatLabz-2026-Kampagnen (Web-Content-Injection, dokumentiert 4-von-26-LLMs führten betrügerische Krypto-Zahlung tatsächlich aus) als verifizierter Beweis der GENERELLEN Schwachstellen-Klasse zitiert; On-Chain-Metadaten-Erweiterung EHRLICH als „aus ersten Prinzipien abgeleitet, keine separat benannte Kampagne" gelabelt statt so getan als wäre sie unabhängig dokumentiert. Nebenbei TOC-Lücke bei `mcp_security_for_agents` gefixt (Sektion existierte bereits, Link fehlte).
+
+Vault-Dual-Write (Agent Economy - ERC-8257, x402 & OpenSea +1, 9→10 Guides), MOC/Praxis-Referenz 207→208, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 119 (2026-07-29) — autonome Fortsetzung (Agent-Dev-Fokus)
 1 Guide (206→207): `agent_local_fork_dry_run` — stärkere Ergänzung zum bestehenden `simulate`-Tool: einen GANZEN Multi-Step-Agent-Plan (nicht nur einen Call) gegen einen lokalen Anvil-Mainnet-Fork proben, mit Account-Impersonation + Balance-Setzen für realistische Tests, null echtes Gas/Kapital-Risiko. Bekannte Ecken (anvil_setBalance-Reports auf Nicht-Mainnet-Forks, Impersonation-Rough-Edges) ehrlich als „gegen eigene Foundry-Version prüfen" gelabelt statt verschwiegen.
