@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **204 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–116 erledigt; Block 116 = Cross-Chain-Messaging-Landschaft (Hyperlane/Axelar/CCIP), 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+Stand: **205 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–117 erledigt; Block 117 = NFT-Royalty-Enforcement, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+
+### Block 117 (2026-07-29) — autonome Fortsetzung (Philipp-Feedback: mehr Vielfalt jenseits Cross-Chain)
+1 Guide (204→205): `nft_royalty_enforcement` — ERC-2981 (reine Signal-Funktion, keine Durchsetzung) vs. ERC-721C (echte On-Chain-Durchsetzung via CreatorTokenTransferValidator, exakte Security-Level-Tabelle 1-7 wörtlich aus Source zitiert). OpenSeas Operator-Filter-Durchsetzung mit exakten Daten als vollständig tot bestätigt (2023-09-01 Stopp für neue Contracts, 2024-02-29 letzte Legacy-Durchsetzung ausgelaufen) — eine Doku/ein Tutorial, das das noch referenziert, beschreibt einen nicht mehr funktionierenden Mechanismus.
+
+Vault-Dual-Write (NFTs - Metadaten, IPFS & Seaport +1, 8→9 Guides), MOC/Praxis-Referenz 204→205. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 116 (2026-07-29) — autonome Fortsetzung
 1 Guide (203→204): `cross_chain_messaging_landscape` — Hyperlane (steckbare Interchain Security Modules, pro App wählbar, 140+ Chains reported), Axelar (General Message Passing + Cosmos-IBC-Reichweite, 70+ Chains), Chainlink CCIP (Oracle-Verifikation + separates Risk Management Network, 25+ Chains) als Landschaft jenseits von LayerZero/Wormhole. Alle drei Dispatch-Funktionssignaturen (Mailbox.dispatch, Gateway.callContract, Router.ccipSend) direkt gegen den jeweiligen Source-Repo verifiziert. Aktivitäts-Nuance ehrlich benannt: Hyperlane-Repo gepusht am Check-Tag, Axelar-Repo ~7-8 Wochen alt, smartcontractkit/ccip-Repo >1 Jahr ruhig — aber explizit als „Repo-Signal, nicht zwingend Projekt-Status" gelabelt statt vorschnell als abandoned eingeordnet.
