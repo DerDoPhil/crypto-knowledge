@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **202 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–114 erledigt; Block 114 = EIP-6963 Wallet-Discovery, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp: Pause nach Block 114/202**).
+Stand: **203 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–115 erledigt; Block 115 = ERC-7683 Cross-Chain-Intents, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+
+### Block 115 (2026-07-29) — autonome Fortsetzung
+1 Guide (202→203): `erc7683_cross_chain_intents` — **echte, gut verifizierte Falle:** der lebende EIP-7683-Spec-Text wurde per Commit-Historie bestätigt am 2026-05-13 „Redesign around resolvers" umgebaut (IResolver.resolve() statt IOriginSettler.open()/IDestinationSettler.fill()), aber das breit deployte „ERC-7683"-Ökosystem (Across = 88% seines Volumens Stand April 2026, laut eigener Statistik) läuft weiter auf dem ALTEN open()/fill()-Design von VOR diesem Redesign. eips.ethereum.org heute zu lesen beschreibt nicht, wie deployte Bridges tatsächlich arbeiten — ein Fund, der klassische „geläufig = wahr"-Fehlannahme (Operating-Manual §4) direkt widerlegt hätte, wäre er nicht doppelt (Raw-Spec-Diff + Commit-Historie + Ökosystem-Cross-Check) verifiziert worden.
+
+Vault-Dual-Write (Swaps, Bridges & Cross-Chain +1, 15→16 Guides), MOC/Praxis-Referenz 202→203, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 114 (2026-07-29) — letzter Block dieser Session (Philipp: „nach 202 kannst du Pause machen")
 1 Guide (201→202): `eip6963_wallet_discovery` — Multi-Wallet-Discovery via Announce/Request-Events statt der window.ethereum-„letzte-Extension-gewinnt"-Kollision. Status direkt gegen eips.ethereum.org verifiziert: **Final**, kein Draft. Event-Namen (eip6963:announceProvider/requestProvider) + Interface-Shapes (EIP6963ProviderInfo/ProviderDetail, uuid vs. rdns-Unterscheidung) exakt zitiert. wagmi als dominante Connector-Library aktiv verifiziert (gepusht am Tag des Checks).
