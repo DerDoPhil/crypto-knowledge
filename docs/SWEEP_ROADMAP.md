@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **211 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–123 erledigt; Block 123 = Solana ZK Compression, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+Stand: **212 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–124 erledigt; Block 124 = MEV-Boost/PBS-Mechanismus, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen; einmaliger Webhook-Hänger bei Block 123 per `vercel --prod` gelöst**).
+
+### Block 124 (2026-07-29) — autonome Fortsetzung (Substrat-Guide, schließt Lücke unter mev_share/based_rollups)
+1 Guide (211→212): `mev_boost_pbs_mechanism` — der tatsächliche Proposer-Builder-Separation-Mechanismus hinter ~90% der Ethereum-Blöcke (reported), den mev_share_order_flow_auctions UND based_rollups_preconfirmations' Commit-Boost beide voraussetzen, aber bisher nirgends selbst erklärt wurde. Commit-Reveal-Schema (Proposer signiert Header blind, Relay enthüllt Body erst danach) + exakter Builder-API-3-Call-Flow (registerValidator/getHeader/getPayload) direkt gegen flashbots/mev-boost + flashbots/mev-boost-relay verifiziert (beide Repos aktiv, 5 Tage bzw. 1 Monat vor Check gepusht). Enshrined-PBS-Forschungsrichtung als „aktuelle Off-Chain-Realität, kein Endzustand" sauber eingeordnet.
+
+Vault-Dual-Write (Trading-Strategien & Bots +1, 23→24 Guides), MOC/Praxis-Referenz 211→212, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 123 (2026-07-29) — autonome Fortsetzung (Solana-Infra, Themen-Rotation)
 1 Guide (210→211): `solana_zk_compression` — Light Protocols allgemeinere Primitive hinter solana_compressed_nfts: beliebige Accounts/SPL-Token-Balances/PDAs komprimierbar bei ~99% geringeren Speicherkosten (Merkle-Root + Validity-Proof statt roher Rent). Echte Falle herausgearbeitet: komprimierten State lesen braucht eine Photon-Indexer-fähige RPC (Helius/Alchemy u.a.), keine beliebige generische Solana-RPC. SDK-Pakete (@lightprotocol/stateless.js, @lightprotocol/compressed-token, @lightprotocol/zk-compression-cli) verifiziert, Repo-Aktivität bestätigt (gepusht 2026-07-21, ~1 Woche vor Check).
