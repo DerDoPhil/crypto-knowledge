@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **214 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–126 erledigt; Block 126 = Smart-Wallet Social-Recovery, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+Stand: **215 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–127 erledigt; Block 127 = DeFi-Versicherungs-Realitätscheck, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+
+### Block 127 (2026-07-29) — autonome Fortsetzung
+1 Guide (214→215): `defi_insurance_coverage` — Nexus-Mutual/Sherlock-Mechanismus (NXM-Stake-und-Burn, Claims-Committee) PLUS die ehrlichen Adoptionszahlen: ~81,56 Mio. $ Sektor-TVL (85% Nexus Mutual) gegen Hunderte Milliarden DeFi-TVL, nur ~18 Mio. $ Claims in 7 Jahren ausgezahlt vs. dem einzelnen 292-Mio.-$-Kelp-DAO-Exploit, InsurAce/Sherlock-TVL-Kollaps (150M→132K bzw. 60M→505K), und die durchgerechnete Prämien-Mathematik, die zeigt, dass Cover oft den Großteil/die gesamte Yield auffrisst, die es eigentlich schützen soll.
+
+Vault-Dual-Write (Web3 Security & Forensik +1, 6→7 Guides), MOC/Praxis-Referenz 214→215, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 126 (2026-07-29) — autonome Fortsetzung
 1 Guide (213→214): `smart_wallet_social_recovery` — Safes Recovery-Module (designierte Recovery-Adresse + Timelock) und Argents Guardian-System (Quorum + Sicherheitsfenster) als Alternativen zur reinen Seed-Phrasen-EOA-Recovery. Kern-Muster herausgearbeitet: Autorität + verpflichtende Verzögerung, dasselbe „der ehrlichen Partei Zeit zu reagieren geben"-Prinzip wie DelayedWETH in op_stack_fault_proofs. **Labeling-Disziplin bewusst eingehalten:** spezifische Zahlen (7-Tage-Timelock, 36h-Fenster) als „reported, nicht in diesem Durchgang aus Contract-Source neu abgeleitet" gekennzeichnet, statt so zu tun als wären sie primärquellen-verifiziert.
