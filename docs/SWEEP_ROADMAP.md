@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **213 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–125 erledigt; Block 125 = ERC-4337-Bundler-Ökonomie, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+Stand: **214 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–126 erledigt; Block 126 = Smart-Wallet Social-Recovery, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+
+### Block 126 (2026-07-29) — autonome Fortsetzung
+1 Guide (213→214): `smart_wallet_social_recovery` — Safes Recovery-Module (designierte Recovery-Adresse + Timelock) und Argents Guardian-System (Quorum + Sicherheitsfenster) als Alternativen zur reinen Seed-Phrasen-EOA-Recovery. Kern-Muster herausgearbeitet: Autorität + verpflichtende Verzögerung, dasselbe „der ehrlichen Partei Zeit zu reagieren geben"-Prinzip wie DelayedWETH in op_stack_fault_proofs. **Labeling-Disziplin bewusst eingehalten:** spezifische Zahlen (7-Tage-Timelock, 36h-Fenster) als „reported, nicht in diesem Durchgang aus Contract-Source neu abgeleitet" gekennzeichnet, statt so zu tun als wären sie primärquellen-verifiziert.
+
+Vault-Dual-Write (Signaturen, Auth & Smart Accounts +1, 12→13 Guides), MOC/Praxis-Referenz 213→214, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 125 (2026-07-29) — autonome Fortsetzung (schließt Lücke unter account_abstraction_4337/_dev)
 1 Guide (212→213): `erc4337_bundler_economics` — die ökonomische Schicht, die entscheidet, ob ein Bundler eine UserOperation tatsächlich inkludiert. Fee-Mechanik (Bundler streckt L1-Gas vor, UserOp-eigene maxFeePerGas/maxPriorityFeePerGas müssen das decken), Marktkonzentration (78% bei 3 Bundlern Q1 2026, reported), Paymaster-Sponsoring-Zentralisierungsdruck als dokumentierte Kritik. ERC-7562s DoS-Verhinderungs-Rationale direkt gegen die Raw-EIP-Quelle verifiziert (Status: Draft) — erklärt, WARUM Bundler strikte Validierungsphasen-Regeln durchsetzen (abstrahierte Validierung bricht die implizite „nur höher bezahlende Tx verdrängt"-DoS-Resistenz von EOA-Transaktionen).
