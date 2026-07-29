@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **205 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–117 erledigt; Block 117 = NFT-Royalty-Enforcement, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+Stand: **206 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–118 erledigt; Block 118 = ABI-zu-Agent-Tool-Schema, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+
+### Block 118 (2026-07-29) — autonome Fortsetzung (Agent-Dev-Fokus)
+1 Guide (205→206): `abi_to_agent_tool_schemas` — die uint256-als-JSON-Schema-„number"-Falle beim Umwandeln einer Contract-ABI in ein LLM-Tool-Schema (MCP/OpenAI-Function-Calling/Anthropic-Tool-Use nutzen alle dieselbe JSON-Schema-Form). **Selbstreferenziell verifiziert:** das korrekte Muster (`z.string()` statt `z.number()` für Beträge, server-seitig via BigInt geparst) wörtlich aus diesem Repos eigenem `src/modules/portfolio/tool.ts` zitiert statt als abstrakte Empfehlung — das Tool demonstriert die eigene Lehre bereits produktiv. Address/bytes/tuple-Mapping-Regeln + Decimals-vs-Präzision-Unterscheidung ergänzt.
+
+Vault-Dual-Write (Smart-Contract-Entwicklung EVM +1, 16→17 Guides), MOC/Praxis-Referenz 205→206, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 117 (2026-07-29) — autonome Fortsetzung (Philipp-Feedback: mehr Vielfalt jenseits Cross-Chain)
 1 Guide (204→205): `nft_royalty_enforcement` — ERC-2981 (reine Signal-Funktion, keine Durchsetzung) vs. ERC-721C (echte On-Chain-Durchsetzung via CreatorTokenTransferValidator, exakte Security-Level-Tabelle 1-7 wörtlich aus Source zitiert). OpenSeas Operator-Filter-Durchsetzung mit exakten Daten als vollständig tot bestätigt (2023-09-01 Stopp für neue Contracts, 2024-02-29 letzte Legacy-Durchsetzung ausgelaufen) — eine Doku/ein Tutorial, das das noch referenziert, beschreibt einen nicht mehr funktionierenden Mechanismus.
