@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **203 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–115 erledigt; Block 115 = ERC-7683 Cross-Chain-Intents, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+Stand: **204 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–116 erledigt; Block 116 = Cross-Chain-Messaging-Landschaft (Hyperlane/Axelar/CCIP), 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag**).
+
+### Block 116 (2026-07-29) — autonome Fortsetzung
+1 Guide (203→204): `cross_chain_messaging_landscape` — Hyperlane (steckbare Interchain Security Modules, pro App wählbar, 140+ Chains reported), Axelar (General Message Passing + Cosmos-IBC-Reichweite, 70+ Chains), Chainlink CCIP (Oracle-Verifikation + separates Risk Management Network, 25+ Chains) als Landschaft jenseits von LayerZero/Wormhole. Alle drei Dispatch-Funktionssignaturen (Mailbox.dispatch, Gateway.callContract, Router.ccipSend) direkt gegen den jeweiligen Source-Repo verifiziert. Aktivitäts-Nuance ehrlich benannt: Hyperlane-Repo gepusht am Check-Tag, Axelar-Repo ~7-8 Wochen alt, smartcontractkit/ccip-Repo >1 Jahr ruhig — aber explizit als „Repo-Signal, nicht zwingend Projekt-Status" gelabelt statt vorschnell als abandoned eingeordnet.
+
+Vault-Dual-Write (Swaps, Bridges & Cross-Chain +1, 16→17 Guides), MOC/Praxis-Referenz 203→204, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 115 (2026-07-29) — autonome Fortsetzung
 1 Guide (202→203): `erc7683_cross_chain_intents` — **echte, gut verifizierte Falle:** der lebende EIP-7683-Spec-Text wurde per Commit-Historie bestätigt am 2026-05-13 „Redesign around resolvers" umgebaut (IResolver.resolve() statt IOriginSettler.open()/IDestinationSettler.fill()), aber das breit deployte „ERC-7683"-Ökosystem (Across = 88% seines Volumens Stand April 2026, laut eigener Statistik) läuft weiter auf dem ALTEN open()/fill()-Design von VOR diesem Redesign. eips.ethereum.org heute zu lesen beschreibt nicht, wie deployte Bridges tatsächlich arbeiten — ein Fund, der klassische „geläufig = wahr"-Fehlannahme (Operating-Manual §4) direkt widerlegt hätte, wäre er nicht doppelt (Raw-Spec-Diff + Commit-Historie + Ökosystem-Cross-Check) verifiziert worden.
