@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **210 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–122 erledigt; Block 122 = On-Chain Private Credit, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+Stand: **211 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–123 erledigt; Block 123 = Solana ZK Compression, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+
+### Block 123 (2026-07-29) — autonome Fortsetzung (Solana-Infra, Themen-Rotation)
+1 Guide (210→211): `solana_zk_compression` — Light Protocols allgemeinere Primitive hinter solana_compressed_nfts: beliebige Accounts/SPL-Token-Balances/PDAs komprimierbar bei ~99% geringeren Speicherkosten (Merkle-Root + Validity-Proof statt roher Rent). Echte Falle herausgearbeitet: komprimierten State lesen braucht eine Photon-Indexer-fähige RPC (Helius/Alchemy u.a.), keine beliebige generische Solana-RPC. SDK-Pakete (@lightprotocol/stateless.js, @lightprotocol/compressed-token, @lightprotocol/zk-compression-cli) verifiziert, Repo-Aktivität bestätigt (gepusht 2026-07-21, ~1 Woche vor Check).
+
+Vault-Dual-Write (Solana Agent-Wissen +1, 20→21 Guides), MOC/Praxis-Referenz 210→211, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 122 (2026-07-29) — autonome Fortsetzung (DeFi-Primitive-Fokus, Themen-Rotation)
 1 Guide (209→210): `onchain_private_credit` — strukturell andere RWA-Kategorie neben tokenized_treasuries: echte Kredite statt Staatsschulden. Maples syrupUSDC live on-chain verifiziert (symbol()/name()/asset() direkt via eth_call gegen 0x80ac24aA929eaF5013f6436cdA2a7ba190f5Cc0b — asset() bestätigt kanonisches USDC). Nicht-offensichtlicher Permission-Grenzen-Fund: KYC/Underwriting sitzt bei den KREDITNEHMERN, nicht bei den Lendern — Retail hält den Wrapper-Token vollkommen permissionless. Maple/Centrifuge/Goldfinch als 3 unterschiedliche Kreditnehmer-Kategorien sauber getrennt statt austauschbar dargestellt.

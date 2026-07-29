@@ -24,7 +24,7 @@ POST /mcp  — JSON-RPC 2.0 over Streamable HTTP (Model Context Protocol)
 - whale_watch: recent large ERC-20 transfers over a block window
 - simulate: EVM transaction dry-run + revert reason decoding before signing
 - catalog: capabilities + chain discovery
-- knowledge: the chain brain — 210 live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guide (full) + previews + matching endpoints in ONE call ("full":true for every match in full, "topK" 1-10 for result count). BATCH: {"action":"get_guide","topics":["a","b","c"]} = up to 5 full runbooks for ONE paid call. Also list_topics (free), get_guide (near-miss topic ids resolve or return suggestions — no wasted paid call), search, reference (supports "filter" to narrow tables server-side).
+- knowledge: the chain brain — 211 live-verified guides + a keyless-API directory. Fastest path for an agent: POST /api/tools/knowledge {"action":"ask","query":"<your question>"} → best guide (full) + previews + matching endpoints in ONE call ("full":true for every match in full, "topK" 1-10 for result count). BATCH: {"action":"get_guide","topics":["a","b","c"]} = up to 5 full runbooks for ONE paid call. Also list_topics (free), get_guide (near-miss topic ids resolve or return suggestions — no wasted paid call), search, reference (supports "filter" to narrow tables server-side).
 
 ## Knowledge coverage (action 'ask' / 'get_guide')
 
@@ -35,7 +35,7 @@ EIP-5792 batch calls (wallet_sendCalls), transient storage EIP-1153 + SSTORE2 (i
 session keys + paymasters in depth (ERC-7579/7715/7677, Rhinestone Smart Sessions, MetaMask Delegation Toolkit), ERC-6900 modular accounts vs ERC-7579,
 the Diamond Standard (EIP-2535 facets, loupe introspection, Aavegotchi), formal verification (Halmos symbolic tests, Certora Prover now open source),
 contract/chain migrations (token swap-and-claim vs Merkle-drop vs a whole chain migrating state — Celo's 2025 L1-to-Ethereum-L2 move — plus migration-phishing detection),
-the modern Solana TS stack (@solana/kit ex-web3.js-v2, gill, Codama, Anchor/wallet interop),
+the modern Solana TS stack (@solana/kit ex-web3.js-v2, gill, Codama, Anchor/wallet interop), ZK Compression for compressed accounts/tokens/PDAs at ~1% of normal rent (the Photon-indexer RPC requirement),
 Solana program testing + CU optimization (LiteSVM, Mollusk, surfpool mainnet-fork, anchor-litesvm),
 on-chain data indexing EVM+Solana (Ponder, The Graph network, Envio HyperSync token-gating, Helius webhooks, Yellowstone gRPC, reorg-safe pollers),
 verifying off-chain compute on-chain (SP1 vs RISC Zero zkVMs, ISP1Verifier/IRiscZeroVerifier, STARK-wrapped-in-SNARK, decentralized prover networks), turning a contract ABI into an LLM tool schema (the uint256-as-JSON-string precision gotcha, verified against this tool's own MCP schemas), dry-running a whole multi-step agent plan against a local Anvil mainnet fork before broadcasting anything real,
