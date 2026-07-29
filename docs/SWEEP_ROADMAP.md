@@ -6,7 +6,12 @@ list_topics-Check → Hash-Regression (`scripts/check-hash-71.ts` + tool-sdk has
 `0xf5ff3a29…ebc4`) → commit+push**. Nichts aus dem Gedächtnis; jede Adresse/jeder
 Endpunkt wird vor Einbau live geprüft.
 
-Stand: **206 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–118 erledigt; Block 118 = ABI-zu-Agent-Tool-Schema, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+Stand: **207 Guides, 21 Sektionen, 80 Endpunkte** (Blöcke 1–119 erledigt; Block 119 = Agent-Local-Fork-Dry-Run, 2026-07-29; **Manifest v1.4.1, Baseline `0xf5ff3a29…ebc4` unberührt; Sweep-Workflow: Guides werden im privaten `crypto-knowledge-content`-Repo gepflegt, siehe Block-109-Eintrag; Philipp-Feedback: nicht alles muss Cross-Chain sein, auch praktische Agent-Web3-Dev-Themen einbauen**).
+
+### Block 119 (2026-07-29) — autonome Fortsetzung (Agent-Dev-Fokus)
+1 Guide (206→207): `agent_local_fork_dry_run` — stärkere Ergänzung zum bestehenden `simulate`-Tool: einen GANZEN Multi-Step-Agent-Plan (nicht nur einen Call) gegen einen lokalen Anvil-Mainnet-Fork proben, mit Account-Impersonation + Balance-Setzen für realistische Tests, null echtes Gas/Kapital-Risiko. Bekannte Ecken (anvil_setBalance-Reports auf Nicht-Mainnet-Forks, Impersonation-Rough-Edges) ehrlich als „gegen eigene Foundry-Version prüfen" gelabelt statt verschwiegen.
+
+Vault-Dual-Write (Smart-Contract-Entwicklung EVM +1, 17→18 Guides), MOC/Praxis-Referenz 206→207, llms.txt-Prosa ergänzt. tsc grün, vitest 91 passed. Baseline unberührt.
 
 ### Block 118 (2026-07-29) — autonome Fortsetzung (Agent-Dev-Fokus)
 1 Guide (205→206): `abi_to_agent_tool_schemas` — die uint256-als-JSON-Schema-„number"-Falle beim Umwandeln einer Contract-ABI in ein LLM-Tool-Schema (MCP/OpenAI-Function-Calling/Anthropic-Tool-Use nutzen alle dieselbe JSON-Schema-Form). **Selbstreferenziell verifiziert:** das korrekte Muster (`z.string()` statt `z.number()` für Beträge, server-seitig via BigInt geparst) wörtlich aus diesem Repos eigenem `src/modules/portfolio/tool.ts` zitiert statt als abstrakte Empfehlung — das Tool demonstriert die eigene Lehre bereits produktiv. Address/bytes/tuple-Mapping-Regeln + Decimals-vs-Präzision-Unterscheidung ergänzt.
