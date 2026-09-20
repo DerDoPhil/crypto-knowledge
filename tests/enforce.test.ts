@@ -30,6 +30,7 @@ function opConfig(gatingEnabled = true): OperatorConfig {
 
 const gatedCall = { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "security", arguments: {} } };
 const catalogCall = { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "catalog", arguments: {} } };
+const knowledgeCall = { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "knowledge", arguments: { action: "ask", query: "x" } } };
 const toolsList = { jsonrpc: "2.0", id: 1, method: "tools/list" };
 const RESOURCE = "https://crypto-knowledge-eight.vercel.app/mcp";
 
@@ -45,6 +46,19 @@ describe("isGatedCall", () => {
     expect(isGatedCall({ method: "initialize" })).toBe(false);
     expect(isGatedCall(undefined)).toBe(false);
     expect(isGatedCall([toolsList, gatedCall])).toBe(true);
+  });
+
+  it("treats the knowledge tool as free (product decision 2026-09-20) but keeps every other tool gated", () => {
+    expect(isGatedCall(knowledgeCall)).toBe(false);
+    expect(isGatedCall([knowledgeCall, catalogCall])).toBe(false);
+    // One paid call anywhere in a batch still gates the whole request.
+    expect(isGatedCall([knowledgeCall, gatedCall])).toBe(true);
+    for (const name of ["portfolio", "security", "route", "abi", "whale_watch", "solana_swap", "pumpfun", "mev_protection", "profitability"]) {
+      expect(isGatedCall({ method: "tools/call", params: { name } })).toBe(true);
+    }
+    // A missing/non-string name must never slip through as "free".
+    expect(isGatedCall({ method: "tools/call", params: {} })).toBe(true);
+    expect(isGatedCall({ method: "tools/call", params: { name: ["knowledge"] } })).toBe(true);
   });
 });
 
@@ -71,6 +85,16 @@ describe("AccessEnforcer", () => {
     const e = new AccessEnforcer(opConfig());
     expect((await e.enforce({ headers: {}, body: toolsList, resourceUrl: RESOURCE })).allowed).toBe(true);
     expect((await e.enforce({ headers: {}, body: catalogCall, resourceUrl: RESOURCE })).allowed).toBe(true);
+  });
+
+  it("serves the knowledge tool without any payment even with gating on, while other tools still get 402", async () => {
+    const e = new AccessEnforcer(opConfig());
+    const free = await e.enforce({ headers: {}, body: knowledgeCall, resourceUrl: RESOURCE });
+    expect(free.allowed).toBe(true);
+    expect(vi.mocked(fetchJson)).not.toHaveBeenCalled(); // no facilitator round-trip for a free call
+    const paid = await e.enforce({ headers: {}, body: gatedCall, resourceUrl: RESOURCE });
+    expect(paid.allowed).toBe(false);
+    expect(paid.status).toBe(402);
   });
 
   it("serves the request when an x402 payment verifies AND settles", async () => {

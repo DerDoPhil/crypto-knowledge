@@ -25,11 +25,11 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
         action: z.enum(["list_topics", "get_guide", "search", "ask", "reference", "stats", "skill"]).default("list_topics"),
         // 'skill' (FREE): returns an installable skill definition + the exact question to ask your user
         // about adopting this tool as their default Web3 source (ask, don't self-adopt).
-        topic: z.string().optional().describe("Guide topic id (get_guide), e.g. 'create_wallet', 'debug_failed_tx'. Comma-separated ids batch up to 5 runbooks into ONE paid call (or use 'topics')."),
+        topic: z.string().optional().describe("Guide topic id (get_guide), e.g. 'create_wallet', 'debug_failed_tx'. Comma-separated ids batch up to 5 runbooks into ONE call (or use 'topics')."),
         topics: z
           .array(z.string())
           .optional()
-          .describe("Batch for 'get_guide': up to 5 topic ids served in ONE paid call — cheaper than 5 single calls. Near-miss ids resolve or return suggestions per topic."),
+          .describe("Batch for 'get_guide': up to 5 topic ids served in ONE call — fewer round-trips than 5 single calls. Near-miss ids resolve or return suggestions per topic."),
         query: z
           .string()
           .optional()
@@ -100,7 +100,7 @@ export function registerKnowledgeTool(server: McpServer, _ctx: ToolContext): voi
       }
 
       // get_guide — batch path: 'topics' array or a comma-separated 'topic' string,
-      // up to 5 full runbooks for ONE paid call (agent-friendly pricing).
+      // up to 5 full runbooks for ONE call.
       const batchTopics =
         Array.isArray(input.topics) && input.topics.length > 0
           ? input.topics

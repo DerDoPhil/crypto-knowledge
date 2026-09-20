@@ -1,12 +1,14 @@
 /**
  * HTTP access enforcement for the hosted MCP endpoint (the GO-LIVE §5 adapter).
  *
- * Product rule (Philipp, 2026-07-14): every `tools/call` except `catalog` requires
- * a settled x402 payment of $0.01 USDC on Base. There is NO NFT-holder free tier
- * anymore (the Normies gate was removed) — access is pay-per-call for everyone.
- * Discovery stays open: initialize, tools/list, ping and the `catalog` tool are
+ * Product rule (Philipp, 2026-07-14): every `tools/call` requires a settled x402
+ * payment of $0.01 USDC on Base — EXCEPT the tools in FREE_TOOLS. There is NO
+ * NFT-holder free tier anymore (the Normies gate was removed).
+ * Product rule (Philipp, 2026-09-20): the `knowledge` tool (guides, references,
+ * ERC-8257 tool #71 on OpenSea) is FREE for everyone — no payment, no 402.
+ * Discovery stays open too: initialize, tools/list, ping and the `catalog` tool are
  * never gated, so agents (and registry health probes) can always find out what the
- * tool offers and how to pay.
+ * tool offers and how to pay for the tools that still cost something.
  *
  * Payment:
  *   X-Payment: base64 x402 payment payload → verified AND settled via the keyless
@@ -31,6 +33,9 @@ function header(headers: HeaderMap, name: string): string | undefined {
   return Array.isArray(v) ? v[0] : v;
 }
 
+/** Tools that never require payment: discovery (`catalog`) and the free knowledge base. */
+const FREE_TOOLS: ReadonlySet<string> = new Set(["catalog", "knowledge"]);
+
 /** True when the JSON-RPC body (single or batch) contains a gated tools/call. */
 export function isGatedCall(body: unknown): boolean {
   const items = Array.isArray(body) ? body : [body];
@@ -38,7 +43,7 @@ export function isGatedCall(body: unknown): boolean {
     if (!item || typeof item !== "object") continue;
     const { method, params } = item as { method?: unknown; params?: { name?: unknown } };
     if (method !== "tools/call") continue;
-    if (params?.name === "catalog") continue; // discovery stays free
+    if (typeof params?.name === "string" && FREE_TOOLS.has(params.name)) continue;
     return true;
   }
   return false;

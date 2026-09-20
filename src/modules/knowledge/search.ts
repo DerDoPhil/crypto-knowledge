@@ -93,7 +93,7 @@ export function compactGuides(ranked: RankedGuide[], fullCount = 1): (RankedGuid
 
 /** Note appended to compacted results so agents know how to expand a preview. */
 export const PREVIEW_NOTE =
-  "Rank 1 is the full guide; lower ranks are previews (topic/title/summary/score). Expand several at once with { action: 'get_guide', topics: ['<id>', …] } (up to 5 in ONE paid call), or repeat this call with full: true to get every match in full.";
+  "Rank 1 is the full guide; lower ranks are previews (topic/title/summary/score). Expand several at once with { action: 'get_guide', topics: ['<id>', …] } (up to 5 in ONE call), or repeat this call with full: true to get every match in full.";
 
 /** How many results ask/search may return (agent-controlled via topK). */
 export function clampTopK(topK: number | undefined, fallback: number): number {
@@ -101,7 +101,7 @@ export function clampTopK(topK: number | undefined, fallback: number): number {
   return Math.max(1, Math.min(10, Math.floor(topK)));
 }
 
-/** Max guide topics served in one paid get_guide call. */
+/** Max guide topics served in one get_guide call. */
 export const MAX_BATCH_TOPICS = 5;
 
 export interface BatchMiss {
@@ -119,11 +119,11 @@ export interface BatchResult {
 }
 
 /**
- * Resolve a list of requested topic ids into full guides — ONE paid call for up
+ * Resolve a list of requested topic ids into full guides — ONE call for up
  * to MAX_BATCH_TOPICS runbooks (agent-friendly pricing). Each miss goes through
  * the same rescue as a single get_guide: unique substring match resolves,
  * anything else returns suggestions. Overlong lists are truncated, never
- * rejected — a paid call must not be wasted on a validation error.
+ * rejected — a call must not be wasted on a validation error.
  */
 export function getGuidesBatch(requestedTopics: string[]): BatchResult {
   const cleaned = requestedTopics.map((t) => String(t).trim()).filter((t) => t.length > 0);
@@ -158,7 +158,7 @@ export function getGuidesBatch(requestedTopics: string[]): BatchResult {
 }
 
 /**
- * Rescue path for get_guide with an unknown topic id, so a paid call is never
+ * Rescue path for get_guide with an unknown topic id, so a call is never
  * wasted: a UNIQUE substring match on topic ids resolves directly to that guide
  * (e.g. 'uniswap_v3' → uniswap_v3_swap_coding); otherwise the id is treated as
  * a search query and the best guides come back as previews.

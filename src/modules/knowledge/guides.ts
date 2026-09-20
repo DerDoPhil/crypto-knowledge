@@ -7,7 +7,7 @@
  * The actual guide bodies live in a PRIVATE repo (DerDoPhil/crypto-knowledge-content)
  * and are fetched here at cold-start via the GitHub Contents API — this repo stays
  * open-source (server framework, search/ranking logic, reference tables) while the
- * paid content itself is no longer readable for free on GitHub.
+ * guide content itself is no longer readable directly on GitHub.
  */
 import { fetchJson } from "../../core/http.js";
 

@@ -60,9 +60,8 @@ The caller chooses how RPC/data is sourced:
 
 When `ACCESS_GATING_ENABLED=true` (off by default for local stdio use):
 
-- **Holder** — owns the configured gating NFT (on-chain verified) → free, higher limits, may use the tool's keys.
-- **Paid** — \$0.10 per request via [x402](https://x402.org).
-- **Free** — public-RPC tier with conservative limits.
+- **Free** — the `knowledge` tool (guides, references, keyless-API directory; ERC-8257 tool #71 on OpenSea) and the `catalog` tool need no payment on any endpoint (`/mcp` and `POST /api/tools/knowledge`). See `FREE_TOOLS` in `src/access/enforce.ts`.
+- **Paid** — every other tool costs \$0.01 USDC per request via [x402](https://x402.org) on Base (no NFT gate; the old Normies holder tier was removed 2026-07-14).
 
 ## Architecture
 

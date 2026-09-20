@@ -1,6 +1,4 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { AccessEnforcer } from "../../src/access/enforce.js";
-import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
 import { ADOPTION_PROMPT, getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
 import { ask, clampTopK, compactGuides, deepSearchGuides, getGuidesBatch, PREVIEW_NOTE, relatedGuides, resolveTopicMiss } from "../../src/modules/knowledge/search.js";
@@ -13,12 +11,10 @@ import { ask, clampTopK, compactGuides, deepSearchGuides, getGuidesBatch, PREVIE
  * POST { "action": "list_topics" | "get_guide" | "search" | "reference",
  *        "topic"?: string, "query"?: string, "kind"?: string }
  *
- * list_topics is free (discovery); the actual knowledge (get_guide, search,
- * reference) requires a settled x402 payment ($0.01, pay-per-call, no NFT gate).
+ * Every action is FREE (product decision 2026-09-20): no payment, no 402, no NFT gate.
+ * The same holds for the `knowledge` tool on /mcp (see FREE_TOOLS in src/access/enforce.ts).
  */
 export const config = { maxDuration: 30 };
-
-const enforcer = new AccessEnforcer(loadOperatorConfig());
 
 export default async function handler(
   req: IncomingMessage & { body?: unknown },
@@ -35,10 +31,10 @@ export default async function handler(
     json(200, {
       ok: true,
       tool: "crypto-knowledge",
-      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"topics"?,"query"?,"kind"?,"filter"?,"full"?,"topK"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guide (full) + previews + endpoints in one call (full:true for every match in full; topK 1-10 controls result count). BATCH: {"action":"get_guide","topics":["a","b","c"]} serves up to 5 full runbooks for ONE paid call. reference supports "filter" (e.g. {"kind":"endpoints","filter":"solana"}) so you don\'t pay tokens for a whole table. A near-miss get_guide topic resolves or returns suggestions — the paid call is not wasted. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
+      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"topics"?,"query"?,"kind"?,"filter"?,"full"?,"topK"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guide (full) + previews + endpoints in one call (full:true for every match in full; topK 1-10 controls result count). BATCH: {"action":"get_guide","topics":["a","b","c"]} serves up to 5 full runbooks in ONE call. reference supports "filter" (e.g. {"kind":"endpoints","filter":"solana"}) so you don\'t pay tokens for a whole table. A near-miss get_guide topic resolves or returns suggestions. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
       topics: GUIDE_TOPICS,
       references: [...REFERENCE_KINDS],
-      access: "list_topics + skill are free. Guides/references: $0.01 USDC per request via x402 (X-PAYMENT) — pay-per-call, no NFT gate.",
+      access: "FREE — every action (ask, get_guide, search, reference, list_topics, skill) is free. No payment, no API key, no NFT gate.",
       memoryHint: MEMORY_HINT,
     });
     return;
@@ -75,17 +71,6 @@ export default async function handler(
       return;
     }
 
-    // Everything beyond discovery is the paid/gated knowledge.
-    const verdict = await enforcer.enforce({
-      headers: req.headers,
-      body: { method: "tools/call", params: { name: "knowledge" } },
-      resourceUrl: `https://${req.headers.host ?? "crypto-knowledge-mcp.vercel.app"}/api/tools/knowledge`,
-    });
-    if (!verdict.allowed) {
-      json(verdict.status ?? 402, verdict.body ?? { error: "access denied" }, verdict.headers ?? {});
-      return;
-    }
-
     if (action === "reference") {
       const kind = typeof body.kind === "string" ? body.kind : "";
       if (!(REFERENCE_KINDS as readonly string[]).includes(kind)) {
@@ -112,7 +97,7 @@ export default async function handler(
 
     if (action === "get_guide") {
       // Batch path: 'topics' array or a comma-separated 'topic' string —
-      // up to 5 full runbooks for ONE paid call (agent-friendly pricing).
+      // up to 5 full runbooks for ONE call.
       const rawTopic = typeof body.topic === "string" ? body.topic : "";
       const batchTopics =
         Array.isArray(body.topics) && body.topics.length > 0
@@ -128,7 +113,7 @@ export default async function handler(
       const topic = (batchTopics?.[0] ?? rawTopic).trim();
       const guide = GUIDES[topic];
       if (!guide) {
-        // Rescue the paid call: unique substring match resolves directly;
+        // Rescue the call: unique substring match resolves directly;
         // otherwise the id is treated as a query and suggestions come back.
         const miss = resolveTopicMiss(topic);
         if (miss.bestMatch && miss.resolvedTopic) {

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — 2026-09-20: knowledge tool is FREE
+
+Product decision (Philipp): the `knowledge` tool (ERC-8257 tool #71 on OpenSea) no longer costs anything.
+
+- `src/access/enforce.ts`: `knowledge` joins `catalog` in `FREE_TOOLS` → no x402 on `/mcp` either; every other tool stays $0.01 x402.
+- `api/tools/knowledge.ts`: enforcement removed (all actions free).
+- Manifest 1.5.0: `pricing` array and `x402` tag removed, "free" advertised; on-chain hash updated via `updateToolMetadata(71)`.
+- Agent-facing texts (skill, quickstart, adoption prompt, llms.txt, skill.md, landing) no longer claim a price.
+- Tests: `isGatedCall`/`AccessEnforcer` cover "knowledge free, everything else gated".
+
 ## 0.1.0 — 2026-06-30 (initial build, autonomous session)
 
 First working release. MCP server (stdio + Streamable HTTP), keystore-free,
