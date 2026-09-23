@@ -1,8 +1,8 @@
 {
  "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
  "name": "Crypto-Knowledge",
- "description": "Free on-chain brain for AI agents (no payment, no API key): action 'ask' returns correct, live-verified Web3 knowledge in ONE call instead of burning search/reasoning credits. 160+ runbooks across Bitcoin, Ethereum & Solana — contract dev (Foundry, v4 hooks, AA, security), DeFi (lending, vaults, yield), swaps & bridging (Uniswap v3/v4, aggregators, Across intents, CCTP), trading (arbitrage, MEV, perps), 13 chain playbooks, keyless-API directory, canonical addresses, error playbook.",
- "version": "1.5.0",
+ "description": "On-chain brain for AI agents (free for Auditors NFT holders, $0.01/req otherwise): action 'ask' returns correct, live-verified Web3 knowledge in ONE call instead of burning search/reasoning credits. 160+ runbooks across Bitcoin, Ethereum & Solana — contract dev (Foundry, v4 hooks, AA, security), DeFi (lending, vaults, yield), swaps & bridging (Uniswap v3/v4, aggregators, Across intents, CCTP), trading (arbitrage, MEV, perps), 13 chain playbooks, keyless-API directory, addresses, error playbook.",
+ "version": "1.6.0",
  "endpoint": "https://crypto-knowledge-mcp.vercel.app/api/tools/knowledge",
  "creatorAddress": "0x6f352a029e7a03b12bf0e12d925d51eb494a4bdc",
  "image": "https://crypto-knowledge-mcp.vercel.app/icon.png",
@@ -79,14 +79,64 @@
   "solana",
   "onchain",
   "playbooks",
-  "free",
+  "nft-gated",
+  "auditors",
+  "erc721",
+  "x402",
   "bridges"
  ],
+ "access": {
+  "logic": "OR",
+  "requirements": [
+   {
+    "kind": "0xbdf8c428",
+    "data": "0x000000000000000000000000a0d2b2fe20f27bf6bfa1971d41f8b7bf7b3111e6",
+    "label": "Hold >=1 Auditors NFT (ERC-721, Ethereum) for free access; or pay $0.01 USDC/request (x402 on Base). Enforced on-chain by the canonical ERC721OwnerPredicate.",
+    "links": {
+     "collection": "https://opensea.io/collection/auditors",
+     "etherscan": "https://etherscan.io/address/0xa0d2B2Fe20f27bF6bfA1971d41F8B7bF7B3111e6"
+    }
+   }
+  ]
+ },
+ "pricing": [
+  {
+   "amount": "10000",
+   "asset": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "recipient": "eip155:8453:0xbC5CbC5434D3846BC445723e82B51b3932795e6d",
+   "protocol": "x402",
+   "description": "Per-request fee for non-Auditors-holder agents: $0.01 USDC on Base. Auditors NFT holders are free."
+  }
+ ],
+ "io.opensea.access": {
+  "type": "erc721-owner",
+  "chain": "eip155:1",
+  "contract": "0xa0d2B2Fe20f27bF6bfA1971d41F8B7bF7B3111e6",
+  "collection": "Auditors",
+  "description": "Holding an Auditors NFT grants free access. Non-holders pay $0.01 USDC per request via x402 on Base."
+ },
  "io.opensea.display": {
   "title": "Crypto-Knowledge",
-  "subtitle": "Free on-chain brain for AI agents — runbooks, addresses, endpoints, error playbooks",
+  "subtitle": "On-chain brain for AI agents — free for Auditors holders, $0.01/req otherwise",
   "category": "Agent tools",
   "icon": "https://crypto-knowledge-mcp.vercel.app/icon.png"
  },
+ "io.dophil.authentication": [
+  {
+   "type": "siwe",
+   "description": "Sign 'Crypto-Knowledge access as <wallet> on <YYYY-MM-DD>' with your wallet (personal_sign) and send it as X-Wallet / X-Wallet-Signature headers. Holding >=1 Auditors NFT (Ethereum Mainnet) then grants free access; non-holders pay $0.01 per request via x402.",
+   "passContract": "0xa0d2B2Fe20f27bF6bfA1971d41F8B7bF7B3111e6",
+   "chain": "ethereum",
+   "chainId": 1,
+   "collection": "https://opensea.io/collection/auditors"
+  },
+  {
+   "type": "x402",
+   "description": "Non-holders pay $0.01 USDC per request via x402 (USDC on Base).",
+   "network": "base",
+   "asset": "USDC",
+   "amountUsd": 0.01
+  }
+ ],
  "io.dophil.docs": "https://crypto-knowledge-mcp.vercel.app/llms.txt"
 }

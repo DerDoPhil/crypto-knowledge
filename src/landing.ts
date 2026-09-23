@@ -28,13 +28,15 @@ Ethereum, Base, Arbitrum, Polygon, Cronos, ApeChain, Solana.
 
 ## Access
 
-FREE for everyone, no payment, no API key: initialize, tools/list, the catalog tool and the
-whole knowledge tool (ask, get_guide, search, reference, list_topics, skill) — on /mcp and on
-POST /api/tools/knowledge alike.
-Every other tools/call still requires an x402 payment ($0.01 USDC on Base per request):
-an unpaid call answers HTTP 402 with the exact payment requirements (scheme "exact",
-payTo, asset). Retry with the X-PAYMENT header; the payment is verified and settled
-via the keyless facilitator. No NFT gate.
+FREE, no payment, no API key: initialize, tools/list, the catalog tool, and list_topics/skill
+within the knowledge tool — on /mcp and on POST /api/tools/knowledge alike.
+The rest of the knowledge tool (ask, get_guide, search, reference) and every other tools/call
+require either a verified Auditors NFT (Ethereum Mainnet — sign a day-bound message, send
+X-Wallet + X-Wallet-Signature headers) or a settled x402 payment ($0.01 USDC on Base per
+request): an unpaid, non-holder call answers HTTP 402 with the exact payment requirements
+(scheme "exact", payTo, asset) plus a holderAccess block describing the NFT-gate path.
+Retry with the X-PAYMENT header, or with the wallet headers; payments are verified and
+settled via the keyless facilitator.
 
 ## Source
 

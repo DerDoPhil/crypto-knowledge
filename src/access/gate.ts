@@ -2,11 +2,12 @@ import type { OperatorConfig } from "../config.js";
 import { SlidingWindowLimiter, type RateLimitRule } from "./ratelimit.js";
 
 /**
- * Access tiers (product decision 2026-07-14 — the Normies NFT-holder tier was removed):
+ * Access tiers (restored 2026-09-24 — see holder.ts for the Auditors NFT check
+ * that replaces the old, removed-2026-07-14 Normies gate):
  *   free   → discovery only (list_topics / catalog), no payment
+ *   holder → verified Auditors NFT holder (day-bound wallet signature + on-chain
+ *            balanceOf), same generous limit the old Normies tier had
  *   paid   → $0.01 per request via x402 (pay-per-call + 300/min safety cap)
- * The `holder` limit is retained only as the open-mode fallback when gating is off
- * (local stdio use), not as a real access tier.
  */
 export type Tier = "free" | "holder" | "paid";
 
@@ -21,6 +22,8 @@ export interface AccessRequest {
   identity: string;
   /** Proof that an x402 payment settled for this request (paid tier). */
   paymentSettled?: boolean;
+  /** Verified Auditors NFT ownership for this request's wallet (holder tier). */
+  holderVerified?: boolean;
 }
 
 export interface AccessDecision {
@@ -47,7 +50,7 @@ export class AccessGate {
         : { allowed: false, tier: "holder", reason: "rate limit", retryAfterSec: rl.retryAfterSec };
     }
 
-    const tier: Tier = req.paymentSettled ? "paid" : "free";
+    const tier: Tier = req.paymentSettled ? "paid" : req.holderVerified ? "holder" : "free";
 
     const rl = this.limiter.check(req.identity, TIER_LIMITS[tier]);
     if (!rl.allowed) {

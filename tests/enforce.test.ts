@@ -1,11 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { privateKeyToAccount } from "viem/accounts";
 import type { OperatorConfig } from "../src/config.js";
 import { AccessEnforcer, isGatedCall } from "../src/access/enforce.js";
+import { holderAccessMessage } from "../src/access/holder.js";
 
-// Facilitator HTTP is mocked — everything else is real. The Normies NFT-holder
-// tier was removed (2026-07-14): access is x402 pay-per-call for everyone.
+// Facilitator + RPC HTTP is mocked — everything else is real. The holder tier
+// (restored 2026-09-24, Auditors instead of the old, removed 2026-07-14 Normies
+// gate) is a day-bound wallet signature (real, local EIP-191 recovery — not
+// mocked) plus an on-chain balanceOf read (mocked via fetchJson, same as x402).
 vi.mock("../src/core/http.js", () => ({ fetchJson: vi.fn() }));
 import { fetchJson } from "../src/core/http.js";
+
+const HOLDER_ACCOUNT = privateKeyToAccount("0x53fe3ca9a453ed48b0b5da6d4704eacf4a8de7d172d9cedcc0aa0b6736713f6c");
+const NON_HOLDER_ACCOUNT = privateKeyToAccount("0xafbe9a8a525184e8d071c6a907c7cb03eb50405f11a0aaa8b92e2d3e79b58a89");
+/** Distinct wallet per call so the 5-min holder cache in holder.ts never bleeds between tests. */
+async function proofHeaders(account: typeof HOLDER_ACCOUNT): Promise<Record<string, string>> {
+  const signature = await account.signMessage({ message: holderAccessMessage(account.address) });
+  return { "x-wallet": account.address, "x-wallet-signature": signature };
+}
+/** eth_call result for balanceOf(address) — 32-byte big-endian uint256. */
+function balanceOfResult(n: number): { result: string } {
+  return { result: `0x${n.toString(16).padStart(64, "0")}` };
+}
 
 const TREASURY = "0xbC5CbC5434D3846BC445723e82B51b3932795e6d";
 
@@ -48,12 +64,9 @@ describe("isGatedCall", () => {
     expect(isGatedCall([toolsList, gatedCall])).toBe(true);
   });
 
-  it("treats the knowledge tool as free (product decision 2026-09-20) but keeps every other tool gated", () => {
-    expect(isGatedCall(knowledgeCall)).toBe(false);
-    expect(isGatedCall([knowledgeCall, catalogCall])).toBe(false);
-    // One paid call anywhere in a batch still gates the whole request.
-    expect(isGatedCall([knowledgeCall, gatedCall])).toBe(true);
-    for (const name of ["portfolio", "security", "route", "abi", "whale_watch", "solana_swap", "pumpfun", "mev_protection", "profitability"]) {
+  it("gates the knowledge tool again (2026-09-24: free only for verified Auditors holders, not for everyone)", () => {
+    expect(isGatedCall(knowledgeCall)).toBe(true);
+    for (const name of ["knowledge", "portfolio", "security", "route", "abi", "whale_watch", "solana_swap", "pumpfun", "mev_protection", "profitability"]) {
       expect(isGatedCall({ method: "tools/call", params: { name } })).toBe(true);
     }
     // A missing/non-string name must never slip through as "free".
@@ -69,16 +82,15 @@ describe("AccessEnforcer", () => {
     expect(verdict.allowed).toBe(true);
   });
 
-  it("answers 402 with payment requirements when no payment is given (no NFT-holder path)", async () => {
+  it("answers 402 with payment requirements AND the free-holder instructions when no payment/wallet is given", async () => {
     const e = new AccessEnforcer(opConfig());
     const verdict = await e.enforce({ headers: {}, body: gatedCall, resourceUrl: RESOURCE });
     expect(verdict.allowed).toBe(false);
     expect(verdict.status).toBe(402);
-    const body = verdict.body as { accepts: Array<{ payTo: string; maxAmountRequired: string }>; holderAccess?: unknown };
+    const body = verdict.body as { accepts: Array<{ payTo: string; maxAmountRequired: string }>; holderAccess?: { collection: string } };
     expect(body.accepts[0]!.payTo).toBe(TREASURY);
     expect(body.accepts[0]!.maxAmountRequired).toBe("100000");
-    // The Normies holder path was removed — no holderAccess block anymore.
-    expect(body.holderAccess).toBeUndefined();
+    expect(body.holderAccess?.collection).toBe("0x9Eb6E2025B64f340691e424b7fe7022fFDE12438");
   });
 
   it("leaves discovery (tools/list, catalog) open even with gating on", async () => {
@@ -87,14 +99,41 @@ describe("AccessEnforcer", () => {
     expect((await e.enforce({ headers: {}, body: catalogCall, resourceUrl: RESOURCE })).allowed).toBe(true);
   });
 
-  it("serves the knowledge tool without any payment even with gating on, while other tools still get 402", async () => {
+  it("gates the knowledge tool like every other tool for a caller with no wallet proof", async () => {
     const e = new AccessEnforcer(opConfig());
-    const free = await e.enforce({ headers: {}, body: knowledgeCall, resourceUrl: RESOURCE });
-    expect(free.allowed).toBe(true);
-    expect(vi.mocked(fetchJson)).not.toHaveBeenCalled(); // no facilitator round-trip for a free call
-    const paid = await e.enforce({ headers: {}, body: gatedCall, resourceUrl: RESOURCE });
-    expect(paid.allowed).toBe(false);
-    expect(paid.status).toBe(402);
+    const verdict = await e.enforce({ headers: {}, body: knowledgeCall, resourceUrl: RESOURCE });
+    expect(verdict.allowed).toBe(false);
+    expect(verdict.status).toBe(402);
+  });
+
+  it("serves any gated tool for free when the wallet's signature is valid AND it holds >=1 Auditors NFT", async () => {
+    const e = new AccessEnforcer(opConfig());
+    vi.mocked(fetchJson).mockResolvedValueOnce(balanceOfResult(1)); // eth_call balanceOf → 1
+    const headers = await proofHeaders(HOLDER_ACCOUNT);
+    const verdict = await e.enforce({ headers, body: gatedCall, resourceUrl: RESOURCE });
+    expect(verdict.allowed).toBe(true);
+    expect(vi.mocked(fetchJson)).toHaveBeenCalledTimes(1); // one eth_call, no x402 facilitator round-trip
+  });
+
+  it("falls back to x402 when the wallet's balanceOf is zero, even with a valid signature", async () => {
+    const e = new AccessEnforcer(opConfig());
+    vi.mocked(fetchJson).mockResolvedValueOnce(balanceOfResult(0));
+    const headers = await proofHeaders(NON_HOLDER_ACCOUNT);
+    const verdict = await e.enforce({ headers, body: gatedCall, resourceUrl: RESOURCE });
+    expect(verdict.allowed).toBe(false);
+    expect(verdict.status).toBe(402);
+  });
+
+  it("rejects a forged wallet header without a matching signature — no on-chain call is even made", async () => {
+    const e = new AccessEnforcer(opConfig());
+    const verdict = await e.enforce({
+      headers: { "x-wallet": HOLDER_ACCOUNT.address, "x-wallet-signature": `0x${"00".repeat(65)}` },
+      body: gatedCall,
+      resourceUrl: RESOURCE,
+    });
+    expect(verdict.allowed).toBe(false);
+    expect(verdict.status).toBe(402);
+    expect(vi.mocked(fetchJson)).not.toHaveBeenCalled(); // signature check is local, fails before any RPC read
   });
 
   it("serves the request when an x402 payment verifies AND settles", async () => {

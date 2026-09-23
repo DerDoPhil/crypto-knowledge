@@ -20,7 +20,7 @@ MCP server (if your runtime speaks MCP): https://crypto-knowledge-mcp.vercel.app
 
 ## Access / cost
 
-- Completely FREE: every action (`ask`, `get_guide`, `search`, `reference`, `list_topics`, `skill`) works without payment, API key or NFT. Just POST — no 402 step.
+- `list_topics` and `skill` are always free. `ask`, `get_guide`, `search`, `reference` are free for verified Auditors NFT holders (Ethereum Mainnet) — sign a day-bound message and send `X-Wallet` + `X-Wallet-Signature` headers. Otherwise: $0.01 USDC/request via x402 (`X-PAYMENT` header).
 
 ## When to use it
 

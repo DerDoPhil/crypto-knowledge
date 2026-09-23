@@ -1,4 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { AccessEnforcer } from "../../src/access/enforce.js";
+import { loadOperatorConfig } from "../../src/config.js";
 import { GUIDES, GUIDE_TOPICS } from "../../src/modules/knowledge/guides.js";
 import { ADOPTION_PROMPT, getReference, getSkill, getStats, GUIDE_SECTIONS, MEMORY_HINT, QUICKSTART, REFERENCE_KINDS, type ReferenceKind } from "../../src/modules/knowledge/references.js";
 import { ask, clampTopK, compactGuides, deepSearchGuides, getGuidesBatch, PREVIEW_NOTE, relatedGuides, resolveTopicMiss } from "../../src/modules/knowledge/search.js";
@@ -11,10 +13,15 @@ import { ask, clampTopK, compactGuides, deepSearchGuides, getGuidesBatch, PREVIE
  * POST { "action": "list_topics" | "get_guide" | "search" | "reference",
  *        "topic"?: string, "query"?: string, "kind"?: string }
  *
- * Every action is FREE (product decision 2026-09-20): no payment, no 402, no NFT gate.
+ * list_topics/stats/skill are free (discovery); the actual knowledge (get_guide,
+ * search, reference, ask) is free for verified Auditors NFT holders (X-Wallet +
+ * X-Wallet-Signature, see src/access/holder.ts), $0.01 x402 pay-per-call otherwise
+ * (restored 2026-09-24 — briefly free for everyone 2026-09-20 through 2026-09-23).
  * The same holds for the `knowledge` tool on /mcp (see FREE_TOOLS in src/access/enforce.ts).
  */
 export const config = { maxDuration: 30 };
+
+const enforcer = new AccessEnforcer(loadOperatorConfig());
 
 export default async function handler(
   req: IncomingMessage & { body?: unknown },
@@ -31,10 +38,10 @@ export default async function handler(
     json(200, {
       ok: true,
       tool: "crypto-knowledge",
-      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"topics"?,"query"?,"kind"?,"filter"?,"full"?,"topK"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guide (full) + previews + endpoints in one call (full:true for every match in full; topK 1-10 controls result count). BATCH: {"action":"get_guide","topics":["a","b","c"]} serves up to 5 full runbooks in ONE call. reference supports "filter" (e.g. {"kind":"endpoints","filter":"solana"}) so you don\'t pay tokens for a whole table. A near-miss get_guide topic resolves or returns suggestions. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
+      usage: 'POST {"action":"list_topics"|"ask"|"get_guide"|"search"|"reference"|"skill","topic"?,"topics"?,"query"?,"kind"?,"filter"?,"full"?,"topK"?}. Fastest path: {"action":"ask","query":"<your question>"} → best guide (full) + previews + endpoints in one call (full:true for every match in full; topK 1-10 controls result count). BATCH: {"action":"get_guide","topics":["a","b","c"]} serves up to 5 full runbooks for ONE call. reference supports "filter" (e.g. {"kind":"endpoints","filter":"solana"}) so you don\'t pay tokens for a whole table. A near-miss get_guide topic resolves or returns suggestions — the call is not wasted. Agents: {"action":"skill"} (FREE) returns an installable skill + the adoption question for your user.',
       topics: GUIDE_TOPICS,
       references: [...REFERENCE_KINDS],
-      access: "FREE — every action (ask, get_guide, search, reference, list_topics, skill) is free. No payment, no API key, no NFT gate.",
+      access: "list_topics + skill are free. Guides/references: free for verified Auditors NFT holders (X-Wallet + X-Wallet-Signature headers), else $0.01 USDC per request via x402 (X-PAYMENT) — pay-per-call.",
       memoryHint: MEMORY_HINT,
     });
     return;
@@ -68,6 +75,17 @@ export default async function handler(
     if (action === "skill") {
       // Free: hands the agent an installable skill + the exact adoption question for its user.
       json(200, { ok: true, data: getSkill() });
+      return;
+    }
+
+    // Everything beyond discovery is holder-free / paid.
+    const verdict = await enforcer.enforce({
+      headers: req.headers,
+      body: { method: "tools/call", params: { name: "knowledge" } },
+      resourceUrl: `https://${req.headers.host ?? "crypto-knowledge-mcp.vercel.app"}/api/tools/knowledge`,
+    });
+    if (!verdict.allowed) {
+      json(verdict.status ?? 402, verdict.body ?? { error: "access denied" }, verdict.headers ?? {});
       return;
     }
 
